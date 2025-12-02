@@ -1,127 +1,65 @@
 "use client";
 
-import React, { useState } from "react";
-import Tesseract from "tesseract.js";
+
+import React, { useState, useEffect } from "react";
+
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
+import pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.min?url";
 
 export default function TimetableExtractor() {
   const [timetable, setTimetable] = useState(null);
+  const [editingCell, setEditingCell] = useState(null);
+  const [editValue, setEditValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [pdfText, setPdfText] = useState("");
 
   const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
   const TIME_SLOTS = ["8h30→10h30", "10h45→12h45", "14h → 16h", "16h15→18h15"];
 
- const handlePdfUpload = async (e) => {
+ useEffect(() => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+  }, []);
+
+
+  const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setLoading(true);
     try {
-      let imageDataUrl;
-
-      if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-        // lire PDF en ArrayBuffer
-        const arrayBuffer = await file.arrayBuffer();
-        // pdfjs: render première page
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2 }); // augmente la résolution
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.floor(viewport.width);
-        canvas.height = Math.floor(viewport.height);
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        imageDataUrl = canvas.toDataURL("image/png");
-      } else {
-       // image (png/jpg)
-        imageDataUrl = await readFileAsDataUrl(file);
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      let fullText = "";
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        fullText += pageText + "\n";
       }
 
-      // prétraitement (grayscale, contraste, redim)
-      const preprocessed = await preprocessImage(imageDataUrl);
+      console.log("TEXTE PDF BRUT:", fullText);
+      setPdfText(fullText);
 
-      // OCR avec options
-     const result = await Tesseract.recognize(preprocessed, "fra", {
-        logger: m => console.log(m),
-        tessedit_pageseg_mode: Tesseract.PSM.SPARSE_TEXT,
-     });
-
-      const text = result.data?.text || "";
-      console.log("TEXTE OCR:", text);
-      setPdfText(text);
-
-      const parsed = parseTimetableByColumns(result.data, text);
-      
+      // Parser le texte structuré
+      const parsed = parseTimetableFromText(fullText);
       console.log("EMPLOI DU TEMPS PARSÉ:", parsed);
       setTimetable(parsed);
+
     } catch (err) {
-      console.error("Erreur OCR:", err);
-      alert("Impossible d'extraire le document via OCR.");
+      console.error("Erreur PDF:", err);
+      alert("Erreur lors de l'extraction du PDF.");
     } finally {
       setLoading(false);
     }
   };
-   // util: lire fichier en dataURL
-  const readFileAsDataUrl = (file) => new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
 
-  // prétraitement canvas: resize large, grayscale, simple threshold/contrast
-  const preprocessImage = (dataUrl, targetWidth = 1800) => new Promise((res) => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, targetWidth / img.width) || 1;
-      const w = Math.floor(img.width * scale);
-      const h = Math.floor(img.height * scale);
-      const c = document.createElement("canvas");
-      c.width = w;
-      c.height = h;
-      const ctx = c.getContext("2d", { willReadFrequently: true });
-      ctx.drawImage(img, 0, 0, w, h);
-
-        // récupérer pixels, appliquer grayscale + contraste + léger sharpen via convolution si besoin
-      const imageData = ctx.getImageData(0, 0, w, h);
-      const d = imageData.data;
-      // simple contrast & grayscale
-      for (let i = 0; i < d.length; i += 4) {
-        const r = d[i], g = d[i+1], b = d[i+2];
-        let gray = 0.299*r + 0.587*g + 0.114*b;
-        // augmenter contraste
-        const contrast = 1.2;
-        gray = ((gray - 128) * contrast) + 128;
-        d[i] = d[i+1] = d[i+2] = gray;
-      }
-      ctx.putImageData(imageData, 0, 0);
-
-      // optional: global threshold to improve text contrast
-      const imgData2 = ctx.getImageData(0, 0, w, h);
-      const d2 = imgData2.data;
-      // calculer moyenne rapide
-      let sum = 0, cnt = 0;
-      for (let i = 0; i < d2.length; i += 4) { sum += d2[i]; cnt++; }
-      const mean = sum / cnt;
-      const thresh = Math.max(120, mean - 10);
-      for (let i = 0; i < d2.length; i += 4) {
-        const v = d2[i] > thresh ? 255 : 0;
-        d2[i] = d2[i+1] = d2[i+2] = v;
-        }
-      ctx.putImageData(imgData2, 0, 0);
-
-      res(c.toDataURL("image/png"));
-    };
-    img.onerror = () => res(dataUrl); // fallback
-    img.src = dataUrl;
-  });
-
-  // parsing robuste: normaliser, splitter, heuristiques
- const parseTimetableByColumns = (ocrData, rawText) => {
+  // Parser intelligent pour structure : Jour / Horaire / Cours
+  const parseTimetableFromText = (rawText) => {
     const text = rawText.toLowerCase();
-    
-    // Initialiser grille vide
+    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 1);
+
+    // Initialiser grille
     const timetable = DAYS.map(day => ({ 
       jour: capitalize(day), 
       slot1: "", 
@@ -129,55 +67,77 @@ export default function TimetableExtractor() {
       slot3: "", 
       slot4: "" 
     }));
-// Essayer de détecter ordre des horaires et jours via le texte brut
-    const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 2);
-    
-    // Grouper par bloc logique (jour + ses 4 slots)
-    let dayBlocks = [];
-    let currentBlock = {};
+
+    const TIME_SLOTS_REGEX = [
+      { slot: 1, regex: /8h30\s*→?\s*10h30/ },
+      { slot: 2, regex: /10h45\s*→?\s*12h45/ },
+      { slot: 3, regex: /14h\s*→?\s*16h/ },
+      { slot: 4, regex: /16h15\s*→?\s*18h15/ }
+    ];
+
+    // Étape 1 : splitter par horaire
+    let sections = [];
+    let currentSlot = 0;
+    let currentContent = [];
 
     lines.forEach(line => {
-      // Détecter jour
-      const dayMatch = DAYS.find(d => line.includes(d));
-      if (dayMatch) {
-        if (Object.keys(currentBlock).length > 0) dayBlocks.push(currentBlock);
-        currentBlock = { jour: dayMatch, content: [] };
-      } else if (Object.keys(currentBlock).length > 0) {
-        currentBlock.content.push(line);
+      // Vérifier si c'est un horaire
+      let foundSlot = false;
+      TIME_SLOTS_REGEX.forEach(({ slot, regex }) => {
+        if (regex.test(line)) {
+          if (currentContent.length > 0) {
+            sections.push({ slot: currentSlot, content: currentContent });
+          }
+          currentSlot = slot;
+          currentContent = [];
+          foundSlot = true;
+        }
+      });
+
+      if (!foundSlot && line.length > 1) {
+        currentContent.push(line);
       }
     });
-  if (Object.keys(currentBlock).length > 0) dayBlocks.push(currentBlock);
+    if (currentContent.length > 0) {
+      sections.push({ slot: currentSlot, content: currentContent });
+    }
 
-    // Pour chaque bloc jour, splitter en 4 slots
-    dayBlocks.forEach(block => {
-      const dayIdx = DAYS.indexOf(block.jour);
-      if (dayIdx === -1) return;
+    console.log("Sections par horaire:", sections);
 
-      // Joindre contenu et splitter par détecteurs d'horaire
-      const fullContent = block.content.join(" ");
-      
-      // Splitter heuristique : chercher patterns "8h30", "10h45", etc.
-      const slotRegex = /(8h30|8h:30|10h45|10h:45|14h|16h15|16h:15)/gi;
-      const matches = [];
-      let match;
-      while ((match = slotRegex.exec(fullContent)) !== null) {
-        matches.push({ time: match[0].toLowerCase(), idx: match.index });
-      }
-    // Extraire contenu pour chaque slot
-      for (let slotNum = 0; slotNum < 4; slotNum++) {
-        let slotStart = matches[slotNum]?.idx || 0;
-        let slotEnd = matches[slotNum + 1]?.idx || fullContent.length;
-        let slotContent = fullContent.substring(slotStart, slotEnd);
+    // Étape 2 : pour chaque section, extraire jour + cours
+    sections.forEach(({ slot, content }) => {
+      let currentDayIdx = -1;
+      let courseBuffer = [];
 
-        // Nettoyer et limiter à première phrase/nom de cours
-        slotContent = slotContent
-          .replace(/^(8h|10h|14h|16h)[^a-z]*/i, "")
-          .split(/pr\.|d'|salle|d'information/i)[0]
-          .trim();
+      content.forEach(line => {
+        // Détecter jour
+        const dayMatch = DAYS.find(d => line.includes(d));
+        if (dayMatch) {
+          // Sauvegarder cours du jour précédent
+          if (courseBuffer.length > 0 && currentDayIdx !== -1) {
+            const courseText = cleanCourseText(courseBuffer.join(" "));
+            if (courseText.length > 2) {
+              const key = `slot${slot}`;
+              timetable[currentDayIdx][key] = courseText;
+            }
+            courseBuffer = [];
+          }
+          currentDayIdx = DAYS.indexOf(dayMatch);
+          return;
+        }
 
-        if (slotContent.length > 3) {
-          const key = `slot${slotNum + 1}`;
-          timetable[dayIdx][key] = capitalize(slotContent.split(/\s{2,}/)[0]);
+        // Ignorer lignes vides, prof, salle, etc.
+        if (line && !line.startsWith("pr.") && !line.includes("salle") && line.length > 2) {
+          courseBuffer.push(line);
+        }
+      });
+
+      // Flush dernier jour
+      if (courseBuffer.length > 0 && currentDayIdx !== -1) {
+        const courseText = cleanCourseText(courseBuffer.join(" "));
+        if (courseText.length > 2) {
+          const key = `slot${slot}`;
+          timetable[currentDayIdx][key] = courseText;
         }
       }
     });
@@ -185,60 +145,156 @@ export default function TimetableExtractor() {
     return timetable;
   };
 
+  // Nettoyer le texte de cours
+  const cleanCourseText = (text) => {
+    return text
+      .replace(/cours|td|tp|td\/tp|cours td\/tp/gi, "")
+      .replace(/\(.*?\)/g, "") // enlever parenthèses
+      .replace(/pr\.|salle|d'information/gi, "")
+      .trim()
+      .split(/\s{2,}/)[0]; // première partie
+  };
 
-
-
+  const readFileAsDataUrl = (file) =>
+    new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
 
   const capitalize = (s) => s && s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 
+  // Éditer une cellule
+  const handleCellClick = (dayIdx, slotKey) => {
+    setEditingCell({ dayIdx, slotKey });
+    setEditValue(timetable[dayIdx][slotKey] || "");
+  };
 
+  // Sauvegarder l'édition
+  const handleSaveEdit = () => {
+    if (!editingCell) return;
+    const newTimetable = [...timetable];
+    newTimetable[editingCell.dayIdx][editingCell.slotKey] = editValue;
+    setTimetable(newTimetable);
+    setEditingCell(null);
+    setEditValue("");
+  };
+
+  // Exporter en JSON
+  const handleExport = () => {
+    const dataStr = JSON.stringify(timetable, null, 2);
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "emploi_du_temps.json";
+    link.click();
+  };
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial, sans-serif", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ padding: 20, fontFamily: "Arial, sans-serif", maxWidth: 1400, margin: "0 auto" }}>
       <h1 style={{ color: "#2c3e50", marginBottom: 20, textAlign: "center" }}>
-        📅 Extractor d'Emploi du Temps - Génie Électrique (OCR)
+        📅 Extracteur d'Emploi du Temps (PDF Structuré)
       </h1>
 
       <div style={{ marginBottom: 30, padding: 25, backgroundColor: "#f8f9fa", borderRadius: 10, border: "2px dashed #dee2e6", textAlign: "center" }}>
-        <h3 style={{ color: "#495057", marginBottom: 15 }}>
-          Téléchargez votre emploi du temps au format PDF ou image
-        </h3>
+        <h3 style={{ color: "#495057", marginBottom: 15 }}>Téléchargez votre emploi du temps (PDF)</h3>
         <input
           type="file"
-          accept=".pdf,image/*"
+          accept=".pdf"
           onChange={handlePdfUpload}
-          style={{ padding: 15, border: "2px solid #007bff", borderRadius: 8, width: "100%", maxWidth: 400, cursor: "pointer", backgroundColor: "#fff", margin: "0 auto", display: "block" }}
+          disabled={loading}
+          style={{ padding: 15, border: "2px solid #007bff", borderRadius: 8, width: "100%", maxWidth: 400, cursor: "pointer", backgroundColor: "#fff", display: "block", margin: "0 auto" }}
         />
       </div>
 
-      {loading && <p style={{ color: "#007bff" }}>Extraction OCR en cours…</p>}
+      {loading && <p style={{ color: "#007bff", textAlign: "center" }}>⏳ Extraction en cours…</p>}
+
+      {editingCell && (
+        <div style={{ marginBottom: 20, padding: 15, backgroundColor: "#fff3cd", border: "1px solid #ffc107", borderRadius: 5 }}>
+          <label>Éditer : <strong>{DAYS[editingCell.dayIdx].toUpperCase()} - {TIME_SLOTS[Object.keys(timetable[0]).indexOf(editingCell.slotKey) - 1]}</strong></label>
+          <textarea
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            style={{ width: "100%", padding: 8, marginTop: 10, marginBottom: 10, borderRadius: 4, border: "1px solid #ffc107", minHeight: "80px" }}
+            placeholder="Entrez le nom du cours"
+          />
+          <button onClick={handleSaveEdit} style={{ padding: "8px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: 4, cursor: "pointer", marginRight: 10 }}>
+            ✓ Sauvegarder
+          </button>
+          <button onClick={() => setEditingCell(null)} style={{ padding: "8px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
+            ✗ Annuler
+          </button>
+        </div>
+      )}
 
       {timetable && (
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 20 }}>
-          <thead>
-            <tr style={{ backgroundColor: "#2c3e50", color: "white" }}>
-              <th style={{ padding: 10 }}>Jour</th>
-              {TIME_SLOTS.map((slot, i) => <th key={i} style={{ padding: 10 }}>{slot}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {timetable.map((row, i) => (
-              <tr key={i} style={{ backgroundColor: i % 2 === 0 ? "#fff" : "#f1f3f5" }}>
-                <td style={{ padding: 10, fontWeight: "bold" }}>{row.jour}</td>
-                <td style={{ padding: 10 }}>{row.slot1 || "Pas de cours"}</td>
-                <td style={{ padding: 10 }}>{row.slot2 || "Pas de cours"}</td>
-                <td style={{ padding: 10 }}>{row.slot3 || "Pas de cours"}</td>
-                <td style={{ padding: 10 }}>{row.slot4 || "Pas de cours"}</td>
+        <>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 20, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+            <thead>
+              <tr style={{ backgroundColor: "#2c3e50", color: "white" }}>
+                <th style={{ padding: 12, textAlign: "left" }}>Jour</th>
+                {TIME_SLOTS.map((slot, i) => <th key={i} style={{ padding: 12, textAlign: "center", fontSize: "12px" }}>{slot}</th>)}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {timetable.map((row, dayIdx) => (
+                <tr key={dayIdx} style={{ backgroundColor: dayIdx % 2 === 0 ? "#fff" : "#f8f9fa", borderBottom: "1px solid #dee2e6" }}>
+                  <td style={{ padding: 12, fontWeight: "bold", color: "#2c3e50" }}>{row.jour}</td>
+                  {[1, 2, 3, 4].map((slotNum) => {
+                    const slotKey = `slot${slotNum}`;
+                    return (
+                      <td
+                        key={slotKey}
+                        onClick={() => handleCellClick(dayIdx, slotKey)}
+                        style={{
+                          padding: 12,
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: editingCell?.dayIdx === dayIdx && editingCell?.slotKey === slotKey ? "#e7f3ff" : "inherit",
+                          border: editingCell?.dayIdx === dayIdx && editingCell?.slotKey === slotKey ? "2px solid #007bff" : "1px solid #dee2e6",
+                          minHeight: "80px",
+                          verticalAlign: "middle",
+                          fontSize: "12px",
+                          transition: "all 0.2s",
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word"
+                        }}
+                      >
+                        {row[slotKey] || <span style={{ color: "#999" }}>Cliquer pour ajouter</span>}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <button
+              onClick={handleExport}
+              style={{
+                padding: "12px 25px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "none",
+                borderRadius: 5,
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "bold"
+              }}
+            >
+              💾 Exporter en JSON
+            </button>
+          </div>
+        </>
       )}
 
       {pdfText && (
-        <details style={{ marginTop: 20 }}>
-          <summary>📄 Afficher le texte OCR extrait</summary>
-          <pre style={{ maxHeight: 300, overflow: "auto", backgroundColor: "#f8f9fa", padding: 10 }}>{pdfText}</pre>
+        <details style={{ marginTop: 30 }}>
+          <summary style={{ cursor: "pointer", fontWeight: "bold", color: "#2c3e50" }}>📄 Afficher le texte PDF extrait</summary>
+          <pre style={{ maxHeight: 300, overflow: "auto", backgroundColor: "#f8f9fa", padding: 15, marginTop: 10, borderRadius: 5, border: "1px solid #dee2e6", fontSize: "11px" }}>{pdfText}</pre>
         </details>
       )}
     </div>
