@@ -53,10 +53,10 @@ const data = {
   projects: [
 
     { name: "Gestion des emplois", url: "#", icon: Calendar },
-    { name: "Gestion des absences", url: "/absence", icon: PieChart },
+    { name: "Gestion des absences", url: "#", icon: PieChart },
     { name: "Gestion des annonces", url: "#", icon: Map },
   ],
-};    
+};
 
 export function AppSidebar(props) {
   return (

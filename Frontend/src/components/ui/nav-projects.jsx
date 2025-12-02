@@ -61,11 +61,7 @@ export function NavProjects({ projects }) {
                   <Forward className="text-muted-foreground" />
                   <Link to="/timetable">Consulter un emploi</Link>              
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <Link to="/extract">Extraire un emploi</Link>                
-                </DropdownMenuItem>
+               
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
