@@ -25,6 +25,7 @@
     "@tailwindcss/vite": "^4.1.17",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "docx": "^9.5.1",
     "lucide-react": "^0.555.0",
     "pdfjs-dist": "^5.4.449",
     "react": "^19.2.0",

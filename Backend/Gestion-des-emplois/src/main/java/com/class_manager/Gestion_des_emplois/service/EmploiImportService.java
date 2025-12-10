@@ -1,0 +1,345 @@
+package com.class_manager.Gestion_des_emplois.service;
+import com.class_manager.Gestion_des_emplois.model.entity.*;
+import com.class_manager.Gestion_des_emplois.repository.*;
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiImportDTO;
+import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.Optional;
+
+import java.util.List;
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
+@Service
+@RequiredArgsConstructor
+public class EmploiImportService {
+
+    private final ClasseRepository classeRepo;
+    private final FiliereRepository filiereRepo;
+    private final ProfRepository profRepo;
+    private final MatiereRepository matiereRepo;
+    private final SalleRepository salleRepo;
+    private final CreneauRepository creneauRepo;
+    private final EmploiDuTempsRepository edtRepo;
+
+
+
+    public void importEmploi(ImportRequest request) {
+
+        // 1. Vérifier/créer filière
+        Filiere filiere;
+        if (request.getFiliere() != null && !request.getFiliere().isEmpty()) {
+            filiere = filiereRepo.findByNom(request.getFiliere())
+                    .orElseGet(() -> {
+                        Filiere f = new Filiere();
+                        f.setNom(request.getFiliere());
+                        return filiereRepo.save(f);
+                    });
+        } else {
+            filiere = null;
+        }
+
+        // 2. Vérifier/créer classe (en tenant compte de la filière)
+        Classe classe;
+        if (filiere != null) {
+            // Chercher classe avec nom ET filière
+            classe = classeRepo.findByNomAndFiliere_Nom(request.getClasse(), filiere.getNom())
+                    .orElseGet(() -> {
+                        Classe c = new Classe();
+                        c.setNom(request.getClasse());
+                        c.setFiliere(filiere);
+                        return classeRepo.save(c);
+                    });
+        } else {
+            // Si pas de filière, prendre la première classe avec ce nom
+            List<Classe> classes = classeRepo.findByNom(request.getClasse());
+            if (classes.isEmpty()) {
+                Classe c = new Classe();
+                c.setNom(request.getClasse());
+                classe = classeRepo.save(c);
+            } else {
+                classe = classes.get(0);
+            }
+        }
+
+        // 3. Pour chaque ligne d'emploi importée
+        for (EmploiImportDTO dto : request.getEmplois()) {
+
+            // Créneau
+            String[] parts = dto.getCreneau().split("-");
+            Creneau creneau = creneauRepo.findByHeureDebutAndHeureFin(parts[0], parts[1])
+                    .orElseGet(() -> {
+                        Creneau c = new Creneau();
+                        c.setHeureDebut(parts[0]);
+                        c.setHeureFin(parts[1]);
+                        return creneauRepo.save(c);
+                    });
+
+            // Matière
+            Matiere matiere = matiereRepo.findByNom(dto.getMatiere())
+                    .orElseGet(() -> {
+                        Matiere m = new Matiere();
+                        m.setNom(dto.getMatiere());
+                        return matiereRepo.save(m);
+                    });
+
+            // Prof
+            Prof prof = profRepo.findByNom(dto.getProf())
+                    .orElseGet(() -> {
+                        Prof p = new Prof();
+                        p.setNom(dto.getProf());
+                        return profRepo.save(p);
+                    });
+
+            // Salle
+            Salle salle = salleRepo.findByNom(dto.getSalle())
+                    .orElseGet(() -> {
+                        Salle s = new Salle();
+                        s.setNom(dto.getSalle());
+                        return salleRepo.save(s);
+                    });
+
+            // Enregistrer EDT
+            EmploiDuTemps edt = new EmploiDuTemps();
+            edt.setJour(dto.getJour());
+            edt.setClasse(classe);
+            edt.setProf(prof);
+            edt.setMatiere(matiere);
+            edt.setSalle(salle);
+            edt.setCreneau(creneau);
+            edt.setSemestre(Semestre.valueOf(dto.getSemestre()));
+            edt.setFileName(request.getFileName());
+            edtRepo.save(edt);
+        }
+    }
+
+
+    public List<EmploiDuTemps> getAllEmplois() {
+        return edtRepo.findAll();
+    }
+    public Optional<EmploiDuTemps> getEmploiById(Long id) {
+        return edtRepo.findById(id);
+    }
+
+
+
+    // ✅ Méthode pour mettre à jour une cellule d'emploi
+    @Transactional
+    public EmploiDuTemps updateEmploiCell(Long emploiId, EmploiCellUpdateDTO updateDTO) {
+        // 1. Récupérer l'emploi existant
+        EmploiDuTemps emploi = edtRepo.findById(emploiId)
+                .orElseThrow(() -> new RuntimeException("Emploi non trouvé avec l'ID: " + emploiId));
+
+        // 2. Mettre à jour les champs selon ce qui est fourni dans le DTO
+
+        // Mise à jour de la matière
+        if (updateDTO.getMatiere() != null && !updateDTO.getMatiere().isEmpty()) {
+            Matiere matiere = matiereRepo.findByNom(updateDTO.getMatiere())
+                    .orElseGet(() -> {
+                        Matiere m = new Matiere();
+                        m.setNom(updateDTO.getMatiere());
+                        return matiereRepo.save(m);
+                    });
+            emploi.setMatiere(matiere);
+        }
+
+        // Mise à jour du prof
+        if (updateDTO.getProf() != null && !updateDTO.getProf().isEmpty()) {
+            Prof prof = profRepo.findByNom(updateDTO.getProf())
+                    .orElseGet(() -> {
+                        Prof p = new Prof();
+                        p.setNom(updateDTO.getProf());
+                        return profRepo.save(p);
+                    });
+            emploi.setProf(prof);
+        }
+
+        // Mise à jour de la salle
+        if (updateDTO.getSalle() != null && !updateDTO.getSalle().isEmpty()) {
+            Salle salle = salleRepo.findByNom(updateDTO.getSalle())
+                    .orElseGet(() -> {
+                        Salle s = new Salle();
+                        s.setNom(updateDTO.getSalle());
+                        return salleRepo.save(s);
+                    });
+            emploi.setSalle(salle);
+        }
+
+        // Mise à jour du créneau
+        if (updateDTO.getCreneau() != null && !updateDTO.getCreneau().isEmpty()) {
+            String[] parts = updateDTO.getCreneau().split("-");
+            if (parts.length == 2) {
+                Creneau creneau = creneauRepo.findByHeureDebutAndHeureFin(parts[0], parts[1])
+                        .orElseGet(() -> {
+                            Creneau c = new Creneau();
+                            c.setHeureDebut(parts[0]);
+                            c.setHeureFin(parts[1]);
+                            return creneauRepo.save(c);
+                        });
+                emploi.setCreneau(creneau);
+            }
+        }
+
+        // Mise à jour du jour
+        if (updateDTO.getJour() != null && !updateDTO.getJour().isEmpty()) {
+            emploi.setJour(updateDTO.getJour());
+        }
+
+        // 3. Sauvegarder les modifications
+        return edtRepo.save(emploi);
+    }
+
+
+    public void deleteEmploi(Long id) {
+        edtRepo.deleteById(id);
+    }
+
+
+
+
+    // ✅ Nouvelle méthode pour supprimer par classe/filière/semestre
+    public void deleteEmploisByGroup(String className, String filiereName, String semester) {
+        List<EmploiDuTemps> emplois = edtRepo.findAll();
+
+        emplois.stream()
+                .filter(e -> {
+                    boolean matchClass = e.getClasse() != null &&
+                            className.equalsIgnoreCase(e.getClasse().getNom());
+
+                    boolean matchFiliere = (filiereName == null || filiereName.isEmpty()) ?
+                            (e.getClasse() == null || e.getClasse().getFiliere() == null) :
+                            (e.getClasse() != null &&
+                                    e.getClasse().getFiliere() != null &&
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().getNom()));
+
+                    boolean matchSemester = (semester == null || semester.isEmpty()) ?
+                            (e.getSemestre() == null || e.getSemestre().isEmpty()) :
+                            semester.equalsIgnoreCase(String.valueOf(e.getSemestre()));
+
+                    return matchClass && matchFiliere && matchSemester;
+                })
+                .forEach(e -> edtRepo.delete(e));
+    }
+
+
+    // ✅ Nouvelle méthode pour récupérer par groupe (classe/filière/semestre)
+    public List<EmploiDuTemps> getEmploisByGroup(String className, String filiereName, String semester) {
+        List<EmploiDuTemps> emplois = edtRepo.findAll();
+
+        return emplois.stream()
+                .filter(e -> {
+                    boolean matchClass = e.getClasse() != null &&
+                            className.equalsIgnoreCase(e.getClasse().getNom());
+
+                    boolean matchFiliere = (filiereName == null || filiereName.isEmpty()) ?
+                            (e.getClasse() == null || e.getClasse().getFiliere() == null) :
+                            (e.getClasse() != null &&
+                                    e.getClasse().getFiliere() != null &&
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().getNom()));
+
+                    boolean matchSemester = (semester == null || semester.isEmpty()) ?
+                            true :
+                            (e.getSemestre() != null &&
+                                    semester.equalsIgnoreCase(e.getSemestre().name()));
+
+                    return matchClass && matchFiliere && matchSemester;
+                })
+                .toList();
+    }
+
+
+    // ...existing code...
+    @Transactional
+    public EmploiDuTemps createEmploi(EmploiDuTemps emploi) {
+        // Classe (recherche par id si fourni, sinon par nom, sinon création)
+        Classe classe = null;
+        if (emploi.getClasse() != null) {
+            if (emploi.getClasse().getId() != null) {
+                classe = classeRepo.findById(emploi.getClasse().getId()).orElse(null);
+            }
+            if (classe == null && emploi.getClasse().getNom() != null) {
+                List<Classe> found = classeRepo.findByNom(emploi.getClasse().getNom());
+                if (!found.isEmpty()) {
+                    classe = found.get(0);
+                } else {
+                    classe = new Classe();
+                    classe.setNom(emploi.getClasse().getNom());
+                    if (emploi.getClasse().getFiliere() != null && emploi.getClasse().getFiliere().getNom() != null) {
+                        Filiere fil = filiereRepo.findByNom(emploi.getClasse().getFiliere().getNom())
+                                .orElseGet(() -> {
+                                    Filiere f = new Filiere();
+                                    f.setNom(emploi.getClasse().getFiliere().getNom());
+                                    return filiereRepo.save(f);
+                                });
+                        classe.setFiliere(fil);
+                    }
+                    classe = classeRepo.save(classe);
+                }
+            }
+        }
+
+        // Matiere
+        Matiere matiere = null;
+        if (emploi.getMatiere() != null && emploi.getMatiere().getNom() != null && !emploi.getMatiere().getNom().isBlank()) {
+            matiere = matiereRepo.findByNom(emploi.getMatiere().getNom())
+                    .orElseGet(() -> {
+                        Matiere m = new Matiere();
+                        m.setNom(emploi.getMatiere().getNom());
+                        return matiereRepo.save(m);
+                    });
+        }
+
+        // Prof
+        Prof prof = null;
+        if (emploi.getProf() != null && emploi.getProf().getNom() != null && !emploi.getProf().getNom().isBlank()) {
+            prof = profRepo.findByNom(emploi.getProf().getNom())
+                    .orElseGet(() -> {
+                        Prof p = new Prof();
+                        p.setNom(emploi.getProf().getNom());
+                        return profRepo.save(p);
+                    });
+        }
+
+        // Salle
+        Salle salle = null;
+        if (emploi.getSalle() != null && emploi.getSalle().getNom() != null && !emploi.getSalle().getNom().isBlank()) {
+            salle = salleRepo.findByNom(emploi.getSalle().getNom())
+                    .orElseGet(() -> {
+                        Salle s = new Salle();
+                        s.setNom(emploi.getSalle().getNom());
+                        return salleRepo.save(s);
+                    });
+        }
+
+        // Creneau
+        Creneau creneau = null;
+        if (emploi.getCreneau() != null && emploi.getCreneau().getHeureDebut() != null) {
+            String hd = emploi.getCreneau().getHeureDebut();
+            String hf = emploi.getCreneau().getHeureFin();
+            creneau = creneauRepo.findByHeureDebutAndHeureFin(hd, hf)
+                    .orElseGet(() -> {
+                        Creneau c = new Creneau();
+                        c.setHeureDebut(hd);
+                        c.setHeureFin(hf);
+                        return creneauRepo.save(c);
+                    });
+        }
+
+        // Construire et sauvegarder EmploiDuTemps
+        EmploiDuTemps newEmploi = new EmploiDuTemps();
+        newEmploi.setClasse(classe);
+        newEmploi.setMatiere(matiere);
+        newEmploi.setProf(prof);
+        newEmploi.setSalle(salle);
+        newEmploi.setCreneau(creneau);
+        if (emploi.getJour() != null) newEmploi.setJour(emploi.getJour());
+        if (emploi.getSemestre() != null) newEmploi.setSemestre(emploi.getSemestre());
+        if (emploi.getFileName() != null) newEmploi.setFileName(emploi.getFileName());
+
+        return edtRepo.save(newEmploi);
+    }
+// ...existing code...
+
+
+
+}

@@ -1,5 +1,5 @@
 "use client";
-
+const BASE_URL = "http://localhost:8082"; 
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -22,132 +22,166 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+export  function TimetableUpload() {
+const { id } = useParams();
+// charger les donnée depuis la base de donnée
 
-// Données statiques pour simuler la base de données
-const sampleTimetables = {
-  1: {
-    id: 1,
-    fileName: "emploi_cp1_s1.pdf",
-    class: "cp1",
-    filiere: "",
-    semester: "s1",
-    uploadDate: "2024-01-15",
-    fileSize: "2.4 MB",
-    fileUrl: "/emplois/emploi_cp1_s1.pdf"
-  },
-  2: {
-    id: 2,
-    fileName: "emploi_ci1_gi_s5.pdf",
-    class: "ci1",
-    filiere: "gi",
-    semester: "s5",
-    uploadDate: "2024-01-10",
-    fileSize: "3.1 MB",
-    fileUrl: "/emplois/emploi_ci1_gi_s5.pdf"
-  },
-  3: {
-    id: 3,
-    fileName: "emploi_cp2_s3.pdf",
-    class: "cp2",
-    filiere: "",
-    semester: "s3",
-    uploadDate: "2024-01-08",
-    fileSize: "2.8 MB",
-    fileUrl: "/emplois/emploi_cp2_s3.pdf"
-  }
-};
+const [classes, setClasses] = useState([]);
+const [filieresList, setFilieresList] = useState([]);
+const [profs, setProfs] = useState([]);
+const [matieres, setMatieres] = useState([]);
+const [salles, setSalles] = useState([]);
+const [progress, setProgress] = useState(0);
+const [documentText, setDocumentText] = useState("");
 
-export function TimetableUpload() {
-  const { id } = useParams(); // Récupère l'ID depuis l'URL
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedClass, setSelectedClass] = useState("");
-  const [selectedFiliere, setSelectedFiliere] = useState("");
-  const [selectedSemester, setSelectedSemester] = useState("");
-  const [timetableName, setTimetableName] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState("");
-  const [isEditMode, setIsEditMode] = useState(false);
-  
-  // States pour l'extraction DOCX (même que TimetableExtractor)
-  const [timetable, setTimetable] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [documentText, setDocumentText] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(null);
-  const [jszipReady, setJszipReady] = useState(false);
-  const [editingCell, setEditingCell] = useState(null);
-  const [editForm, setEditForm] = useState({ type: "Cours", cours: "", professeur: "", salle: "" });
+
+
+const [timetable, setTimetable] = useState(null);
+const [selectedFile, setSelectedFile] = useState(null);
+const [jszipReady, setJszipReady] = useState(false);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+const [isEditMode, setIsEditMode] = useState(false);
+const [timetableName, setTimetableName] = useState("");
+const [selectedClass, setSelectedClass] = useState("");
+const [selectedFiliere, setSelectedFiliere] = useState("");
+const [selectedSemester, setSelectedSemester] = useState("");
+const [showFiliereSelect, setShowFiliereSelect] = useState(false);
+const [availableSemesters, setAvailableSemesters] = useState([]);
+const [editingCell, setEditingCell] = useState(null);
+const [editForm, setEditForm] = useState({ type: "Cours", cours: "", professeur: "", salle: "" });
+const [isUploading, setIsUploading] = useState(false);
+const [uploadStatus, setUploadStatus] = useState("");
+
 
   const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
   const TIME_SLOTS = ["8h30→10h30", "10h45→12h45", "14h → 16h", "16h15→18h15"];
+  // map statique des semestres par classe (modifiable)
+const SEMESTERS_MAP = {
+  cp1: [{ value: "S1", label: "S1" }, { value: "S2", label: "S2" }],
+  cp2: [{ value: "S3", label: "S3" }, { value: "S4", label: "S4" }],
+  ci1: [{ value: "S5", label: "S5" }, { value: "S6", label: "S6" }],
+  ci2: [{ value: "S7", label: "S7" }, { value: "S8", label: "S8" }],
+  ci3: [{ value: "S9", label: "S9" }]
+};
 
-  // Données pour les classes et filières
-  const classes = [
-    { value: "cp1", label: "CP1" },
-    { value: "cp2", label: "CP2" },
-    { value: "ci1", label: "CI1" },
-    { value: "ci2", label: "CI2" },
-    { value: "ci3", label: "CI3" }
-  ];
 
-  const filieres = {
-    ci1: [
-      { value: "gi", label: "Génie informatique" },
-      { value: "gm", label: "Génie mécatronique" },
-      { value: "ge", label: "Génie électrique" },
-      { value: "gc", label: "Génie civil" },
-      { value: "gind", label: "Génie industriel" },
-      { value: "grst", label: "Génie réseaux et télécommunications" }
-    ],
-    ci2: [
-      { value: "gi", label: "Génie informatique" },
-      { value: "gm", label: "Génie mécatronique" },
-      { value: "ge", label: "Génie électrique" },
-      { value: "gc", label: "Génie civil" },
-      { value: "gind", label: "Génie industriel" },
-      { value: "grst", label: "Génie réseaux et télécommunications" }
-    ],
-    ci3: [
-      { value: "gi", label: "Génie informatique" },
-      { value: "gm", label: "Génie mécatronique" },
-      { value: "ge", label: "Génie électrique" },
-      { value: "gc", label: "Génie civil" },
-      { value: "gind", label: "Génie industriel" },
-      { value: "grst", label: "Génie réseaux et télécommunications" }
-    ]
+const normalizeCreneauLabelToRange = (label) => label; // placeholder
+const sampleTimetables = {};
+const filieres = {}; 
+
+// Hook pour récupérer les classes et filières depuis le backend
+ const useClassesAndFilieres = () => {
+  const [classes, setClasses] = useState([]);
+  const [filieres, setFilieres] = useState({});
+
+useEffect(() => {
+  const fetchAll = async () => {
+    try {
+      const [cRes, fRes] = await Promise.all([
+        fetch(`${BASE_URL}/classes`),
+        fetch(`${BASE_URL}/filieres`)
+      ]);
+
+      if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
+
+      const [cData, fData] = await Promise.all([cRes.json(), fRes.json()]);
+
+      setClasses(cData || []);
+      setFilieres(fData || []);
+
+    } catch (err) {
+      console.error("Erreur fetching metadata:", err);
+    }
   };
 
-  const allSemesters = [
-    { value: "s1", label: "Semestre 1" },
-    { value: "s2", label: "Semestre 2" },
-    { value: "s3", label: "Semestre 3" },
-    { value: "s4", label: "Semestre 4" },
-    { value: "s5", label: "Semestre 5" },
-    { value: "s6", label: "Semestre 6" },
-    { value: "s7", label: "Semestre 7" },
-    { value: "s8", label: "Semestre 8" },
-    { value: "s9", label: "Semestre 9" } 
-  ];
+  fetchAll();
+}, []);
 
-  // Filtrer les semestres selon la classe
-  const availableSemesters = React.useMemo(() => {
-    if (!selectedClass) return allSemesters;
-    
-    switch (selectedClass) {
-      case "cp1":
-        return allSemesters.filter(sem => sem.value === "s1" || sem.value === "s2");
-      case "cp2":
-        return allSemesters.filter(sem => sem.value === "s3" || sem.value === "s4");
-      case "ci1":
-        return allSemesters.filter(sem => sem.value === "s5" || sem.value === "s6");
-      case "ci2":
-        return allSemesters.filter(sem => sem.value === "s7" || sem.value === "s8");
-      case "ci3":
-        return allSemesters.filter(sem => sem.value === "s9");
-      default:
-        return allSemesters;
+
+  return { classes, filieres };
+};
+
+useEffect(() => {
+  const fetchAll = async () => {
+    try {
+      const [cRes, fRes, pRes, mRes, sRes] = await Promise.all([
+        fetch(`${BASE_URL}/classes`),
+        fetch(`${BASE_URL}/filieres`),
+        fetch(`${BASE_URL}/profs`),
+        fetch(`${BASE_URL}/matieres`),
+        fetch(`${BASE_URL}/salles`)
+      ]);
+      if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
+
+      const [cData, fData, pData, mData, sData] = await Promise.all([
+        cRes.json(), fRes.json(), pRes.json(), mRes.json(), sRes.json()
+      ]);
+
+      console.log("Classes brutes du backend:", cData);
+      console.log("Filières brutes du backend:", fData);
+
+      // Grouper les classes par nom et construire la map des filières
+      // Format backend: [{"id":1,"nom":"ci1","filiere":{"id":1,"nom":"GI"}}, ...]
+      const classesMap = new Map();
+      const filieresMap = {};
+
+      (cData || []).forEach(c => {
+        const className = (c.nom || "").toLowerCase().trim();
+        if (!className) return;
+
+        // Grouper les classes par nom
+        if (!classesMap.has(className)) {
+          classesMap.set(className, {
+            id: c.id,
+            nom: c.nom,
+            filieres: []
+          });
+        }
+
+        // Ajouter la filière à la map par classe
+        if (c.filiere && c.filiere.nom) {
+          if (!filieresMap[className]) {
+            filieresMap[className] = [];
+          }
+          
+          // Vérifier si la filière n'est pas déjà dans la liste
+          const exists = filieresMap[className].some(f => f.id === c.filiere.id);
+          if (!exists) {
+            filieresMap[className].push({
+              id: c.filiere.id,
+              nom: c.filiere.nom
+            });
+          }
+
+          // Ajouter aussi dans l'objet classe
+          const classObj = classesMap.get(className);
+          const filiereExists = classObj.filieres.some(f => f.id === c.filiere.id);
+          if (!filiereExists) {
+            classObj.filieres.push(c.filiere);
+          }
+        }
+      });
+
+      // Convertir la map en array pour les classes uniques
+      const uniqueClasses = Array.from(classesMap.values());
+
+      console.log("Classes traitées:", uniqueClasses);
+      console.log("Filières par classe (filieresMap):", filieresMap);
+      console.log("Clés disponibles dans filieresMap:", Object.keys(filieresMap));
+
+      setClasses(uniqueClasses);
+      setFilieresList(filieresMap);
+      setProfs(pData || []);
+      setMatieres(mData || []);
+      setSalles(sData || []);
+    } catch (err) {
+      console.error("Erreur fetching metadata:", err);
     }
-  }, [selectedClass]);
+  };
+
+  fetchAll();
+}, []);
 
   // Charger JSZip depuis CDN (même code que TimetableExtractor)
   useEffect(() => {
@@ -534,105 +568,61 @@ export function TimetableUpload() {
     }
   };
 
-  // Fonction pour ouvrir le dialog d'édition
-  const handleEditCell = (dayIndex, slotKey) => {
-    const cellData = timetable[dayIndex][slotKey];
-    setEditingCell({ dayIndex, slotKey });
-    setEditForm({
-      type: cellData.type || "Cours",
-      cours: cellData.cours || "",
-      professeur: cellData.professeur || "",
-      salle: cellData.salle || ""
-    });
-  };
 
-  // Fonction pour sauvegarder les modifications
-  const handleSaveEdit = () => {
-    if (!editingCell) return;
-    
-    const newTimetable = [...timetable];
-    newTimetable[editingCell.dayIndex][editingCell.slotKey] = {
-      type: editForm.type || "Cours",
-      cours: editForm.cours.trim(),
-      professeur: editForm.professeur.trim(),
-      salle: editForm.salle.trim()
-    };
-    
-    setTimetable(newTimetable);
-    setEditingCell(null);
-    setEditForm({ type: "Cours", cours: "", professeur: "", salle: "" });
-  };
 
-  // Composant pour afficher une cellule avec style (même que TimetableExtractor)
-  const TimetableCell = ({ cellData, isEmpty, onEdit }) => {
-    if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
-      return (
-        <div className="relative group min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={onEdit}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <span className="text-muted-foreground italic text-sm">Pas de cours</span>
-        </div>
-      );
-    }
 
+  const TimetableCell = ({ cellData, isEmpty }) => {  // ✅ Enlever onEdit
+  if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
     return (
-      <div className="relative group min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30 hover:shadow-md transition-all">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={onEdit}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-        
-        <div className="space-y-2 pr-8">
-          {cellData.type && (
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-              <Badge variant="secondary" className="text-xs">
-                {cellData.type}
-              </Badge>
-            </div>
-          )}
-          
-          {cellData.cours && (
-            <div className="flex items-start gap-2">
-              <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-              <span className="font-semibold text-sm leading-tight text-foreground">
-                {cellData.cours}
-              </span>
-            </div>
-          )}
-          
-          {cellData.professeur && (
-            <div className="flex items-center gap-2">
-              <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="text-xs text-muted-foreground">
-                {cellData.professeur}
-              </span>
-            </div>
-          )}
-          
-          {cellData.salle && (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-              <Badge variant="outline" className="text-xs">
-                {cellData.salle}
-              </Badge>
-            </div>
-          )}
-        </div>
+      <div className="min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20">
+        <span className="text-muted-foreground italic text-sm">Pas de cours</span>
       </div>
     );
-  };
+  }
 
+  return (
+    <div className="min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30">
+      {/* ✅ Supprimer le bouton avec le crayon */}
+      <div className="space-y-2">
+        {cellData.type && (
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+            <Badge variant="secondary" className="text-xs">
+              {cellData.type}
+            </Badge>
+          </div>
+        )}
+        
+        {cellData.cours && (
+          <div className="flex items-start gap-2">
+            <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <span className="font-semibold text-sm leading-tight text-foreground">
+              {cellData.cours}
+            </span>
+          </div>
+        )}
+        
+        {cellData.professeur && (
+          <div className="flex items-center gap-2">
+            <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+            <span className="text-xs text-muted-foreground">
+              {cellData.professeur}
+            </span>
+          </div>
+        )}
+        
+        {cellData.salle && (
+          <div className="flex items-center gap-2">
+            <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
+            <Badge variant="outline" className="text-xs">
+              {cellData.salle}
+            </Badge>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -694,69 +684,191 @@ export function TimetableUpload() {
     }
   };
 
-  const handleClassChange = (value) => {
-    setSelectedClass(value);
-    setSelectedFiliere("");
-    setSelectedSemester("");
+const handleClassChange = (value) => {
+  setSelectedClass(value);
+  setSelectedFiliere("");
+  setSelectedSemester("");
+
+  const classKey = (value || "").toLowerCase().trim();
+
+  console.log("=== HANDLECLASSCHANGE DEBUG ===");
+  console.log("Classe sélectionnée (value):", value);
+  console.log("Clé classe normalisée (classKey):", classKey);
+  console.log("Type de filieresList:", typeof filieresList);
+  console.log("Toutes les filières (filieresList):", filieresList);
+  console.log("Clés disponibles:", Object.keys(filieresList || {}));
+  console.log("Filières pour cette classe [" + classKey + "]:", filieresList[classKey]);
+  console.log("Existe ?", filieresList.hasOwnProperty(classKey));
+
+  // afficher filière si filieresList a des entrées pour cette classe
+  const hasFilieres = filieresList && filieresList[classKey] && Array.isArray(filieresList[classKey]) && filieresList[classKey].length > 0;
+  console.log("hasFilieres:", hasFilieres);
+  console.log("================================");
+  
+  setShowFiliereSelect(Boolean(hasFilieres));
+
+  // charger semestres statiques à partir de SEMESTERS_MAP
+  const sems = SEMESTERS_MAP[classKey] || [];
+  setAvailableSemesters(sems);
+};
+const buildImportPayload = (classe, filiere, timetableData, semester, fileName) => {
+  const emplois = [];
+
+  timetableData.forEach(day => {
+    TIME_SLOTS.forEach((slot, index) => {
+      const slotKey = `slot${index + 1}`;
+      const cellData = day[slotKey];
+
+      if (cellData && (cellData.cours || cellData.professeur || cellData.salle)) {
+        const creneauFormatted = slot
+          .replace(/h/g, ':')
+          .replace(/→/g, '-')
+          .replace(/\s+/g, '');
+
+        emplois.push({
+          jour: day.jour,
+          creneau: creneauFormatted,
+          matiere: cellData.cours || "",
+          prof: cellData.professeur || "",
+          salle: cellData.salle || "",
+          semestre: semester || ""   
+        });
+      }
+    });
+  });
+
+  return {
+    classe: classe,
+    filiere: filiere || null,
+    semestre: semester || "",
+    fileName: fileName,  // ✅ Ajout du fileName
+    emplois: emplois
   };
+};
 
-  const handleSubmit = async () => {
-    if (!selectedFile && !isEditMode) {
-      setUploadStatus("Veuillez sélectionner un fichier PDF.");
-      return;
+const handleSubmit = async () => {
+  if (!selectedFile && !isEditMode) {
+    setUploadStatus("Veuillez sélectionner un fichier PDF ou DOCX.");
+    return;
+  }
+  if (!selectedClass) {
+    setUploadStatus("Veuillez sélectionner une classe.");
+    return;
+  }
+  if (showFiliereSelect && !selectedFiliere) {
+    setUploadStatus("Veuillez sélectionner une filière.");
+    return;
+  }
+  if (!selectedSemester) {
+    setUploadStatus("Veuillez sélectionner un semestre.");
+    return;
+  }
+  if (!timetable) {
+    setUploadStatus("Aucun emploi extrait à sauvegarder.");
+    return;
+  }
+
+  setIsUploading(true);
+  setUploadStatus("");
+
+  try {
+    // ✅ ÉTAPE 1: Upload du fichier
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const uploadRes = await fetch(`${BASE_URL}/emploi/upload`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!uploadRes.ok) {
+      throw new Error("Erreur lors de l'upload du fichier");
     }
 
-    if (!selectedClass) {
-      setUploadStatus("Veuillez sélectionner une classe.");
-      return;
+    const uploadData = await uploadRes.json();
+    const uploadedFileName = uploadData.fileName || selectedFile.name;
+
+    // ✅ ÉTAPE 2: Import des données avec le nom du fichier
+    const payload = buildImportPayload(
+      selectedClass, 
+      selectedFiliere, 
+      timetable, 
+      selectedSemester,
+      uploadedFileName
+    );
+
+    const importRes = await fetch(`${BASE_URL}/emploi/import`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!importRes.ok) {
+      const text = await importRes.text();
+      throw new Error(text || "Erreur import");
     }
 
-    if ((selectedClass === "ci1" || selectedClass === "ci2" || selectedClass === "ci3") && !selectedFiliere) {
-      setUploadStatus("Veuillez sélectionner une filière.");
-      return;
-    }
-
-    if (!selectedSemester) {
-      setUploadStatus("Veuillez sélectionner un semestre.");
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadStatus("");
-
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulation de sauvegarde
-      console.log("Données sauvegardées:", {
-        file: selectedFile,
-        class: selectedClass,
-        filiere: selectedFiliere,
-        semester: selectedSemester,
-        timetableName: timetableName || (selectedFile ? selectedFile.name : ""),
-        isEditMode,
-        timetableId: id
-      });
-
-      setUploadStatus("success");
-      
-      // Redirection après succès
-      setTimeout(() => {
-        window.location.href = '/timetable';
-      }, 1500);
-      
-    } catch (error) {
-      setUploadStatus("error");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    setUploadStatus("success");
+    setTimeout(() => window.location.href = "/timetable", 1000);
+  } catch (err) {
+    console.error(err);
+    setUploadStatus("error");
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const handleBack = () => {
     window.location.href = '/timetable';
   };
+const handleUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  const showFiliereSelect = selectedClass && (selectedClass === "ci1" || selectedClass === "ci2" || selectedClass === "ci3");
+  setSelectedFile(file);
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    setIsUploading(true);
+    setUploadStatus("");
+
+    const res = await fetch(`${BASE_URL}/emploi/upload`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      throw new Error("Erreur lors de l'envoi");
+    }
+
+    const msg = await res.text();
+    setUploadStatus(msg);
+  } catch (err) {
+    console.error(err);
+    setUploadStatus("Échec de l'upload !");
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+
+const uploadFile = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${BASE_URL}/emploi/upload`, {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+  console.log('Upload response:', data);
+
+  // data.fileName contient le nom réel du fichier enregistré côté serveur
+  return data.fileName;
+};
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -790,8 +902,8 @@ export function TimetableUpload() {
                 <Input
                   id="file-upload"
                   type="file"
-                  accept=".pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  onChange={handleFileChange}
+                accept=".pdf,.png,.jpg,.jpeg,.docx"               
+                    onChange={handleFileChange}
                   className="hidden"
                   disabled={!jszipReady || loading || isUploading}
                 />
@@ -873,28 +985,24 @@ export function TimetableUpload() {
                           <TimetableCell
                             cellData={row.slot1}
                             isEmpty={!row.slot1 || (!row.slot1.cours && !row.slot1.professeur && !row.slot1.salle)}
-                            onEdit={() => handleEditCell(i, "slot1")}
                           />
                         </TableCell>
                         <TableCell className="align-top">
                           <TimetableCell
                             cellData={row.slot2}
                             isEmpty={!row.slot2 || (!row.slot2.cours && !row.slot2.professeur && !row.slot2.salle)}
-                            onEdit={() => handleEditCell(i, "slot2")}
                           />
                         </TableCell>
                         <TableCell className="align-top">
                           <TimetableCell
                             cellData={row.slot3}
                             isEmpty={!row.slot3 || (!row.slot3.cours && !row.slot3.professeur && !row.slot3.salle)}
-                            onEdit={() => handleEditCell(i, "slot3")}
                           />
                         </TableCell>
                         <TableCell className="align-top">
                           <TimetableCell
                             cellData={row.slot4}
                             isEmpty={!row.slot4 || (!row.slot4.cours && !row.slot4.professeur && !row.slot4.salle)}
-                            onEdit={() => handleEditCell(i, "slot4")}
                           />
                         </TableCell>
                       </TableRow>
@@ -928,35 +1036,37 @@ export function TimetableUpload() {
               </SelectTrigger>
               <SelectContent>
                 {classes.map((classe) => (
-                  <SelectItem key={classe.value} value={classe.value}>
-                    <div className="flex items-center gap-2">
-                      <School className="h-4 w-4" />
-                      {classe.label}
-                    </div>
+                  <SelectItem key={classe.id} value={classe.nom}>
+                    {classe.nom}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
           </div>
 
-          {/* Sélecteur de filière (uniquement pour CI) */}
-          {showFiliereSelect && (
-            <div className="space-y-2">
-              <Label htmlFor="filiere-select">Filière</Label>
-              <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
-                <SelectTrigger id="filiere-select">
-                  <SelectValue placeholder="Sélectionnez une filière" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filieres[selectedClass]?.map((filiere) => (
-                    <SelectItem key={filiere.value} value={filiere.value}>
-                      {filiere.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+{ /* Sélecteur de filière (uniquement pour CI) */ }
+{showFiliereSelect && (
+  // compute normalized key from selectedClass to access the map
+  (() => {
+    const classKey = (selectedClass || "").toLowerCase().trim();
+    const currentFilieres = filieresList && filieresList[classKey] ? filieresList[classKey] : [];
+    return (
+      <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
+        <SelectTrigger id="filiere-select">
+          <SelectValue placeholder="Sélectionnez une filière" />
+        </SelectTrigger>
+        <SelectContent>
+          {currentFilieres.map((filiere) => (
+            <SelectItem key={filiere.id} value={filiere.nom}>
+              {filiere.nom}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  })()
+)}
 
           {/* Sélecteur de semestre */}
           <div className="space-y-2">
@@ -1040,71 +1150,11 @@ export function TimetableUpload() {
         </CardContent>
       </Card>
 
-      {/* Edit Dialog - Même que TimetableExtractor */}
-      <Dialog open={editingCell !== null} onOpenChange={(open) => !open && setEditingCell(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Modifier le cours</DialogTitle>
-            <DialogDescription>
-              Modifiez les informations du cours. Cliquez sur Enregistrer lorsque vous avez terminé.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="type">Type</Label>
-              <Select
-                value={editForm.type}
-                onValueChange={(value) => setEditForm({ ...editForm, type: value })}
-              >
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Sélectionner le type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Cours">Cours</SelectItem>
-                  <SelectItem value="TD/TP">TD/TP</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="cours">
-                {editForm.type === "TD/TP" ? "Sujet (TD/TP)" : "Cours"}
-              </Label>
-              <Input
-                id="cours"
-                placeholder={editForm.type === "TD/TP" ? "Nom du sujet" : "Nom du cours"}
-                value={editForm.cours}
-                onChange={(e) => setEditForm({ ...editForm, cours: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="professeur">Professeur</Label>
-              <Input
-                id="professeur"
-                placeholder="Nom du professeur"
-                value={editForm.professeur}
-                onChange={(e) => setEditForm({ ...editForm, professeur: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="salle">Salle / Amphi</Label>
-              <Input
-                id="salle"
-                placeholder="Numéro de salle ou Amphi"
-                value={editForm.salle}
-                onChange={(e) => setEditForm({ ...editForm, salle: e.target.value })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingCell(null)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSaveEdit}>
-              Enregistrer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+
+
     </div>
+
+    
   );
 }
