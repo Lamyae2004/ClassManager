@@ -1,23 +1,35 @@
 "use client";
 import React, { useState } from "react";
-import { 
-  classes, etudiants, emploi, seances, absences, matieres, creneaux, salles 
+import {
+  classes, etudiants, emploi, seances, absences, matieres, creneaux, salles
 } from "./data";
-import { 
-  Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter 
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter
 } from "@/components/ui/card";
-import { 
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { 
+import {
   Calendar, Clock, Building, BookOpen, Users, CheckCircle, XCircle, Search,
-  FileText, CalendarDays, ChevronRight, Info
+  FileText, CalendarDays, ChevronRight, Info, FileCheck, FileX, FileQuestion,
+  Download, Eye, AlertCircle
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 export default function HistoriqueAbsences({ role = "admin", currentProfId = null }) {
   const [classe, setClasse] = useState(null);
@@ -40,11 +52,11 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
   const etudiantsClasse = etudiants
     .filter(e => e.id_classe === Number(classe))
     .filter(e => role === "prof" ? emploi.some(emp => emp.id_classe === Number(classe) && emp.id_prof === currentProfId) : true)
-   .filter(e => {
-  if (!searchStudent) return true;
-  const search = searchStudent.toLowerCase();
-  return e.nom.toLowerCase().startsWith(search) || e.prenom.toLowerCase().startsWith(search);
-});
+    .filter(e => {
+      if (!searchStudent) return true;
+      const search = searchStudent.toLowerCase();
+      return e.nom.toLowerCase().startsWith(search) || e.prenom.toLowerCase().startsWith(search);
+    });
 
   // Statistiques globales
   const stats = {
@@ -54,12 +66,253 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
       return total + absencesSeance.length;
     }, 0),
     etudiantsAbsents: new Set(
-      seancesClasse.flatMap(seance => 
+      seancesClasse.flatMap(seance =>
         absences
           .filter(a => a.id_seance === seance.id_seance && !a.present)
           .map(a => a.id_etudiant)
       )
     ).size
+  };
+
+  // Fonction pour formater la justification
+  const renderJustification = (absence) => {
+    if (absence.present) {
+      return (
+        <div className="flex items-center justify-center">
+          <Badge 
+            variant="outline" 
+            className="bg-green-50 text-green-700 border-green-200 px-3 py-1"
+          >
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Présent
+          </Badge>
+        </div>
+      );
+    }
+
+    if (absence.justifie) {
+      const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
+      
+      return (
+        <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 px-3 py-1">
+              <div className="flex items-center">
+                <FileCheck className="h-3 w-3 mr-1" />
+                Justifié
+              </div>
+            </Badge>
+            
+            {hasFile && (
+              <div className="flex items-center gap-2 mt-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => window.open(`/${absence.justificatif}`, '_blank')}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        Voir
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Voir le justificatif</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => {
+                          // Télécharger le fichier
+                          const link = document.createElement('a');
+                          link.href = `/${absence.justificatif}`;
+                          link.download = `justificatif_${absence.id_absence}.pdf`;
+                          link.click();
+                        }}
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Télécharger
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Télécharger le justificatif</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+            
+            {!hasFile && (
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <div className="cursor-help">
+                    <Info className="h-3 w-3 text-emerald-600" />
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <div className="flex justify-between space-x-4">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold">Justification manuelle</h4>
+                      <p className="text-sm text-gray-600">
+                        L'absence a été justifiée par l'administration sans pièce jointe.
+                      </p>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Non justifié
+    return (
+      <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 px-3 py-1">
+            <div className="flex items-center">
+              <FileX className="h-3 w-3 mr-1" />
+              Non justifié
+            </div>
+          </Badge>
+          
+          {/* Option: Bouton pour ajouter un justificatif (si admin/prof) */}
+          {(role === "admin" || role === "prof") && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs border-dashed"
+              onClick={() => {
+                // Logique pour ajouter un justificatif
+                console.log("Ajouter justificatif pour:", absence.id_absence);
+              }}
+            >
+              <FileCheck className="h-3 w-3 mr-1" />
+              Justifier
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Version alternative plus compacte pour la colonne
+  const renderJustificationCompact = (absence) => {
+    if (absence.present) {
+      return (
+        <div className="flex items-center justify-center">
+          <Badge 
+            variant="outline" 
+            className="bg-green-50 text-green-700 border-green-200 px-2 py-0.5"
+          >
+            <CheckCircle className="h-3 w-3" />
+          </Badge>
+        </div>
+      );
+    }
+
+    if (absence.justifie) {
+      const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
+      
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-center">
+                {hasFile ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                  >
+                    <FileCheck className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-emerald-200 px-2 py-0.5">
+                    <FileCheck className="h-3 w-3" />
+                  </Badge>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="space-y-1">
+                <p className="font-medium">Absence justifiée</p>
+                {hasFile ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => window.open(`/${absence.justificatif}`, '_blank')}
+                    >
+                      Voir
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = `/${absence.justificatif}`;
+                        link.download = `justificatif_${absence.id_absence}.pdf`;
+                        link.click();
+                      }}
+                    >
+                      Télécharger
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600">Justification manuelle</p>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    // Non justifié
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center">
+              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 px-2 py-0.5">
+                <FileX className="h-3 w-3" />
+              </Badge>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="space-y-2">
+              <p className="font-medium">Absence non justifiée</p>
+              {(role === "admin" || role === "prof") && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs w-full"
+                  onClick={() => {
+                    console.log("Ajouter justificatif pour:", absence.id_absence);
+                  }}
+                >
+                  <FileCheck className="h-3 w-3 mr-1" />
+                  Justifier maintenant
+                </Button>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   };
 
   return (
@@ -143,7 +396,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                   {searchStudent && etudiantsClasse.length > 0 && (
                     <div className="border rounded mt-1 bg-white max-h-40 overflow-y-auto">
                       {etudiantsClasse.map(e => (
-                        <div 
+                        <div
                           key={e.id_etudiant}
                           className="p-2 hover:bg-blue-50 cursor-pointer"
                           onClick={() => setSearchStudent(`${e.nom} ${e.prenom}`)}
@@ -277,10 +530,10 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-gray-50">
-                            <TableHead className="w-12"></TableHead>
+                            <TableHead className="w-12 text-center">#</TableHead>
                             <TableHead>Étudiant</TableHead>
                             <TableHead className="text-center">Statut</TableHead>
-                            <TableHead className="text-center">Détails</TableHead>
+                            <TableHead className="text-center">Justification</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -288,9 +541,13 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                             const etu = etudiants.find(e => e.id_etudiant === absence.id_etudiant);
                             return (
                               <TableRow key={absence.id_absence} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                <TableCell className="font-medium text-gray-900">{index + 1}</TableCell>
+                                <TableCell className="text-center font-medium text-gray-900">
+                                  {index + 1}
+                                </TableCell>
                                 <TableCell>
-                                  <div className="font-medium text-gray-900">{etu?.nom} {etu?.prenom}</div>
+                                  <div className="font-medium text-gray-900">
+                                    {etu?.nom} {etu?.prenom}
+                                  </div>
                                 </TableCell>
                                 <TableCell className="text-center">
                                   {absence.present ? (
@@ -306,10 +563,9 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                                   )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <Button variant="ghost" size="sm" className="h-8">
-                                    Détails
-                                    <ChevronRight className="h-3 w-3 ml-1" />
-                                  </Button>
+                                
+                                  {renderJustificationCompact(absence)}
+                                 
                                 </TableCell>
                               </TableRow>
                             );

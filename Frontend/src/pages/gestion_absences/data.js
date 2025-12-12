@@ -28,13 +28,14 @@ export const salles = [
 
 
 export const absences = [
-  { id_absence: 1, id_seance: 1, id_etudiant: 1, present: true },
-  { id_absence: 2, id_seance: 1, id_etudiant: 2, present: false },
-  { id_absence: 3, id_seance: 1, id_etudiant: 3, present: true },
-  { id_absence: 4, id_seance: 2, id_etudiant: 1, present: true },
-  { id_absence: 5, id_seance: 2, id_etudiant: 2, present: true },
-  { id_absence: 6, id_seance: 2, id_etudiant: 3, present: false }
+  { id_absence: 1, id_seance: 1, id_etudiant: 1, present: true, justifie: false, justificatif: null },
+  { id_absence: 2, id_seance: 1, id_etudiant: 2, present: false, justifie: true, justificatif: "certificat_medical.pdf" },
+  { id_absence: 3, id_seance: 1, id_etudiant: 3, present: true, justifie: false, justificatif: null },
+  { id_absence: 4, id_seance: 2, id_etudiant: 1, present: true, justifie: false, justificatif: null },
+  { id_absence: 5, id_seance: 2, id_etudiant: 2, present: true, justifie: false, justificatif: null },
+  { id_absence: 6, id_seance: 2, id_etudiant: 3, present: false, justifie: true, justificatif: "certificat_medical_aya.pdf" }
 ];
+
 
 export const seances = [
   {
