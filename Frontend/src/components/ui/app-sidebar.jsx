@@ -9,9 +9,10 @@ import {
   Calendar,
   GalleryVerticalEnd,
   Map,
-  PieChart,
+  ClipboardCheck,
   Settings2,
   SquareTerminal,
+
 } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -53,7 +54,7 @@ const data = {
   projects: [
 
     { name: "Gestion des emplois", url: "#", icon: Calendar },
-    { name: "Gestion des absences", url: "#", icon: PieChart },
+    { name: "Gestion des absences", url: "#", icon: ClipboardCheck },
     { name: "Gestion des annonces", url: "#", icon: Map },
   ],
 };

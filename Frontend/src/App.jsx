@@ -3,7 +3,8 @@ import Page from "./pages/dashboard";
 import { TimetableUpload } from './pages/gestion_emplois/TimetableUpload.jsx';
 import { TimetableList } from './pages/gestion_emplois/TimetableList.jsx';
 import TimetableExtractor from './pages/gestion_emplois/TimetableExtractor.jsx';
-
+import AbsencePage from './pages/gestion_absences/AbsencePage.jsx';
+import HistoriqueAbsences from "./pages/gestion_absences/HistoriqueAbsences.jsx";
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
           <Route path="extract" element={<TimetableExtractor />} />
           <Route path="timetable" element={<TimetableList />} />
           <Route path="upload/edit/:id" element={<TimetableUpload />} />
+          <Route path="absences/create" element={<AbsencePage />} />
+          <Route path="absences/consulter" element={<HistoriqueAbsences />} />
         </Route>
       </Routes>
     </Router>
