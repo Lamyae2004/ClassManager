@@ -77,16 +77,20 @@ export function NavProjects({ projects }) {
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                {projectMenus[item.name]?.map((menuItem, index) =>
-                  menuItem.separator ? (
-                    <DropdownMenuSeparator key={index} />
-                  ) : (
-                    <DropdownMenuItem key={index}>
-                      <menuItem.icon className="text-muted-foreground" />
-                      <Link to={menuItem.link}>{menuItem.label}</Link>
-                    </DropdownMenuItem>
-                  )
-                )}
+                <DropdownMenuItem>
+                  <Folder className="text-muted-foreground" />
+                  <Link to="/upload">Créer un emploi</Link>
+                </DropdownMenuItem>
+
+                <DropdownMenuItem>
+                  <Forward className="text-muted-foreground" />
+                  <Link to="/timetable">Consulter un emploi</Link>              
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <Trash2 className="text-muted-foreground" />
+                  <Link to="/extract">Extraire un emploi</Link>                
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

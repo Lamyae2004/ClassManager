@@ -1,0 +1,175 @@
+package com.class_manager.Gestion_des_emplois.controller;
+
+import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
+import com.class_manager.Gestion_des_emplois.model.entity.*;
+import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
+import com.class_manager.Gestion_des_emplois.repository.MatiereRepository;
+import com.class_manager.Gestion_des_emplois.service.EmploiImportService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/emploi")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+public class EmploiImportController {
+
+    private final EmploiImportService emploiService;
+    private static final String EMPLOI_DIR = "uploads/emplois/";
+
+    @PostMapping("/import")
+    public ResponseEntity<String> importEmploi(@RequestBody ImportRequest request) {
+        emploiService.importEmploi(request);
+        return ResponseEntity.ok("Emploi du temps importé avec succès");
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadEmploi(@RequestParam("file") MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Fichier manquant");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        try {
+            Files.createDirectories(Paths.get(EMPLOI_DIR));
+
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            // ✅ Utiliser le nom original pour la sauvegarde
+            String savedFilename = originalFilename;
+
+            Path target = Paths.get(EMPLOI_DIR).resolve(savedFilename).normalize();
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("fileName", savedFilename);
+            response.put("originalName", originalFilename);
+
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Erreur sauvegarde fichier");
+            return ResponseEntity.internalServerError().body(error);
+        }
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<EmploiDuTemps>> getAllEmplois() {
+        List<EmploiDuTemps> emplois = emploiService.getAllEmplois();
+        return ResponseEntity.ok(emplois);
+    }
+
+    // ...existing code...
+    @PostMapping("/create")
+    public ResponseEntity<EmploiDuTemps> createEmploi(@RequestBody EmploiDuTemps emploi) {
+        try {
+            EmploiDuTemps saved = emploiService.createEmploi(emploi);
+            return ResponseEntity.ok(saved);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+// ...existing code...
+
+    // ✅ IMPORTANT : Définir /group AVANT /{id} pour éviter la confusion de routing
+    @GetMapping("/group")
+    public ResponseEntity<List<EmploiDuTemps>> getEmploiGroup(
+            @RequestParam String classe,
+            @RequestParam(required = false) String filiere,
+            @RequestParam(required = false) String semester) {
+        List<EmploiDuTemps> emplois = emploiService.getEmploisByGroup(classe, filiere, semester);
+        return ResponseEntity.ok(emplois);
+    }
+
+    // ✅ Téléchargement du fichier
+    @GetMapping("/{filename:.+}/file")
+    public ResponseEntity<Resource> downloadEmploi(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(EMPLOI_DIR).resolve(filename).normalize();
+            UrlResource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Détecter le type de contenu
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // ✅ Supprimer un emploi individuel (pour l'édition future)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmploi(@PathVariable Long id) {
+        emploiService.deleteEmploi(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
+    // ✅ Mettre à jour une cellule d'emploi existant
+    @PutMapping("/{id}/cell")
+    public ResponseEntity<EmploiDuTemps> updateEmploiCell(
+            @PathVariable Long id,
+            @RequestBody EmploiCellUpdateDTO updateDTO) {
+
+        try {
+            EmploiDuTemps updatedEmploi = emploiService.updateEmploiCell(id, updateDTO);
+            return ResponseEntity.ok(updatedEmploi);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // ✅ Optionnel : Récupérer un emploi spécifique pour l'édition
+    @GetMapping("/{id}")
+    public ResponseEntity<EmploiDuTemps> getEmploiById(@PathVariable Long id) {
+        return emploiService.getEmploiById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/group")
+    public ResponseEntity<Void> deleteEmploiGroup(
+            @RequestParam String classe,
+            @RequestParam(required = false) String filiere,
+            @RequestParam(required = false) String semester) {
+        emploiService.deleteEmploisByGroup(classe, filiere, semester);
+        return ResponseEntity.noContent().build();
+    }
+
+}
