@@ -32,7 +32,9 @@ export function NavProjects({ projects }) {
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
+        
         {projects.map((item) => (
+          
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
@@ -52,7 +54,22 @@ export function NavProjects({ projects }) {
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
+                {item.name === "Gestion des users" && (
+                  <>
+                  <DropdownMenuItem>
+                  <Folder className="text-muted-foreground" />
+                  <Link to="/add-Students">Ajouter les étudiants</Link>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem>
+                  <Forward className="text-muted-foreground" />
+                  <Link to="/add-Teachers">Ajouter les professeurs</Link>              
+                </DropdownMenuItem>
+                </>)
+                }
+
+                {item.name === "Gestion des emplois" && (<>
+                  <DropdownMenuItem>
                   <Folder className="text-muted-foreground" />
                   <Link to="/upload">Créer un emploi</Link>
                 </DropdownMenuItem>
@@ -61,6 +78,8 @@ export function NavProjects({ projects }) {
                   <Forward className="text-muted-foreground" />
                   <Link to="/timetable">Consulter un emploi</Link>              
                 </DropdownMenuItem>
+                </>)}
+              
                
               </DropdownMenuContent>
             </DropdownMenu>

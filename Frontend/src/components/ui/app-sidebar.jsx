@@ -12,6 +12,7 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  User,
 } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -55,6 +56,7 @@ const data = {
     { name: "Gestion des emplois", url: "#", icon: Calendar },
     { name: "Gestion des absences", url: "#", icon: PieChart },
     { name: "Gestion des annonces", url: "#", icon: Map },
+    { name: "Gestion des users", url: "#", icon: User },
   ],
 };
 

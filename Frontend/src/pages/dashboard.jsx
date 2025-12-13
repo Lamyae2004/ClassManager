@@ -1,6 +1,9 @@
 import React from "react"
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { Outlet } from "react-router-dom";
+import { useState ,useEffect } from "react";
+import axios from "axios";
+import { AuthContext } from "@/context/AuthContext";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +18,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-
+import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
 export default function Page() {
   return (
     <SidebarProvider>
