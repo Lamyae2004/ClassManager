@@ -55,7 +55,7 @@ export const emploi = [
     id_edt: 1,
     id_classe: 1,
     id_prof: 10,           
-    jour: "Vendredi",
+    jour: "Samedi",
     id_creneau: 1,
     id_matiere: 1,
     id_salle: 5
@@ -64,7 +64,7 @@ export const emploi = [
     id_edt: 2,
     id_classe: 1,
     id_prof: 10,           
-    jour: "Vendredi",
+    jour: "Samedi",
     id_creneau: 3,
     id_matiere: 2,
     id_salle: 1

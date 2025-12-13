@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Page from "./pages/dashboard";
 import { TimetableUpload } from './pages/gestion_emplois/TimetableUpload.jsx';
 import { TimetableList } from './pages/gestion_emplois/TimetableList.jsx';
-import TimetableExtractor from './pages/gestion_emplois/TimetableExtractor.jsx';
 import AbsencePage from './pages/gestion_absences/AbsencePage.jsx';
 import HistoriqueAbsences from "./pages/gestion_absences/HistoriqueAbsences.jsx";
 

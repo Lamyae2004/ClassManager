@@ -772,13 +772,13 @@ const handleSubmit = async () => {
   setUploadStatus("");
 
   try {
-    // ✅ ÉTAPE 1: Upload du fichier
+    // ✅ Upload du fichier
     const formData = new FormData();
     formData.append("file", selectedFile);
 
     const uploadRes = await fetch(`${BASE_URL}/emploi/upload`, {
       method: "POST",
-      body: formData
+      body: formData, // ✅ ici
     });
 
     if (!uploadRes.ok) {
@@ -788,7 +788,7 @@ const handleSubmit = async () => {
     const uploadData = await uploadRes.json();
     const uploadedFileName = uploadData.fileName || selectedFile.name;
 
-    // ✅ ÉTAPE 2: Import des données avec le nom du fichier
+    // ✅ Import des données
     const payload = buildImportPayload(
       selectedClass, 
       selectedFiliere, 
@@ -817,6 +817,7 @@ const handleSubmit = async () => {
     setIsUploading(false);
   }
 };
+
 
   const handleBack = () => {
     window.location.href = '/timetable';
