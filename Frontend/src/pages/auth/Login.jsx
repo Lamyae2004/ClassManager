@@ -1,14 +1,17 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Label";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { setUser } = useContext(AuthContext);
+
   const navigate = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,7 +27,12 @@ const Login = () => {
             "Content-Type": "application/json" 
           }, withCredentials: true 
         });
-        
+          const res2 = await axios.get("http://localhost:9090/api/users/profile", {
+        withCredentials: true,
+      });
+
+      setUser(res2.data); // 
+      navigate("/");
           alert("Connexion réussie !"); 
           navigate("/");
           }

@@ -9,6 +9,7 @@ import com.class_manager.user_auth_service.repository.UserRepository;
 import com.class_manager.user_auth_service.service.ExcelImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ public class AdminController {
     private final ExcelImportService excelService;
     private final JwtService jwtService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/createTeachers")
     public ResponseEntity<String> createTeachers(
             @RequestParam("file") MultipartFile file) throws IOException {
@@ -53,7 +55,7 @@ public class AdminController {
     }
 
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/createStudents")
     public ResponseEntity<String> createStudents(
             @RequestParam("file") MultipartFile file,

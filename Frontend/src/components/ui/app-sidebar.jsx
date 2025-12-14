@@ -26,6 +26,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { AuthContext } from "@/context/AuthContext";
 
 // Sample data
 const data = {
@@ -60,14 +61,22 @@ const data = {
   ],
 };
 
+
 export function AppSidebar(props) {
+   const { user } = React.useContext(AuthContext);
+   const filtredProjects = data.projects.filter((project)=>{
+    if (project.name === "Gestion des users" && user?.role !== "ADMIN") {
+      return false;
+    }
+    return true;
+   })
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={filtredProjects} />
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>

@@ -24,58 +24,58 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    public AuthenticationResponse register(RegisterRequest request) {
-      Optional<User> existingUser = repository.findByEmail(request.getEmail());
-      if(existingUser.isPresent()){
-          throw new IllegalArgumentException("Email déjà existant !");
-      }
-      User user ;
-      switch (request.getRole()){
-          case STUDENT:
-              user = Student.builder()
-                      .firstname(request.getFirstname())
-                      .lastname(request.getLastname())
-                      .email(request.getEmail())
-                      .password(passwordEncoder.encode(request.getPassword()))
-                      .role(Role.STUDENT)
-                      .apogeeNumber(request.getApogeeNumber())
-                      .filiere(request.getFiliere())
-                      .niveau(request.getNiveau())
-                      .build();
-              break;
-          case TEACHER:
-              user = Teacher.builder()
-                      .firstname(request.getFirstname())
-                      .lastname(request.getLastname())
-                      .email(request.getEmail())
-                      .password(passwordEncoder.encode(request.getPassword()))
-                      .role(Role.TEACHER)
-                      .teacherCode(request.getTeacherCode())
-                      .speciality(request.getSpeciality())
-                      .build();
-              break;
-
-          case ADMIN:
-              user = Admin.builder()
-                      .firstname(request.getFirstname())
-                      .lastname(request.getLastname())
-                      .email(request.getEmail())
-                      .password(passwordEncoder.encode(request.getPassword()))
-                      .role(Role.ADMIN)
-                      .build();
-              break;
-          default:
-              throw new IllegalArgumentException("Invalid role");
-      }
-      repository.save(user);
-      HashMap<String,Object> extraClaims =new HashMap<>();
-      extraClaims.put("id",user.getId());
-      extraClaims.put("role",user.getRole());
-      var jwtToken = jwtService.generateToken(extraClaims,user);
-       return AuthenticationResponse.builder()
-               .token(jwtToken)
-               .build();
-    }
+//    public AuthenticationResponse register(RegisterRequest request) {
+//      Optional<User> existingUser = repository.findByEmail(request.getEmail());
+//      if(existingUser.isPresent()){
+//          throw new IllegalArgumentException("Email déjà existant !");
+//      }
+//      User user ;
+//      switch (request.getRole()){
+//          case STUDENT:
+//              user = Student.builder()
+//                      .firstname(request.getFirstname())
+//                      .lastname(request.getLastname())
+//                      .email(request.getEmail())
+//                      .password(passwordEncoder.encode(request.getPassword()))
+//                      .role(Role.STUDENT)
+//                      .apogeeNumber(request.getApogeeNumber())
+//                      .filiere(request.getFiliere())
+//                      .niveau(request.getNiveau())
+//                      .build();
+//              break;
+//          case TEACHER:
+//              user = Teacher.builder()
+//                      .firstname(request.getFirstname())
+//                      .lastname(request.getLastname())
+//                      .email(request.getEmail())
+//                      .password(passwordEncoder.encode(request.getPassword()))
+//                      .role(Role.TEACHER)
+//                      .teacherCode(request.getTeacherCode())
+//                      .speciality(request.getSpeciality())
+//                      .build();
+//              break;
+//
+//          case ADMIN:
+//              user = Admin.builder()
+//                      .firstname(request.getFirstname())
+//                      .lastname(request.getLastname())
+//                      .email(request.getEmail())
+//                      .password(passwordEncoder.encode(request.getPassword()))
+//                      .role(Role.ADMIN)
+//                      .build();
+//              break;
+//          default:
+//              throw new IllegalArgumentException("Invalid role");
+//      }
+//      repository.save(user);
+//      HashMap<String,Object> extraClaims =new HashMap<>();
+//      extraClaims.put("id",user.getId());
+//      extraClaims.put("role",user.getRole());
+//      var jwtToken = jwtService.generateToken(extraClaims,user);
+//       return AuthenticationResponse.builder()
+//               .token(jwtToken)
+//               .build();
+//    }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) {
 

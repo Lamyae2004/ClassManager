@@ -12,8 +12,7 @@ export const AuthProvider = ({children})=>{
          axios.get("http://localhost:9090/api/users/profile", { withCredentials: true })
       .then(res => setUser(res.data))
       .catch(err => {
-        console.error(err);
-        navigate("/login");
+        setUser(null);
       })
       .finally(() => setLoading(false));
     },[navigate]);

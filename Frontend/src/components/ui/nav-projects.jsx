@@ -62,7 +62,7 @@ export function NavProjects({ projects }) {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem>
-                  <Forward className="text-muted-foreground" />
+                  <Folder className="text-muted-foreground" />
                   <Link to="/add-Teachers">Ajouter les professeurs</Link>              
                 </DropdownMenuItem>
                 </>)

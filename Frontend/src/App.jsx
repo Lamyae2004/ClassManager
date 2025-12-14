@@ -8,11 +8,13 @@ import VerifyOtp from "./pages/auth/VerifyOtp";
 import SetUpPassword from "./pages/auth/SetUpPassword";
 import AddStudents from "./pages/gestion_users/AddStudents";
 import AddTeachers from "./pages/gestion_users/AddTeachers";
+import { AuthProvider } from "./context/AuthContext";
 
 
 function App() {
   return (
-    <Router>
+  <Router>
+    <AuthProvider>
       <Routes>
           <Route path="login" element={<Login />} />
           <Route path="verifyEmail" element={<VerifyEmail mode="validate"/>} />
@@ -30,7 +32,8 @@ function App() {
           <Route path="add-Teachers" element={<AddTeachers />} />
         </Route>
       </Routes>
-    </Router>
+    </AuthProvider>
+  </Router>
   );
 }
 

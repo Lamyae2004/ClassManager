@@ -23,7 +23,7 @@ const addStudents = () =>{
         formData.append("niveau", niveau);
         formData.append("filiere", field);
         try {
-          const res = await axios.post("http://localhost:9090/admin/createStudents",formData);
+          const res = await axios.post("http://localhost:9090/admin/createStudents",formData,{ withCredentials: true });
           alert(res.data);
         } catch (error) {
           console.error(error);

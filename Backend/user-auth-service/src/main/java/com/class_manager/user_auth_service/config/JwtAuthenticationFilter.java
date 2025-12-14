@@ -50,8 +50,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //        return;
         //  }
         //  jwt =authHeader.substring(7);
-        if (jwt != null) { // ✅ vérifier que jwt n'est pas null
+        if (jwt != null) {
             String userEmail = jwtService.extractUsername(jwt);
+            System.out.println("JWT correspond à l'utilisateur: " + userEmail);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
@@ -60,9 +61,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication définie : " + SecurityContextHolder.getContext().getAuthentication());
+                    System.out.println("Authorities : " + userDetails.getAuthorities());
                 }
             }
         }
         filterChain.doFilter(request, response);
     }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/v1/auth/");
+    }
+
 }

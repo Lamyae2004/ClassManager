@@ -1,5 +1,6 @@
 package com.class_manager.user_auth_service.repository;
 
+import com.class_manager.user_auth_service.model.entity.Role;
 import com.class_manager.user_auth_service.model.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,7 @@ public interface UserRepository extends JpaRepository <User,Integer>{
     @Modifying
     @Query("update User u set u.password = ?2 where u.email = ?1")
     void updatePassword(String email,String password);
+
+    boolean existsByRole(Role role);
+
 }
