@@ -24,15 +24,15 @@ export default function Page() {
   const { user, loading } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [loading, user, navigate]);
+  //useEffect(() => {
+   // if (!loading && !user) {
+    //  navigate("/login");
+   // }
+  //}, [loading, user, navigate]);
 
-  if (loading) return <p>Loading...</p>;
+  //if (loading) return <p>Loading...</p>;
 
-  if (!user) return null;
+  //if (!user) return null;
   return (
     <SidebarProvider>
       <AppSidebar />
