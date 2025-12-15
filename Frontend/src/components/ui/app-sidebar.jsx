@@ -9,7 +9,7 @@ import {
   Calendar,
   GalleryVerticalEnd,
   Map,
-  PieChart,
+  ClipboardCheck,
   Settings2,
   SquareTerminal,
   User,
@@ -55,7 +55,7 @@ const data = {
   projects: [
 
     { name: "Gestion des emplois", url: "#", icon: Calendar },
-    { name: "Gestion des absences", url: "#", icon: PieChart },
+    { name: "Gestion des absences", url: "#", icon: ClipboardCheck },
     { name: "Gestion des annonces", url: "#", icon: Map },
     { name: "Gestion des users", url: "#", icon: User },
   ],

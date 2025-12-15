@@ -9,6 +9,9 @@ import SetUpPassword from "./pages/auth/SetUpPassword";
 import AddStudents from "./pages/gestion_users/AddStudents";
 import AddTeachers from "./pages/gestion_users/AddTeachers";
 import { AuthProvider } from "./context/AuthContext";
+import AbsencePage from './pages/gestion_absences/AbsencePage.jsx';
+import HistoriqueAbsences from "./pages/gestion_absences/HistoriqueAbsences.jsx";
+
 
 
 function App() {
@@ -30,6 +33,8 @@ function App() {
           <Route path="upload/edit/:id" element={<TimetableUpload />} />
           <Route path="add-Students" element={<AddStudents />} />
           <Route path="add-Teachers" element={<AddTeachers />} />
+          <Route path="absences/create" element={<AbsencePage />} />
+          <Route path="absences/consulter" element={<HistoriqueAbsences />} />
         </Route>
       </Routes>
     </AuthProvider>
