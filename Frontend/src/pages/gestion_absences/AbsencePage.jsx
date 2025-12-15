@@ -1,19 +1,19 @@
 "use client";
-import React, { useState } from "react";
-import { classes, etudiants, creneaux, emploi,matieres,salles } from "./data";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import React, { useState, useEffect } from "react";
+import { classes, etudiants, creneaux, emploi, matieres, salles } from "./data";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
 } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +27,12 @@ export default function AbsencePage() {
     const [classe, setClasse] = useState(null);
     const [creneau, setCreneau] = useState(null);
     const [presences, setPresences] = useState({});
+    const [filiere, setFiliere] = useState(null);
+    const [classes, setClasses] = useState([]);
+
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 10;
+    const profConnecte = 9;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -41,6 +44,14 @@ export default function AbsencePage() {
         month: 'long',
         day: 'numeric'
     });
+
+   useEffect(() => {
+    fetch(`http://localhost:8080/classes/prof/${profConnecte}`)
+        .then(res => res.json())
+        .then(data => setClasses(data))
+        .catch(err => console.error(err));
+}, []);
+
 
     const handlePresenceChange = (id, value) => {
         setPresences(prev => ({ ...prev, [id]: value }));
@@ -77,7 +88,7 @@ export default function AbsencePage() {
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* En-tête */}
                 <div className="space-y-2">
-                   
+
                     <div className="flex flex-wrap items-center gap-4 text-gray-600">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
@@ -103,14 +114,18 @@ export default function AbsencePage() {
                             {/* Sélection de classe */}
                             <div className="space-y-3">
                                 <Label htmlFor="classe">Classe</Label>
-                                <Select onValueChange={setClasse} value={classe || ""}>
+                                <Select onValueChange={(val) => {
+                                    setClasse(val);
+                                    const selected = classes.find(c => c.id.toString() === val);
+                                    setFiliere(selected?.filiere || null);
+                                }} value={classe || ""}>
                                     <SelectTrigger id="classe" className="w-full">
                                         <SelectValue placeholder="Sélectionner une classe" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {classes.map(c => (
                                             <SelectItem key={c.id} value={c.id.toString()}>
-                                                {c.nom}
+                                                {c.nom} ({c.filiere})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -135,7 +150,7 @@ export default function AbsencePage() {
                                                             <Clock className="h-3 w-3" />
                                                             <span>{horaire.debut} - {horaire.fin}</span>
                                                             <Badge variant="secondary" className="ml-2">
-                                                               {matiereItem ? matiereItem.nom_matiere : "Matière inconnue"} 
+                                                                {matiereItem ? matiereItem.nom_matiere : "Matière inconnue"}
                                                             </Badge>
                                                         </div>
                                                     </SelectItem>
@@ -187,7 +202,7 @@ export default function AbsencePage() {
                                     <Separator />
                                 </>
                             )}
-                            
+
                             {classe && creneau && (
                                 <div className="space-y-2">
                                     <h4 className="font-semibold text-sm text-gray-500">Statistiques</h4>
@@ -239,7 +254,7 @@ export default function AbsencePage() {
                                                 <TableCell>
                                                     <div>
                                                         <div className="font-medium">{e.nom} {e.prenom}</div>
-                                                       
+
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
@@ -294,7 +309,7 @@ export default function AbsencePage() {
                                         </>
                                     )}
                                 </div>
-                                <Button 
+                                <Button
                                     onClick={handleSave}
                                     size="lg"
                                     className="bg-blue-600 hover:bg-blue-700"

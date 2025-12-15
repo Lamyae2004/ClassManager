@@ -20,7 +20,8 @@ public class Absence {
     private Long idEtudiant;   // vient du MS Gestion-des-emplois
     private Long idSeance;     // seance de ce microservice
 
-    private boolean justifie = false;
+    private boolean present;
+    private boolean justifie;
 
     @Column(name = "file_path")
     private String filePath;
