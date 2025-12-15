@@ -12,7 +12,7 @@ import {
   ClipboardCheck,
   Settings2,
   SquareTerminal,
-
+  User,
 } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -26,6 +26,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { AuthContext } from "@/context/AuthContext";
 
 // Sample data
 const data = {
@@ -56,17 +57,26 @@ const data = {
     { name: "Gestion des emplois", url: "#", icon: Calendar },
     { name: "Gestion des absences", url: "#", icon: ClipboardCheck },
     { name: "Gestion des annonces", url: "#", icon: Map },
+    { name: "Gestion des users", url: "#", icon: User },
   ],
 };
 
+
 export function AppSidebar(props) {
+   const { user } = React.useContext(AuthContext);
+   const filtredProjects = data.projects.filter((project)=>{
+    if (project.name === "Gestion des users" && user?.role !== "ADMIN") {
+      return false;
+    }
+    return true;
+   })
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={filtredProjects} />
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>

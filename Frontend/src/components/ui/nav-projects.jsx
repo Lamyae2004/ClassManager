@@ -30,7 +30,7 @@ import { Link } from "react-router-dom";
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
 
-  // Définition des menus spécifiques pour chaque projet
+  
   const projectMenus = {
     "Gestion des emplois": [
       { icon: Folder, label: "Créer un emploi", link: "/upload" },
@@ -48,13 +48,20 @@ export function NavProjects({ projects }) {
       { icon: Folder, label: "Créer une annonce", link: "/annonces/creer" },
       { icon: Forward, label: "Consulter les annonces", link: "/annonces/consulter" },
     ],
+      "Gestion des users": [
+      { icon: Folder, label: "Ajouter les étudiants", link: "/add-Students" },
+      { icon: Folder, label: "Ajouter les professeurs", link: "/add-Teachers" },
+    ],
+
   };
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
+        
         {projects.map((item) => (
+          
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
@@ -77,6 +84,7 @@ export function NavProjects({ projects }) {
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
+
                 {projectMenus[item.name]?.map((menuItem, index) =>
                   menuItem.separator ? (
                     <DropdownMenuSeparator key={index} />
