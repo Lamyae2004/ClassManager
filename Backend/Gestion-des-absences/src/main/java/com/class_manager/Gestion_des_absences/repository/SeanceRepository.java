@@ -14,9 +14,4 @@ public interface SeanceRepository extends JpaRepository<Seance, Long> {
     // Trouver toutes les séances d’un emploi du temps donné (id_edt)
     List<Seance> findByIdEdt(Long idEdt);
 
-    // Chercher les séances d’une date précise
-    List<Seance> findByDateSeance(LocalDate dateSeance);
-
-    // Chercher par id emploi du temps et date (utile pour éviter les doublons)
-    List<Seance> findByIdEdtAndDateSeance(Long idEdt, LocalDate dateSeance);
 }

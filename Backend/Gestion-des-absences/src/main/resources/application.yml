@@ -1,28 +1,15 @@
 server:
-  port: 8082
-
-  eureka:
-    client:
-      service-url:
-        defaultZone: http://localhost:8761/eureka
-
+  port: 8083
 
 
 
 spring:
   application:
-    name: EMPLOI-SERVICE
+    name: ABSENCE-SERVICE
   datasource:
-    url: jdbc:postgresql://localhost:5432/gestion_emplois
+    url: jdbc:postgresql://localhost:5432/gestion_absences
     username: postgres
-    password: root
-
-
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
+    password: admin
 
   jpa:
     hibernate:
@@ -38,4 +25,9 @@ spring:
       enabled: false
       import-check:
         enabled: false
+
+  eureka:
+     client:
+      service-url:
+         defaultZone: http://localhost:8761/eureka
 
