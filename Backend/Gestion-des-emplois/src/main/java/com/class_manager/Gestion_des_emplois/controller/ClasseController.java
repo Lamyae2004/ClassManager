@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/classes")
+@RequestMapping("/emploi/classes")
 @RequiredArgsConstructor
 public class ClasseController {
 
@@ -25,10 +25,12 @@ public class ClasseController {
         return repo.findAll();
     }
 
-    @GetMapping("/prof/{profId}")
-    public List<ClasseDTO> getClassesByProf(@PathVariable Long profId) {
-        return classeService.getClassesByProf(profId);
+    @GetMapping("/prof/{id}")
+    public List<ClasseDTO> getClassesByProfId(@PathVariable Long id) {
+        return classeService.getClassesByTeacherId(id);
     }
+
+
 
 
 }

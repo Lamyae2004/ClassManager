@@ -13,12 +13,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Absence {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idEtudiant;   // vient du MS Gestion-des-emplois
-    private Long idSeance;     // seance de ce microservice
+    private Long etudiantId;
+
+    @ManyToOne
+    @JoinColumn(name = "seance_id")
+    private Seance seance;
 
     private boolean present;
     private boolean justifie;

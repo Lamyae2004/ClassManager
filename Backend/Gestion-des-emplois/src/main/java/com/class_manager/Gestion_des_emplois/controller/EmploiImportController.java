@@ -1,5 +1,6 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
 import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
@@ -25,12 +26,23 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/emploi")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class EmploiImportController {
 
     private final EmploiImportService emploiService;
     private static final String EMPLOI_DIR = "uploads/emplois/";
+
+    @GetMapping("/classe/{classeId}/prof/{profId}/jour/{jour}")
+
+    public List<EmploiDuTempsDTO> getEmploiByClasseProfJour(
+            @PathVariable Long classeId,
+            @PathVariable Long profId,
+            @PathVariable String jour
+    ) {
+        return emploiService.getEmploiByClasseProfJour(classeId, profId, jour);
+    }
+
+
 
     @PostMapping("/import")
     public ResponseEntity<String> importEmploi(@RequestBody ImportRequest request) {

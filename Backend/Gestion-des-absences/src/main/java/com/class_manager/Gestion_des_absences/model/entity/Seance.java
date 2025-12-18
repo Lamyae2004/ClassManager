@@ -19,10 +19,13 @@ public class Seance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_edt")
-    private Long idEdt; // id_edt venant du MS Gestion-des-emplois
+    private Long profId;
+    private Long classeId;
+    private Long creneauId;
+    private LocalDate date;
 
-    private LocalDate dateSeance;
+    @OneToMany(mappedBy = "seance", cascade = CascadeType.ALL)
+    private List<Absence> absences;
 
 
 

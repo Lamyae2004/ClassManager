@@ -1,6 +1,5 @@
 package com.class_manager.Gestion_des_emplois.service;
 
-
 import com.class_manager.Gestion_des_emplois.model.dto.ClasseDTO;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,13 +12,14 @@ import java.util.List;
 public class ClasseService {
     private final ClasseRepository classeRepository;
 
-    public List<ClasseDTO> getClassesByProf(Long profId) {
-        return classeRepository.findByProfId(profId) // méthode à créer dans repository
+    // Méthode pour récupérer les classes d'un prof à partir de son ID
+    public List<ClasseDTO> getClassesByTeacherId(Long teacherId) {
+        return classeRepository.findByProfId(teacherId)
                 .stream()
-                .map(c -> new ClasseDTO(
-                        c.getId(),
-                        c.getNom(),
-                        c.getFiliere().getNom()
+                .map(classe -> new ClasseDTO(
+                        classe.getId(),
+                        classe.getNom(),
+                        classe.getFiliere() != null ? classe.getFiliere().getNom() : null
                 ))
                 .toList();
     }

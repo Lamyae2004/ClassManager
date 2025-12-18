@@ -1,4 +1,6 @@
 package com.class_manager.Gestion_des_emplois.service;
+import com.class_manager.Gestion_des_emplois.client.TeacherClient;
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
 import com.class_manager.Gestion_des_emplois.repository.*;
 import com.class_manager.Gestion_des_emplois.model.dto.EmploiImportDTO;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
 @Service
 @RequiredArgsConstructor
@@ -16,12 +20,38 @@ public class EmploiImportService {
 
     private final ClasseRepository classeRepo;
     private final FiliereRepository filiereRepo;
-    private final ProfRepository profRepo;
     private final MatiereRepository matiereRepo;
     private final SalleRepository salleRepo;
     private final CreneauRepository creneauRepo;
     private final EmploiDuTempsRepository edtRepo;
+    private final TeacherClient teacherClient;
 
+
+    public List<EmploiDuTempsDTO> getEmploiByClasseProfJour(Long classeId, Long profId, String jour) {
+
+
+        return edtRepo.findAll()
+                .stream()
+                .filter(e ->
+                        e.getClasse() != null &&
+                                e.getClasse().getId() != null &&
+                                e.getClasse().getId().equals(classeId) &&
+                                e.getProfId() != null &&
+                                e.getProfId().equals(profId) &&
+                                e.getJour() != null &&
+                                e.getJour().equalsIgnoreCase(jour)
+                )
+                .map(e -> new EmploiDuTempsDTO(
+                        e.getId(),
+                        e.getCreneau() != null ? e.getCreneau().getId() : null,
+                        e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
+                        e.getCreneau() != null ? e.getCreneau().getHeureFin() : null,
+                        e.getMatiere() != null ? e.getMatiere().getNom() : null,
+                        e.getSalle() != null ? e.getSalle().getNom() : null,
+                        e.getProfId()
+                ))
+                .toList();
+    }
 
 
     public void importEmploi(ImportRequest request) {
@@ -84,12 +114,29 @@ public class EmploiImportService {
                     });
 
             // Prof
-            Prof prof = profRepo.findByNom(dto.getProf())
-                    .orElseGet(() -> {
-                        Prof p = new Prof();
-                        p.setNom(dto.getProf());
-                        return profRepo.save(p);
-                    });
+            Long profId;
+            try {
+                // "Pr. Ahmed Benali" → ["Ahmed", "Benali"]
+                String cleanProf = dto.getProf()
+                        .replace("Pr.", "")
+                        .replace("pr.", "")
+                        .trim();
+
+                String[] names = cleanProf.split("\\s+", 2);
+                if (names.length < 2) {
+                    throw new RuntimeException("Nom du prof invalide : " + dto.getProf());
+                }
+
+                String firstname = names[0];
+                String lastname = names[1];
+
+                var teacher = teacherClient.getTeacherByFullName(firstname, lastname);
+                profId = teacher.getId();
+
+            } catch (Exception e) {
+                throw new RuntimeException("Prof introuvable : " + dto.getProf());
+            }
+
 
             // Salle
             Salle salle = salleRepo.findByNom(dto.getSalle())
@@ -103,7 +150,7 @@ public class EmploiImportService {
             EmploiDuTemps edt = new EmploiDuTemps();
             edt.setJour(dto.getJour());
             edt.setClasse(classe);
-            edt.setProf(prof);
+            edt.setProfId(profId);
             edt.setMatiere(matiere);
             edt.setSalle(salle);
             edt.setCreneau(creneau);
@@ -143,16 +190,31 @@ public class EmploiImportService {
             emploi.setMatiere(matiere);
         }
 
-        // Mise à jour du prof
-        if (updateDTO.getProf() != null && !updateDTO.getProf().isEmpty()) {
-            Prof prof = profRepo.findByNom(updateDTO.getProf())
-                    .orElseGet(() -> {
-                        Prof p = new Prof();
-                        p.setNom(updateDTO.getProf());
-                        return profRepo.save(p);
-                    });
-            emploi.setProf(prof);
+        // ===== Mise à jour du prof =====
+        if (updateDTO.getProf() != null && !updateDTO.getProf().isBlank()) {
+            try {
+                // Nettoyage "Pr. Ahmed Benali"
+                String cleanProf = updateDTO.getProf()
+                        .replace("Pr.", "")
+                        .replace("pr.", "")
+                        .trim();
+
+                String[] names = cleanProf.split("\\s+", 2);
+                if (names.length < 2) {
+                    throw new RuntimeException("Nom du prof invalide : " + updateDTO.getProf());
+                }
+
+                String firstname = names[0];
+                String lastname = names[1];
+
+                var teacher = teacherClient.getTeacherByFullName(firstname, lastname);
+                emploi.setProfId(teacher.getId());
+
+            } catch (Exception e) {
+                throw new RuntimeException("Prof introuvable : " + updateDTO.getProf());
+            }
         }
+
 
         // Mise à jour de la salle
         if (updateDTO.getSalle() != null && !updateDTO.getSalle().isEmpty()) {
@@ -290,15 +352,7 @@ public class EmploiImportService {
         }
 
         // Prof
-        Prof prof = null;
-        if (emploi.getProf() != null && emploi.getProf().getNom() != null && !emploi.getProf().getNom().isBlank()) {
-            prof = profRepo.findByNom(emploi.getProf().getNom())
-                    .orElseGet(() -> {
-                        Prof p = new Prof();
-                        p.setNom(emploi.getProf().getNom());
-                        return profRepo.save(p);
-                    });
-        }
+
 
         // Salle
         Salle salle = null;
@@ -329,13 +383,12 @@ public class EmploiImportService {
         EmploiDuTemps newEmploi = new EmploiDuTemps();
         newEmploi.setClasse(classe);
         newEmploi.setMatiere(matiere);
-        newEmploi.setProf(prof);
         newEmploi.setSalle(salle);
         newEmploi.setCreneau(creneau);
         if (emploi.getJour() != null) newEmploi.setJour(emploi.getJour());
         if (emploi.getSemestre() != null) newEmploi.setSemestre(emploi.getSemestre());
         if (emploi.getFileName() != null) newEmploi.setFileName(emploi.getFileName());
-
+        newEmploi.setProfId(emploi.getProfId());
         return edtRepo.save(newEmploi);
     }
 // ...existing code...

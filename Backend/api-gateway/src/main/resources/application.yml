@@ -21,7 +21,12 @@ spring:
         - id: emploi-service
           uri: lb://EMPLOI-SERVICE
           predicates:
-            - Path=/classes/**
+            - Path=/emploi/**
+
+        - id: auth-service
+          uri: lb://USER-AUTH-SERVICE
+          predicates:
+              - Path=/auth/**
 
 
 

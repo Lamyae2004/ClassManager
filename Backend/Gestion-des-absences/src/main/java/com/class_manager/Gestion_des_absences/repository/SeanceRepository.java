@@ -11,7 +11,5 @@ import java.util.List;
 @Repository
 public interface SeanceRepository extends JpaRepository<Seance, Long> {
 
-    // Trouver toutes les séances d’un emploi du temps donné (id_edt)
-    List<Seance> findByIdEdt(Long idEdt);
 
 }

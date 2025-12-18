@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { classes, etudiants, creneaux, emploi, matieres, salles } from "./data";
+import { etudiants, creneaux, emploi, matieres, salles } from "./data";
 import {
     Card,
     CardContent,
@@ -29,6 +29,10 @@ export default function AbsencePage() {
     const [presences, setPresences] = useState({});
     const [filiere, setFiliere] = useState(null);
     const [classes, setClasses] = useState([]);
+    const [classeList, setClasseList] = useState([]);
+    const [todayCreneaux, setTodayCreneaux] = useState([]);
+    const [students, setStudents] = useState([]);
+
 
 
     // 🔹 Prof connecté (simulé pour l'exemple)
@@ -45,27 +49,73 @@ export default function AbsencePage() {
         day: 'numeric'
     });
 
-   useEffect(() => {
-    fetch(`http://localhost:8080/classes/prof/${profConnecte}`)
-        .then(res => res.json())
-        .then(data => setClasses(data))
-        .catch(err => console.error(err));
-}, []);
+    useEffect(() => {
+
+        fetch(`http://localhost:8080/emploi/classes/prof/${profConnecte}`)
+
+            .then(res => res.json())
+            .then(data => {
+                console.log("Data reçue :", data);
+                setClasseList(Array.isArray(data) ? data : []);
+            })
+            .catch(err => console.error(err));
+    }, []);
+
 
 
     const handlePresenceChange = (id, value) => {
         setPresences(prev => ({ ...prev, [id]: value }));
     };
 
+
+    useEffect(() => {
+        if (!classe) return;
+
+        const selectedClasse = classeList.find(c => c.id.toString() === classe);
+        if (!selectedClasse) return;
+
+        //const token = localStorage.getItem("token");
+
+        fetch(
+            `http://localhost:8080/auth/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
+
+        )
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log("Étudiants reçus :", data);
+                setStudents(data);
+            })
+            .catch(err => console.error("Erreur étudiants :", err));
+    }, [classe, classeList]);
+
+
+
     // 🔹 Étudiants filtrés selon la classe
-    const filteredStudents = etudiants.filter(e => e.id_classe === Number(classe));
+    const filteredStudents = students;
+
 
     // 🔹 Créneaux filtrés selon classe + jour + prof
-    const todayCreneaux = emploi.filter(
-        e => e.id_classe === Number(classe) &&
-            e.jour === jourSelectionne &&
-            e.id_prof === profConnecte
-    );
+    useEffect(() => {
+        if (!classe) return;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/Vendredi`;
+
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log("Créneaux reçus :", data);
+                setTodayCreneaux(data);
+            })
+            .catch(err => console.error("Erreur fetch emploi :", err));
+    }, [classe, jourSelectionne]);
+
+
+
 
     // Trouver le créneau sélectionné
     const selectedCreneau = todayCreneaux.find(c => c.id_edt === Number(creneau));
@@ -74,9 +124,38 @@ export default function AbsencePage() {
     const salle = selectedCreneau && salles.find(s => s.id_salle === selectedCreneau.id_salle);
 
     const handleSave = () => {
-        console.log("Absences envoyées :", presences);
-        alert("Absence enregistrée ✔ (simulation)");
+        if (!classe || !creneau) return;
+
+        const data = {
+            profId: profConnecte,
+            classeId: Number(classe),
+            creneauId: Number(creneau),
+            date: new Date().toISOString().split("T")[0],
+            absences: Object.entries(presences).map(([etudiantId, present]) => ({
+                etudiantId: Number(etudiantId),
+                present
+            }))
+        };
+
+        fetch("http://localhost:8080/absences", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(res => {
+                console.log("Absences enregistrées :", res);
+                alert("Absences enregistrées ✔");
+            })
+            .catch(err => {
+                console.error("Erreur enregistrement :", err);
+                alert("Erreur lors de l'enregistrement");
+            });
     };
+
 
     // Calculer les statistiques
     const totalStudents = filteredStudents.length;
@@ -116,14 +195,14 @@ export default function AbsencePage() {
                                 <Label htmlFor="classe">Classe</Label>
                                 <Select onValueChange={(val) => {
                                     setClasse(val);
-                                    const selected = classes.find(c => c.id.toString() === val);
+                                    const selected = classeList.find(c => c.id.toString() === val);
                                     setFiliere(selected?.filiere || null);
                                 }} value={classe || ""}>
                                     <SelectTrigger id="classe" className="w-full">
                                         <SelectValue placeholder="Sélectionner une classe" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {classes.map(c => (
+                                        {classeList.map(c => (
                                             <SelectItem key={c.id} value={c.id.toString()}>
                                                 {c.nom} ({c.filiere})
                                             </SelectItem>
@@ -141,22 +220,19 @@ export default function AbsencePage() {
                                             <SelectValue placeholder="Sélectionner un créneau" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {todayCreneaux.map(c => {
-                                                const horaire = creneaux.find(cr => cr.id === c.id_creneau);
-                                                const matiereItem = matieres.find(m => m.id_matiere === c.id_matiere);
-                                                return (
-                                                    <SelectItem key={c.id_edt} value={c.id_edt.toString()}>
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="h-3 w-3" />
-                                                            <span>{horaire.debut} - {horaire.fin}</span>
-                                                            <Badge variant="secondary" className="ml-2">
-                                                                {matiereItem ? matiereItem.nom_matiere : "Matière inconnue"}
-                                                            </Badge>
-                                                        </div>
-                                                    </SelectItem>
-                                                );
-                                            })}
+                                            {todayCreneaux.map(c => (
+                                                <SelectItem key={c.id} value={c.id.toString()}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{c.heureDebut} - {c.heureFin}</span>
+                                                        <Badge variant="secondary" className="ml-2">
+                                                            {c.matiereNom}
+                                                        </Badge>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
+
                                     </Select>
                                 </div>
                             )}
@@ -249,14 +325,13 @@ export default function AbsencePage() {
                                     </TableHeader>
                                     <TableBody>
                                         {filteredStudents.map((e, index) => (
-                                            <TableRow key={e.id_etudiant}>
-                                                <TableCell className="font-medium">{index + 1}</TableCell>
+                                            <TableRow key={e.id}>
+                                                <TableCell>{index + 1}</TableCell>
                                                 <TableCell>
-                                                    <div>
-                                                        <div className="font-medium">{e.nom} {e.prenom}</div>
-
-                                                    </div>
+                                                    <div className="font-medium">{e.firstname} {e.lastname}</div>
+                                                    <div className="text-xs text-gray-500">{e.apogeeNumber}</div>
                                                 </TableCell>
+
                                                 <TableCell className="text-center">
                                                     <RadioGroup
                                                         value={presences[e.id_etudiant] === true ? "present" : ""}

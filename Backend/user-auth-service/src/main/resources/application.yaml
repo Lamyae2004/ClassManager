@@ -1,12 +1,19 @@
 server:
   port: 9090
+
+eureka:
+  client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka
+
+
 spring:
   application:
     name: user-auth-service
   datasource:
     url: jdbc:postgresql://localhost:5432/user_auth_db
     username: postgres
-    password: root
+    password: admin
   jpa:
     hibernate:
       ddl-auto: update
@@ -30,3 +37,10 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+
+  # Desactiver Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false

@@ -15,7 +15,7 @@ public interface ClasseRepository extends JpaRepository<Classe, Long> {
     List<Classe> findByNom(String nom); // Changé de Optional à List
     Optional<Classe> findByNomAndFiliere_Nom(String nom, String filiereNom); // Nouvelle méthode
 
-    @Query("SELECT DISTINCT c FROM Classe c JOIN EmploiDuTemps e ON e.classe.id = c.id WHERE e.prof.id = :profId")
+    @Query("SELECT DISTINCT e.classe FROM EmploiDuTemps e WHERE e.profId = :profId")
     List<Classe> findByProfId(@Param("profId") Long profId);
 
 }

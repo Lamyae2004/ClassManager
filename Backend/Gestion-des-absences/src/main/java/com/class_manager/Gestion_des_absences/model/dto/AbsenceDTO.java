@@ -8,8 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AbsenceDTO {
-    private Absence absence;
-    private Seance seance;
-    private EmploiDuTempsDTO emploi;
-    private EtudiantDTO etudiant;
+    private Long etudiantId;
+    private boolean present;
 }

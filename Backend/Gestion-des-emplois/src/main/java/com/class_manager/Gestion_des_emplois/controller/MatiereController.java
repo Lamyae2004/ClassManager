@@ -1,7 +1,6 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
 import com.class_manager.Gestion_des_emplois.model.entity.Matiere;
-import com.class_manager.Gestion_des_emplois.model.entity.Prof;
 import com.class_manager.Gestion_des_emplois.repository.MatiereRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
