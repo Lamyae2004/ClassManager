@@ -8,15 +8,13 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest
-@EnableAutoConfiguration(exclude = {
-		DataSourceAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class
-})
+//@SpringBootTest
+//@EnableAutoConfiguration(exclude = {
+//		DataSourceAutoConfiguration.class,
+//		HibernateJpaAutoConfiguration.class
+//})
 class UserAuthServiceApplicationTests {
 
-	@MockitoBean
-	private UserRepository userRepository;
 
 	@Test
 	void contextLoads() {
