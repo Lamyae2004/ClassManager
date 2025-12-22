@@ -15,7 +15,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_emplois
     username: postgres
-    password: admin
+    password: root
 
 
   servlet:

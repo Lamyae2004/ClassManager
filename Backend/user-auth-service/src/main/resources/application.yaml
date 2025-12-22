@@ -13,7 +13,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/user_auth_db
     username: postgres
-    password: admin
+    password: root
   jpa:
     hibernate:
       ddl-auto: update
@@ -25,7 +25,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: "lamyae.himidi@uit.ac.ma"
-    password: ""
+    password: "hkru jykb hkgq ypuq"
     properties:
       mail:
         smtp:
