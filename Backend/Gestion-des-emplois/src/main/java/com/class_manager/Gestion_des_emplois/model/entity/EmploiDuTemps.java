@@ -20,8 +20,6 @@ public class EmploiDuTemps {
     @ManyToOne
     private Matiere matiere;
 
-    @ManyToOne
-    private Prof prof;
 
     @ManyToOne
     private Salle salle;
@@ -37,5 +35,8 @@ public class EmploiDuTemps {
 
     @Column(name = "file_name")
     private String fileName;
+
+    @Column(name = "prof_id", nullable = false)
+    private Long profId;
 
 }

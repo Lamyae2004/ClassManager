@@ -4,8 +4,11 @@ import com.class_manager.user_auth_service.config.JwtService;
 import com.class_manager.user_auth_service.model.dto.AdminDto;
 import com.class_manager.user_auth_service.model.dto.StudentDto;
 import com.class_manager.user_auth_service.model.dto.TeacherDto;
+import com.class_manager.user_auth_service.model.dto.TeacherDtoMapper;
+import com.class_manager.user_auth_service.model.entity.Teacher;
 import com.class_manager.user_auth_service.model.entity.User;
 import com.class_manager.user_auth_service.repository.UserRepository;
+import com.class_manager.user_auth_service.repository.TeacherRepository;
 import com.class_manager.user_auth_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,10 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,6 +28,28 @@ public class UserController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     public record UserResponse(Long id, String email, String firstname, String lastname, String role) {}
+    private final TeacherRepository teacherRepository;
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        UserResponse response = new UserResponse(
+                user.getId().longValue(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRole().name()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
 
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> getCurrentUser() {
@@ -65,5 +87,16 @@ public class UserController {
         return userService.getAllAdmins();
     }
 
+    @GetMapping("/teachers/search")
+    public TeacherDto getTeacherByFullName(
+            @RequestParam String firstname,
+            @RequestParam String lastname
+    ) {
+        Teacher teacher = teacherRepository
+                .findByFirstnameIgnoreCaseAndLastnameIgnoreCase(firstname, lastname)
+                .orElseThrow(() -> new RuntimeException("Prof non trouvé"));
+
+        return TeacherDtoMapper.fromEntity(teacher);
+    }
 
 }

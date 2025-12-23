@@ -1,5 +1,6 @@
 package com.class_manager.Gestion_des_absences.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,10 +20,14 @@ public class Seance {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_edt")
-    private Long idEdt; // id_edt venant du MS Gestion-des-emplois
+    private Long profId;
+    private Long classeId;
+    private Long creneauId;
+    private LocalDate date;
 
-    private LocalDate dateSeance;
+    @OneToMany(mappedBy = "seance", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Absence> absences;
 
 
 

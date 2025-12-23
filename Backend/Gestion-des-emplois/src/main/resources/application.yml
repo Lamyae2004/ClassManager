@@ -1,14 +1,17 @@
 server:
   port: 8082
 
-eureka:
-  client:
-    enabled: false
+  eureka:
+    client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka
 
 
 
 
 spring:
+  application:
+    name: EMPLOI-SERVICE
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_emplois
     username: postgres
@@ -36,10 +39,3 @@ spring:
       import-check:
         enabled: false
 
-  config:
-    import: "optional:file:./application.yml"
-
-  autoconfigure:
-    exclude:
-      - org.springframework.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration
-      - org.springframework.cloud.config.client.ConfigClientAutoConfiguration

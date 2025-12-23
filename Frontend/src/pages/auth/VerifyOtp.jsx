@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 const VerifyOtp =({ mode })=>{
     const [otp,setOtp]=useState("");
+    const [message,setMessage]=useState("");
     const location = useLocation();
     const { email } = location.state || {};
     const navigate = useNavigate();
@@ -25,6 +26,7 @@ const VerifyOtp =({ mode })=>{
           navigate(dest, { state: { email } });
         } catch (error) {
           console.error(error);
+           setMessage(error.response?.data || "Erreur lors de l’envoi"); 
           alert("Erreur lors de l’envoi");
         }
     };
@@ -32,6 +34,9 @@ const VerifyOtp =({ mode })=>{
     <div className="flex items-center justify-center min-h-screen ">
         <form onSubmit={handleOtpVerification} 
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
+           {message && (
+          <p className="mb-4 text-center text-red-600">{message}</p>
+        )}
              <h2 className="text-2xl font-bold mb-6 text-center">
           Verify your Email
         </h2>

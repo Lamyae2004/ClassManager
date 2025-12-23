@@ -1,5 +1,12 @@
 server:
   port: 9090
+
+eureka:
+  client:
+      service-url:
+        defaultZone: http://localhost:8761/eureka
+
+
 spring:
   application:
     name: user-auth-service
@@ -18,7 +25,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: "lamyae.himidi@uit.ac.ma"
-    password: ""
+    password: "your pass"
     properties:
       mail:
         smtp:
@@ -30,3 +37,10 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+
+  # Desactiver Spring Cloud Config
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false

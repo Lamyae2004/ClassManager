@@ -1,19 +1,19 @@
 "use client";
-import React, { useState } from "react";
-import { classes, etudiants, creneaux, emploi,matieres,salles } from "./data";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import React, { useState, useEffect } from "react";
+import { etudiants, creneaux, emploi, matieres, salles } from "./data";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle
 } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +27,16 @@ export default function AbsencePage() {
     const [classe, setClasse] = useState(null);
     const [creneau, setCreneau] = useState(null);
     const [presences, setPresences] = useState({});
+    const [filiere, setFiliere] = useState(null);
+    const [classes, setClasses] = useState([]);
+    const [classeList, setClasseList] = useState([]);
+    const [todayCreneaux, setTodayCreneaux] = useState([]);
+    const [students, setStudents] = useState([]);
+
+
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 10;
+    const profConnecte = 6;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -42,19 +49,73 @@ export default function AbsencePage() {
         day: 'numeric'
     });
 
+    useEffect(() => {
+
+        fetch(`http://localhost:8080/emploi/classes/prof/${profConnecte}`)
+
+            .then(res => res.json())
+            .then(data => {
+                console.log("Data reçue :", data);
+                setClasseList(Array.isArray(data) ? data : []);
+            })
+            .catch(err => console.error(err));
+    }, []);
+
+
+
     const handlePresenceChange = (id, value) => {
         setPresences(prev => ({ ...prev, [id]: value }));
     };
 
+
+    useEffect(() => {
+        if (!classe) return;
+
+        const selectedClasse = classeList.find(c => c.id.toString() === classe);
+        if (!selectedClasse) return;
+
+        //const token = localStorage.getItem("token");
+
+        fetch(
+            `http://localhost:8080/auth/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
+
+        )
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log("Étudiants reçus :", data);
+                setStudents(data);
+            })
+            .catch(err => console.error("Erreur étudiants :", err));
+    }, [classe, classeList]);
+
+
+
     // 🔹 Étudiants filtrés selon la classe
-    const filteredStudents = etudiants.filter(e => e.id_classe === Number(classe));
+    const filteredStudents = students;
+
 
     // 🔹 Créneaux filtrés selon classe + jour + prof
-    const todayCreneaux = emploi.filter(
-        e => e.id_classe === Number(classe) &&
-            e.jour === jourSelectionne &&
-            e.id_prof === profConnecte
-    );
+    useEffect(() => {
+        if (!classe) return;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
+
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`Erreur HTTP: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log("Créneaux reçus :", data);
+                setTodayCreneaux(data);
+            })
+            .catch(err => console.error("Erreur fetch emploi :", err));
+    }, [classe, jourSelectionne]);
+
+
+
 
     // Trouver le créneau sélectionné
     const selectedCreneau = todayCreneaux.find(c => c.id_edt === Number(creneau));
@@ -63,21 +124,64 @@ export default function AbsencePage() {
     const salle = selectedCreneau && salles.find(s => s.id_salle === selectedCreneau.id_salle);
 
     const handleSave = () => {
-        console.log("Absences envoyées :", presences);
-        alert("Absence enregistrée ✔ (simulation)");
+        if (!classe || !creneau) return;
+
+        const data = {
+            profId: profConnecte,
+            classeId: Number(classe),
+            creneauId: Number(creneau),
+            date: new Date().toISOString().split("T")[0],
+            absences: Object.entries(presences).map(([etudiantId, present]) => ({
+                etudiantId: Number(etudiantId),
+                present
+            }))
+        };
+
+        fetch("http://localhost:8083/absences", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .then(res => {
+                console.log("Absences enregistrées :", res);
+                alert("Absences enregistrées ✔");
+            })
+            .catch(err => {
+                console.error("Erreur enregistrement :", err);
+                alert("Erreur lors de l'enregistrement");
+            });
     };
+
 
     // Calculer les statistiques
     const totalStudents = filteredStudents.length;
     const presentCount = Object.values(presences).filter(v => v === true).length;
     const absentCount = Object.values(presences).filter(v => v === false).length;
 
+    const formatHeure = (heure) => {
+        if (!heure) return "";
+
+        // Ex: "14:", "14", "14:0" → "14:00"
+        const [h, m] = heure.split(":");
+        const heureFormattee = h.padStart(2, "0");
+        const minuteFormattee = (m && m.length > 0 ? m : "00").padEnd(2, "0");
+
+        return `${heureFormattee}:${minuteFormattee}`;
+    };
+
+
+
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* En-tête */}
                 <div className="space-y-2">
-                   
+
                     <div className="flex flex-wrap items-center gap-4 text-gray-600">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
@@ -103,15 +207,27 @@ export default function AbsencePage() {
                             {/* Sélection de classe */}
                             <div className="space-y-3">
                                 <Label htmlFor="classe">Classe</Label>
-                                <Select onValueChange={setClasse} value={classe || ""}>
+                                <Select onValueChange={(val) => {
+                                    setClasse(val);
+                                    const selected = classeList.find(c => c.id.toString() === val);
+                                    setFiliere(selected?.filiere || null);
+                                }} value={classe || ""}>
                                     <SelectTrigger id="classe" className="w-full">
                                         <SelectValue placeholder="Sélectionner une classe" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {classes.map(c => (
+                                        {classeList.map(c => (
                                             <SelectItem key={c.id} value={c.id.toString()}>
-                                                {c.nom}
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span>{c.nom}</span>
+                                                    {c.filiere && (
+                                                        <Badge variant="outline" className="ml-2">
+                                                            {c.filiere}
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </SelectItem>
+
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -126,22 +242,22 @@ export default function AbsencePage() {
                                             <SelectValue placeholder="Sélectionner un créneau" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {todayCreneaux.map(c => {
-                                                const horaire = creneaux.find(cr => cr.id === c.id_creneau);
-                                                const matiereItem = matieres.find(m => m.id_matiere === c.id_matiere);
-                                                return (
-                                                    <SelectItem key={c.id_edt} value={c.id_edt.toString()}>
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="h-3 w-3" />
-                                                            <span>{horaire.debut} - {horaire.fin}</span>
-                                                            <Badge variant="secondary" className="ml-2">
-                                                               {matiereItem ? matiereItem.nom_matiere : "Matière inconnue"} 
-                                                            </Badge>
-                                                        </div>
-                                                    </SelectItem>
-                                                );
-                                            })}
+                                            {todayCreneaux.map(c => (
+                                                <SelectItem key={c.id} value={c.id.toString()}>
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>
+                                                            {formatHeure(c.heureDebut)} - {formatHeure(c.heureFin)}
+                                                        </span>
+
+                                                        <Badge variant="secondary" className="ml-2">
+                                                            {c.matiereNom}
+                                                        </Badge>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
+
                                     </Select>
                                 </div>
                             )}
@@ -187,7 +303,7 @@ export default function AbsencePage() {
                                     <Separator />
                                 </>
                             )}
-                            
+
                             {classe && creneau && (
                                 <div className="space-y-2">
                                     <h4 className="font-semibold text-sm text-gray-500">Statistiques</h4>
@@ -234,39 +350,38 @@ export default function AbsencePage() {
                                     </TableHeader>
                                     <TableBody>
                                         {filteredStudents.map((e, index) => (
-                                            <TableRow key={e.id_etudiant}>
-                                                <TableCell className="font-medium">{index + 1}</TableCell>
+                                            <TableRow key={e.id}>
+                                                <TableCell>{index + 1}</TableCell>
                                                 <TableCell>
-                                                    <div>
-                                                        <div className="font-medium">{e.nom} {e.prenom}</div>
-                                                       
-                                                    </div>
+                                                    <div className="font-medium">{e.firstname} {e.lastname}</div>
+                                                    <div className="text-xs text-gray-500">{e.apogeeNumber}</div>
                                                 </TableCell>
+
                                                 <TableCell className="text-center">
                                                     <RadioGroup
-                                                        value={presences[e.id_etudiant] === true ? "present" : ""}
-                                                        onValueChange={() => handlePresenceChange(e.id_etudiant, true)}
+                                                        value={presences[e.id] === true ? "present" : ""}
+                                                        onValueChange={() => handlePresenceChange(e.id, true)}
                                                         className="flex justify-center"
                                                     >
-                                                        <RadioGroupItem value="present" id={`present-${e.id_etudiant}`} />
+                                                        <RadioGroupItem value="present" id={`present-${e.id}`} />
                                                     </RadioGroup>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <RadioGroup
-                                                        value={presences[e.id_etudiant] === false ? "absent" : ""}
-                                                        onValueChange={() => handlePresenceChange(e.id_etudiant, false)}
+                                                        value={presences[e.id] === false ? "absent" : ""}
+                                                        onValueChange={() => handlePresenceChange(e.id, false)}
                                                         className="flex justify-center"
                                                     >
-                                                        <RadioGroupItem value="absent" id={`absent-${e.id_etudiant}`} />
+                                                        <RadioGroupItem value="absent" id={`absent-${e.id}`} />
                                                     </RadioGroup>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    {presences[e.id_etudiant] === true ? (
+                                                    {presences[e.id] === true ? (
                                                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
                                                             <CheckCircle className="h-3 w-3 mr-1" />
                                                             Présent
                                                         </Badge>
-                                                    ) : presences[e.id_etudiant] === false ? (
+                                                    ) : presences[e.id] === false ? (
                                                         <Badge variant="outline" className="text-red-600 border-red-200">
                                                             <XCircle className="h-3 w-3 mr-1" />
                                                             Absent
@@ -294,7 +409,7 @@ export default function AbsencePage() {
                                         </>
                                     )}
                                 </div>
-                                <Button 
+                                <Button
                                     onClick={handleSave}
                                     size="lg"
                                     className="bg-blue-600 hover:bg-blue-700"

@@ -6,6 +6,7 @@ import com.class_manager.user_auth_service.model.dto.TeacherDto;
 import com.class_manager.user_auth_service.model.dto.UserMapper;
 import com.class_manager.user_auth_service.model.entity.*;
 import com.class_manager.user_auth_service.repository.UserRepository;
+import com.class_manager.user_auth_service.service.AdminService;
 import com.class_manager.user_auth_service.service.ExcelImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,30 +28,13 @@ import java.util.UUID;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
-    private final ExcelImportService excelService;
-    private final JwtService jwtService;
+
+    private final AdminService adminService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/createTeachers")
-    public ResponseEntity<String> createTeachers(
-            @RequestParam("file") MultipartFile file) throws IOException {
-
-        List<TeacherDto> teachers = excelService.parseTeacherExcel(file);
-
-        for(TeacherDto t: teachers){
-            if(!repository.findByEmail(t.getEmail()).isPresent()){
-                t.setRole(Role.TEACHER.name());
-                t.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-                repository.save(UserMapper.toTeacherEntity(t));
-                var extraClaims = new HashMap<String,Object>();
-                extraClaims.put("id", t.getId());
-                extraClaims.put("role", t.getRole());
-                String jwtToken = jwtService.generateToken(extraClaims,UserMapper.toEntity(t));
-            }
-        }
-
+    public ResponseEntity<String> createTeachers(@RequestParam("file") MultipartFile file) throws IOException {
+        adminService.createTeachers(file);
         return ResponseEntity.ok("Professeurs créés avec succès  ");
     }
 
@@ -61,23 +45,7 @@ public class AdminController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("niveau") Niveau niveau,
             @RequestParam("filiere") Filiere filiere) throws IOException {
-
-        List<StudentDto> students = excelService.parseStudentExcel(file);
-
-        for(StudentDto s : students){
-            if(!repository.findByEmail(s.getEmail()).isPresent()){
-                s.setNiveau(niveau.name());
-                s.setFiliere(filiere.name());
-                s.setRole(Role.STUDENT.name());
-                s.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-                repository.save(UserMapper.toStudentEntity(s));
-                var extraClaims = new HashMap<String,Object>();
-                extraClaims.put("id", s.getId());
-                extraClaims.put("role", s.getRole());
-                String jwtToken = jwtService.generateToken(extraClaims,UserMapper.toEntity(s));
-            }
-        }
-
+        adminService.createStudents(file,niveau,filiere);
         return ResponseEntity.ok("Étudiants créés avec succès pour " + niveau + " " + filiere);
     }
 

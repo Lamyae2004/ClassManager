@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_absences.model.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -13,14 +14,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Absence {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long idEtudiant;   // vient du MS Gestion-des-emplois
-    private Long idSeance;     // seance de ce microservice
+    private Long etudiantId;
 
-    private boolean justifie = false;
+    @ManyToOne
+    @JoinColumn(name = "seance_id")
+    @JsonBackReference
+    private Seance seance;
+
+    private boolean present;
+    private boolean justifie;
 
     @Column(name = "file_path")
     private String filePath;

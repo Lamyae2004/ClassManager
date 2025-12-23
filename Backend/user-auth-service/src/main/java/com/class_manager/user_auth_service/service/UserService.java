@@ -24,6 +24,12 @@ public class UserService {
     private final TeacherRepository teacherRepo;
     private final AdminRepository adminRepo;
 
+    public List<Student> getStudentsByClasse(Filiere filiere, Niveau niveau) {
+        return studentRepo.findByNiveauAndFiliere( niveau,filiere);
+    }
+
+
+
     public List<StudentDto> getAllStudents() {
         return studentRepo.findAll()
                 .stream()

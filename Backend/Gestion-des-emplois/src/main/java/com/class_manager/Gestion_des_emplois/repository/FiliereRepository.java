@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface FiliereRepository extends JpaRepository<Filiere, Long> {
-    Optional<Filiere> findByNom(String nom);
+
+public interface FiliereRepository {
+    //Optional<Filiere> findByNom(String nom);
 }
