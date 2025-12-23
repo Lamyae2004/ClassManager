@@ -24,6 +24,8 @@ public class Seance {
     private Long classeId;
     private Long creneauId;
     private LocalDate date;
+    private Long matiereId;
+    private Long salleId;
 
     @OneToMany(mappedBy = "seance", cascade = CascadeType.ALL)
     @JsonManagedReference

@@ -87,7 +87,7 @@ export function TimetableUpload() {
       const fetchAll = async () => {
         try {
           const [cRes, fRes] = await Promise.all([
-            fetch(`${BASE_URL}/emploi/classes`),
+            fetch(`http://localhost:8080/emploi/classes`),
             fetch(`${BASE_URL}/filieres`)
           ]);
 
@@ -114,7 +114,7 @@ export function TimetableUpload() {
     const fetchAll = async () => {
       try {
         const [cRes, fRes, pRes, mRes, sRes] = await Promise.all([
-          fetch(`${BASE_URL}/emploi/classes`),
+          fetch(`http://localhost:8080/emploi/classes`),
           fetch(`${BASE_URL}/filieres`),
           fetch(`${BASE_URL}/profs`),
           fetch(`${BASE_URL}/matieres`),
@@ -775,7 +775,7 @@ export function TimetableUpload() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const uploadRes = await fetch(`${BASE_URL}/emploi/upload`, {
+      const uploadRes = await fetch(`http://localhost:8082/emploi/upload`, {
         method: "POST",
         body: formData, // ✅ ici
       });
@@ -836,7 +836,7 @@ export function TimetableUpload() {
       setIsUploading(true);
       setUploadStatus("");
 
-      const res = await fetch(`${BASE_URL}/emploi/upload`, {
+      const res = await fetch(`http://localhost:8080/emploi/upload`, {
         method: "POST",
         body: formData
       });
@@ -860,7 +860,7 @@ export function TimetableUpload() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`${BASE_URL}/emploi/upload`, {
+    const res = await fetch(`http://localhost:8082/emploi/upload`, {
       method: 'POST',
       body: formData
     });

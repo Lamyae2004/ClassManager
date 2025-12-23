@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2 } from "lucide-react";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,7 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  
+
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -42,7 +42,7 @@ export function TimetableList() {
   const [timetables, setTimetables] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [timetableToDelete, setTimetableToDelete] = useState(null);
-  
+
   // States pour l'extraction et visualisation
   const [viewingTimetable, setViewingTimetable] = useState(null);
   const [timetableData, setTimetableData] = useState(null);
@@ -50,179 +50,215 @@ export function TimetableList() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
   const [jszipReady, setJszipReady] = useState(false);
+  const [teachersMap, setTeachersMap] = useState({});
+
 
   const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
   const TIME_SLOTS = ["8h30→10h30", "10h45→12h45", "14h → 16h", "16h15→18h15"];
 
 
-const [editingCell, setEditingCell] = useState(null);
-const [editForm, setEditForm] = useState({ 
-  type: "Cours", 
-  cours: "", 
-  professeur: "", 
-  salle: "" 
-});
-const [editingTimetable, setEditingTimetable] = useState(null);
-
-
-
-const transformBackendTimetable = (data) => {
-  const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
-  const TIME_SLOTS = ["8:30-10:30", "10:45-12:45", "14:00-16:00", "16:15-18:15"];
-
-  const timetableByDay = DAYS.map(day => ({
-    jour: day,
-    slot1: null,
-    slot2: null,
-    slot3: null,
-    slot4: null,
-  }));
-
-
- data.forEach(item => {
-    const dayObj = timetableByDay.find(d => d.jour.toLowerCase() === (item.jour || '').toLowerCase());
-    if (!dayObj) return;
-
-    // Normaliser heureDebut pour robustesse (ex: "14:" ou "14:00" -> detecter "14")
-    const hd = (item.creneau?.heureDebut || '').trim().toLowerCase();
-    let slotKey = null;
-    if (hd.startsWith("8")) slotKey = "slot1";
-    else if (hd.startsWith("10")) slotKey = "slot2";
-    else if (hd.startsWith("14")) slotKey = "slot3";
-    else if (hd.startsWith("16")) slotKey = "slot4";
-
-    if (slotKey) {
-      dayObj[slotKey] = {
-        type: "Cours",
-        cours: item.matiere?.nom || "",
-        professeur: item.prof?.nom || "",
-        salle: item.salle?.nom || ""
-      };
-    }
+  const [editingCell, setEditingCell] = useState(null);
+  const [editForm, setEditForm] = useState({
+    type: "Cours",
+    cours: "",
+    professeur: "",
+    salle: ""
   });
-
-  return timetableByDay;
-};
+  const [editingTimetable, setEditingTimetable] = useState(null);
 
 
 
-useEffect(() => {
-  const fetchTimetables = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/emploi`);
-      if (response.ok) {
-        const data = await response.json();
+  const transformBackendTimetable = (data) => {
+    const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
+    const TIME_SLOTS = ["8:30-10:30", "10:45-12:45", "14:00-16:00", "16:15-18:15"];
 
-        // Grouper par classe + filière pour obtenir une "liste" de timetables
-        const groups = {};
-        data.forEach(item => {
-          const className = item.classe?.nom || "unknown";
-          const filiereName = item.classe?.filiere || "";
-          const semesterVal = (item.semestre && (typeof item.semestre === "string" ? item.semestre : item.semestre.nom)) || item.semestre?.nom || item.semester || "";
-          const storedFileName = item.fileName || ""; // ✅ Récupérer le fileName de la BDD
-          
-          const key = `${className}__${filiereName}__${semesterVal}`;
-          
-          if (!groups[key]) {
-            groups[key] = {
-              id: key,
-              class: className,
-              filiere: filiereName,
-              semester: semesterVal,
-              fileName: storedFileName, // ✅ Stocker le fileName du premier item
-              items: []
-            };
-          }
-          
-          // ✅ Si le fileName n'est pas encore défini, utiliser celui de l'item actuel
-          if (!groups[key].fileName && storedFileName) {
-            groups[key].fileName = storedFileName;
-          }
-          
-          groups[key].items.push(item);
+    const timetableByDay = DAYS.map(day => ({
+      jour: day,
+      slot1: null,
+      slot2: null,
+      slot3: null,
+      slot4: null,
+    }));
+
+
+    data.forEach(item => {
+      const dayObj = timetableByDay.find(d => d.jour.toLowerCase() === (item.jour || '').toLowerCase());
+      if (!dayObj) return;
+
+      // Normaliser heureDebut pour robustesse (ex: "14:" ou "14:00" -> detecter "14")
+      const hd = (item.creneau?.heureDebut || '').trim().toLowerCase();
+
+      let slotKey = null;
+      if (hd.startsWith("8")) slotKey = "slot1";
+      else if (hd.startsWith("10")) slotKey = "slot2";
+      else if (hd.startsWith("14")) slotKey = "slot3";
+      else if (hd.startsWith("16")) slotKey = "slot4";
+
+      if (slotKey) {
+        console.log("EMPLOI PROF =", item.profId);
+        const teacher = teachersMap[item.profId];
+        dayObj[slotKey] = {
+          type: "Cours",
+          cours: item.matiere?.nom || "",
+          professeur: teacher
+            ? `${teacher.firstname[0].toUpperCase()}${teacher.firstname.slice(1).toLowerCase()}
+             ${teacher.lastname[0].toUpperCase()}${teacher.lastname.slice(1).toLowerCase()}`
+            : "",
+
+          salle: item.salle?.nom || ""
+        };
+      }
+    });
+
+    return timetableByDay;
+  };
+
+
+
+  useEffect(() => {
+    const fetchTimetables = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/emploi`);
+        if (response.ok) {
+          const data = await response.json();
+
+          // Grouper par classe + filière pour obtenir une "liste" de timetables
+          const groups = {};
+          data.forEach(item => {
+            const className = item.classe?.nom || "unknown";
+            const filiereName = item.classe?.filiere || "";
+            const semesterVal = (item.semestre && (typeof item.semestre === "string" ? item.semestre : item.semestre.nom)) || item.semestre?.nom || item.semester || "";
+            const storedFileName = item.fileName || ""; // ✅ Récupérer le fileName de la BDD
+
+            const key = `${className}__${filiereName}__${semesterVal}`;
+
+            if (!groups[key]) {
+              groups[key] = {
+                id: key,
+                class: className,
+                filiere: filiereName,
+                semester: semesterVal,
+                fileName: storedFileName, // ✅ Stocker le fileName du premier item
+                items: []
+              };
+            }
+
+            // ✅ Si le fileName n'est pas encore défini, utiliser celui de l'item actuel
+            if (!groups[key].fileName && storedFileName) {
+              groups[key].fileName = storedFileName;
+            }
+
+            groups[key].items.push(item);
+          });
+
+          const list = Object.values(groups).map(g => ({
+            id: g.id,
+            class: g.class,
+            filiere: g.filiere,
+            semester: g.semester,
+            items: g.items,
+            fileName: g.fileName || `emploi_${g.class}_${g.filiere}_${g.semester}.docx`, // ✅ Utiliser le fileName stocké ou un nom par défaut
+            displayName: `${g.class.toUpperCase()}${g.filiere ? ' - ' + g.filiere : ''}${g.semester ? ' - ' + g.semester : ''}`, // ✅ Nom d'affichage
+            fileUrl: "",
+            uploadDate: g.items[0]?.createdAt || new Date().toISOString(),
+            fileSize: "N/A"
+          }));
+
+          console.log("Timetables chargés:", list); // ✅ Pour debug
+
+          setTimetables(list);
+        }
+      } catch (err) {
+        console.error("Erreur chargement emplois:", err);
+        setTimetables([]);
+      }
+    };
+    fetchTimetables();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/users/teachers");
+        if (!res.ok) throw new Error("Erreur chargement profs");
+
+        const teachers = await res.json();
+
+        // Map : profId -> teacher
+        const map = {};
+        teachers.forEach(t => {
+          map[t.id] = t;
         });
 
-        const list = Object.values(groups).map(g => ({
-          id: g.id,
-          class: g.class,
-          filiere: g.filiere,
-          semester: g.semester,
-          items: g.items,
-          fileName: g.fileName || `emploi_${g.class}_${g.filiere}_${g.semester}.docx`, // ✅ Utiliser le fileName stocké ou un nom par défaut
-          displayName: `${g.class.toUpperCase()}${g.filiere ? ' - ' + g.filiere : ''}${g.semester ? ' - ' + g.semester : ''}`, // ✅ Nom d'affichage
-          fileUrl: "",
-          uploadDate: g.items[0]?.createdAt || new Date().toISOString(),
-          fileSize: "N/A"
-        }));
-
-        console.log("Timetables chargés:", list); // ✅ Pour debug
-
-        setTimetables(list);
+        setTeachersMap(map);
+      } catch (err) {
+        console.error("Erreur fetch teachers:", err);
       }
-    } catch (err) {
-      console.error("Erreur chargement emplois:", err);
-      setTimetables([]);
-    }
-  };
-  fetchTimetables();
-}, []);
+    };
+
+    fetchTeachers();
+  }, []);
+
+
+
 
   // Données pour les classes et filières (chargées du backend)
   const [backendClasses, setBackendClasses] = useState([]);
   const [backendFilieres, setBackendFilieres] = useState({});
 
   useEffect(() => {
-  const fetchMetadata = async () => {
-    try {
-      const cRes = await fetch(`${BASE_URL}/emploi/classes`);
+    const fetchMetadata = async () => {
+      try {
+        const cRes = await fetch(`http://localhost:8080/emploi/classes`);
 
-      if (!cRes.ok) {
-        throw new Error("Erreur chargement classes");
+        if (!cRes.ok) {
+          throw new Error("Erreur chargement classes");
+        }
+
+        const cData = await cRes.json();
+
+        const filieresMap = {};
+        const classesMap = new Map();
+
+        (cData || []).forEach(c => {
+          const className = (c.nom || "").toLowerCase().trim();
+          if (!className) return;
+
+          if (!classesMap.has(className)) {
+            classesMap.set(className, {
+              id: c.id,
+              nom: c.nom,
+              value: c.nom
+            });
+          }
+
+          // si la filière est déjà incluse dans classe
+          if (c.filiere) {
+            if (!filieresMap[className]) {
+              filieresMap[className] = [];
+            }
+
+            const exists = filieresMap[className].some(
+              f => f === c.filiere
+            );
+
+            if (!exists) {
+              filieresMap[className].push(c.filiere);
+            }
+          }
+        });
+
+        setBackendClasses(Array.from(classesMap.values()));
+        setBackendFilieres(filieresMap);
+
+      } catch (err) {
+        console.error("Erreur chargement classes/filières:", err);
       }
+    };
 
-      const cData = await cRes.json();
-
-      const filieresMap = {};
-      const classesMap = new Map();
-
-      (cData || []).forEach(c => {
-        const className = (c.nom || "").toLowerCase().trim();
-        if (!className) return;
-
-        if (!classesMap.has(className)) {
-          classesMap.set(className, {
-            id: c.id,
-            nom: c.nom,
-            value: c.nom
-          });
-        }
-
-        // si la filière est déjà incluse dans classe
-        if (c.filiere) {
-          if (!filieresMap[className]) {
-            filieresMap[className] = [];
-          }
-
-          const exists = filieresMap[className].some(
-            f => f === c.filiere
-          );
-
-          if (!exists) {
-            filieresMap[className].push(c.filiere);
-          }
-        }
-      });
-
-      setBackendClasses(Array.from(classesMap.values()));
-      setBackendFilieres(filieresMap);
-
-    } catch (err) {
-      console.error("Erreur chargement classes/filières:", err);
-    }
-  };
-
-  fetchMetadata();
-}, []);
+    fetchMetadata();
+  }, []);
 
 
 
@@ -249,234 +285,234 @@ useEffect(() => {
     window.location.href = '/upload';
   };
 
-const handleEdit = (timetable) => {
-  // Redirection vers la page de modification avec l'ID
-  window.location.href = `/upload/edit/${timetable.id}`;
-};
+  const handleEdit = (timetable) => {
+    // Redirection vers la page de modification avec l'ID
+    window.location.href = `/upload/edit/${timetable.id}`;
+  };
 
   const handleEditCell = (dayIndex, slotKey) => {
-  const cellData = timetableData[dayIndex][slotKey];
-  const data = cellData || { type: "Cours", cours: "", professeur: "", salle: "" };
+    const cellData = timetableData[dayIndex][slotKey];
+    const data = cellData || { type: "Cours", cours: "", professeur: "", salle: "" };
 
-  setEditingCell({ dayIndex, slotKey });
-  setEditingTimetable(viewingTimetable);
-  setEditForm({
-    type: cellData.type || "Cours",
-    cours: cellData.cours || "",
-    professeur: cellData.professeur || "",
-    salle: cellData.salle || "" ,
+    setEditingCell({ dayIndex, slotKey });
+    setEditingTimetable(viewingTimetable);
+    setEditForm({
+      type: cellData.type || "Cours",
+      cours: cellData.cours || "",
+      professeur: cellData.professeur || "",
+      salle: cellData.salle || "",
       type: data.type || "Cours",
       cours: data.cours || "",
       professeur: data.professeur || "",
       salle: data.salle || ""
-  });
-};
+    });
+  };
 
-const generateDocxFromTimetable = async (data, filename = "emploi_modifie.docx") => {
-  if (!data || !Array.isArray(data)) {
-    throw new Error("Données invalides pour générer le DOCX");
-  }
-
-  const rows = [];
-
-  // header
-  const headerCells = [
-    new DocxTableCell({ children: [new Paragraph({ children: [new TextRun("Jour")] })] }),
-    ...TIME_SLOTS.map(slot => new DocxTableCell({ children: [new Paragraph({ children: [new TextRun(slot)] })] }))
-  ];
-  rows.push(new DocxTableRow({ children: headerCells }));
-  
-  // content rows
-  data.forEach(row => {
-    const cells = [];
-    cells.push(new DocxTableCell({ children: [new Paragraph({ children: [new TextRun(row.jour || "")] })] }));
-
-    for (let i = 1; i <= 4; i++) {
-      const slot = row[`slot${i}`] || {};
-      const paragraphs = [];
-
-      if (slot.type && slot.type !== "Cours") {
-        paragraphs.push(new Paragraph({ children: [new TextRun({ text: slot.type, bold: true })] }));
-      }
-
-      if (slot.cours) paragraphs.push(new Paragraph({ children: [new TextRun(slot.cours)] }));
-      if (slot.professeur) paragraphs.push(new Paragraph({ children: [new TextRun(slot.professeur)] }));
-      if (slot.salle) paragraphs.push(new Paragraph({ children: [new TextRun(slot.salle)] }));
-
-      if (paragraphs.length === 0) paragraphs.push(new Paragraph({ children: [new TextRun("")] }));
-
-      cells.push(new DocxTableCell({ children: paragraphs, width: { size: 4000, type: WidthType.DXA } }));
+  const generateDocxFromTimetable = async (data, filename = "emploi_modifie.docx") => {
+    if (!data || !Array.isArray(data)) {
+      throw new Error("Données invalides pour générer le DOCX");
     }
 
-    rows.push(new DocxTableRow({ children: cells }));
-  });
+    const rows = [];
 
-  const table = new DocxTable({ rows });
+    // header
+    const headerCells = [
+      new DocxTableCell({ children: [new Paragraph({ children: [new TextRun("Jour")] })] }),
+      ...TIME_SLOTS.map(slot => new DocxTableCell({ children: [new Paragraph({ children: [new TextRun(slot)] })] }))
+    ];
+    rows.push(new DocxTableRow({ children: headerCells }));
 
-  // ✅ Créer le document avec sections correctement
-  const doc = new Document({
-    sections: [
-      {
-        children: [
-          new Paragraph({
-            children: [new TextRun({ text: "Emploi du temps", bold: true, size: 32 })]
-          }),
-          new Paragraph({ text: "" }),
-          table
-        ]
-      }
-    ]
-  });
+    // content rows
+    data.forEach(row => {
+      const cells = [];
+      cells.push(new DocxTableCell({ children: [new Paragraph({ children: [new TextRun(row.jour || "")] })] }));
 
-  // Utiliser toBase64String puis convertir en Blob
-  const base64 = await Packer.toBase64String(doc);
-  const binary = atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      for (let i = 1; i <= 4; i++) {
+        const slot = row[`slot${i}`] || {};
+        const paragraphs = [];
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-};
-// ...existing code...
+        if (slot.type && slot.type !== "Cours") {
+          paragraphs.push(new Paragraph({ children: [new TextRun({ text: slot.type, bold: true })] }));
+        }
 
+        if (slot.cours) paragraphs.push(new Paragraph({ children: [new TextRun(slot.cours)] }));
+        if (slot.professeur) paragraphs.push(new Paragraph({ children: [new TextRun(slot.professeur)] }));
+        if (slot.salle) paragraphs.push(new Paragraph({ children: [new TextRun(slot.salle)] }));
 
-const handleSaveEdit = async () => {
-  if (!editingCell || !editingTimetable) return;
-  
-  try {
-    const dayName = timetableData[editingCell.dayIndex].jour;
-    const slotIndex = parseInt(editingCell.slotKey.replace('slot', '')) - 1;
-    const timeSlot = TIME_SLOTS[slotIndex];
-    
-    const creneauFormatted = timeSlot
-      .replace(/h/g, ':')
-      .replace(/→/g, '-')
-      .replace(/\s+/g, '');
-    
-    const creneauStart = creneauFormatted.split('-')[0].substring(0, 2);
-    
-    // Chercher l'emploi existant
-    let emploiToUpdate = editingTimetable.items.find(item => 
-      item.jour.toLowerCase() === dayName.toLowerCase() &&
-      item.creneau?.heureDebut?.startsWith(creneauStart)
-    );
-    
-    const updateDTO = {
-      matiere: editForm.cours.trim(),
-      prof: editForm.professeur.trim(),
-      salle: editForm.salle.trim(),
-      jour: dayName
-    };
+        if (paragraphs.length === 0) paragraphs.push(new Paragraph({ children: [new TextRun("")] }));
 
-    // ✅ Si aucun emploi n'existe pour cette cellule, créer un nouveau
-    if (!emploiToUpdate) {
-      // Créer un nouvel emploi pour cette cellule vide
-      const newEmploiDTO = {
-        classe: {
-          id: editingTimetable.items[0]?.classe?.id,
-          nom: editingTimetable.class
-        },
-        matiere: { nom: editForm.cours.trim() },
-        prof: { nom: editForm.professeur.trim() },
-        salle: { nom: editForm.salle.trim() },
-        creneau: { 
-          heureDebut: creneauFormatted.split('-')[0],
-          heureFin: creneauFormatted.split('-')[1]
-        },
-        jour: dayName,
-        semestre: editingTimetable.semester
-      };
-
-      const createResponse = await fetch(`${BASE_URL}/emploi/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newEmploiDTO)
-      });
-
-      if (!createResponse.ok) {
-        throw new Error("Erreur lors de la création de l'emploi");
+        cells.push(new DocxTableCell({ children: paragraphs, width: { size: 4000, type: WidthType.DXA } }));
       }
 
-      const createdEmploi = await createResponse.json();
-      emploiToUpdate = createdEmploi;
-    } else {
-      // ✅ Si l'emploi existe, le mettre à jour normalement
-      const updateResponse = await fetch(`${BASE_URL}/emploi/${emploiToUpdate.id}/cell`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updateDTO)
-      });
-      
-      if (!updateResponse.ok) {
-        throw new Error("Erreur lors de la mise à jour");
-      }
-    }
-    
-    // 3. Mettre à jour l'affichage local
-    const newTimetableData = [...timetableData];
-    newTimetableData[editingCell.dayIndex][editingCell.slotKey] = {
-      type: editForm.type || "Cours",
-      cours: editForm.cours.trim(),
-      professeur: editForm.professeur.trim(),
-      salle: editForm.salle.trim()
-    };
-    
-    setTimetableData(newTimetableData);
-    setEditingCell(null);
-    setEditForm({ type: "Cours", cours: "", professeur: "", salle: "" });
-    
-    // 4. Mettre à jour viewingTimetable.items
-    const updatedItems = (editingTimetable.items || []).map(it => {
-      if (it.id === emploiToUpdate.id) {
-        return {
-          ...it,
-          matiere: { ...(it.matiere || {}), nom: updateDTO.matiere || editForm.cours },
-          prof: { ...(it.prof || {}), nom: updateDTO.prof || editForm.professeur },
-          salle: { ...(it.salle || {}), nom: updateDTO.salle || editForm.salle },
-          jour: updateDTO.jour || dayName
-        };
-      }
-      return it;
+      rows.push(new DocxTableRow({ children: cells }));
     });
 
-    // ✅ Si c'est un nouvel emploi, l'ajouter à la liste
-    if (!editingTimetable.items.find(it => it.id === emploiToUpdate.id)) {
-      updatedItems.push(emploiToUpdate);
+    const table = new DocxTable({ rows });
+
+    // ✅ Créer le document avec sections correctement
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              children: [new TextRun({ text: "Emploi du temps", bold: true, size: 32 })]
+            }),
+            new Paragraph({ text: "" }),
+            table
+          ]
+        }
+      ]
+    });
+
+    // Utiliser toBase64String puis convertir en Blob
+    const base64 = await Packer.toBase64String(doc);
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binary.charCodeAt(i);
     }
+    const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
 
-    const updatedViewing = { ...editingTimetable, items: updatedItems };
-    setViewingTimetable(updatedViewing);
-    setEditingTimetable(updatedViewing);
-    
-  } catch (err) {
-    console.error("Erreur lors de la sauvegarde:", err);
-    alert("Erreur lors de la sauvegarde des modifications");
-  }
-};
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  // ...existing code...
 
-const fetchGroupItems = async (timetable) => {
-  try {
-    const params = new URLSearchParams({ classe: timetable.class });
-    if (timetable.filiere) params.append('filiere', timetable.filiere);
-    if (timetable.semester) params.append('semester', timetable.semester);
-    const res = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`);
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (err) {
-    console.error("Erreur fetchGroupItems:", err);
-    return [];
-  }
-};
+
+  const handleSaveEdit = async () => {
+    if (!editingCell || !editingTimetable) return;
+
+    try {
+      const dayName = timetableData[editingCell.dayIndex].jour;
+      const slotIndex = parseInt(editingCell.slotKey.replace('slot', '')) - 1;
+      const timeSlot = TIME_SLOTS[slotIndex];
+
+      const creneauFormatted = timeSlot
+        .replace(/h/g, ':')
+        .replace(/→/g, '-')
+        .replace(/\s+/g, '');
+
+      const creneauStart = creneauFormatted.split('-')[0].substring(0, 2);
+
+      // Chercher l'emploi existant
+      let emploiToUpdate = editingTimetable.items.find(item =>
+        item.jour.toLowerCase() === dayName.toLowerCase() &&
+        item.creneau?.heureDebut?.startsWith(creneauStart)
+      );
+
+      const updateDTO = {
+        matiere: editForm.cours.trim(),
+        prof: editForm.professeur.trim(),
+        salle: editForm.salle.trim(),
+        jour: dayName
+      };
+
+      // ✅ Si aucun emploi n'existe pour cette cellule, créer un nouveau
+      if (!emploiToUpdate) {
+        // Créer un nouvel emploi pour cette cellule vide
+        const newEmploiDTO = {
+          classe: {
+            id: editingTimetable.items[0]?.classe?.id,
+            nom: editingTimetable.class
+          },
+          matiere: { nom: editForm.cours.trim() },
+          prof: { nom: editForm.professeur.trim() },
+          salle: { nom: editForm.salle.trim() },
+          creneau: {
+            heureDebut: creneauFormatted.split('-')[0],
+            heureFin: creneauFormatted.split('-')[1]
+          },
+          jour: dayName,
+          semestre: editingTimetable.semester
+        };
+
+        const createResponse = await fetch(`${BASE_URL}/emploi/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newEmploiDTO)
+        });
+
+        if (!createResponse.ok) {
+          throw new Error("Erreur lors de la création de l'emploi");
+        }
+
+        const createdEmploi = await createResponse.json();
+        emploiToUpdate = createdEmploi;
+      } else {
+        // ✅ Si l'emploi existe, le mettre à jour normalement
+        const updateResponse = await fetch(`${BASE_URL}/emploi/${emploiToUpdate.id}/cell`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updateDTO)
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error("Erreur lors de la mise à jour");
+        }
+      }
+
+      // 3. Mettre à jour l'affichage local
+      const newTimetableData = [...timetableData];
+      newTimetableData[editingCell.dayIndex][editingCell.slotKey] = {
+        type: editForm.type || "Cours",
+        cours: editForm.cours.trim(),
+        professeur: editForm.professeur.trim(),
+        salle: editForm.salle.trim()
+      };
+
+      setTimetableData(newTimetableData);
+      setEditingCell(null);
+      setEditForm({ type: "Cours", cours: "", professeur: "", salle: "" });
+
+      // 4. Mettre à jour viewingTimetable.items
+      const updatedItems = (editingTimetable.items || []).map(it => {
+        if (it.id === emploiToUpdate.id) {
+          return {
+            ...it,
+            matiere: { ...(it.matiere || {}), nom: updateDTO.matiere || editForm.cours },
+            prof: { ...(it.prof || {}), nom: updateDTO.prof || editForm.professeur },
+            salle: { ...(it.salle || {}), nom: updateDTO.salle || editForm.salle },
+            jour: updateDTO.jour || dayName
+          };
+        }
+        return it;
+      });
+
+      // ✅ Si c'est un nouvel emploi, l'ajouter à la liste
+      if (!editingTimetable.items.find(it => it.id === emploiToUpdate.id)) {
+        updatedItems.push(emploiToUpdate);
+      }
+
+      const updatedViewing = { ...editingTimetable, items: updatedItems };
+      setViewingTimetable(updatedViewing);
+      setEditingTimetable(updatedViewing);
+
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde:", err);
+      alert("Erreur lors de la sauvegarde des modifications");
+    }
+  };
+
+  const fetchGroupItems = async (timetable) => {
+    try {
+      const params = new URLSearchParams({ classe: timetable.class });
+      if (timetable.filiere) params.append('filiere', timetable.filiere);
+      if (timetable.semester) params.append('semester', timetable.semester);
+      const res = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`);
+      if (!res.ok) return [];
+      return await res.json();
+    } catch (err) {
+      console.error("Erreur fetchGroupItems:", err);
+      return [];
+    }
+  };
 
 
 
@@ -486,118 +522,118 @@ const fetchGroupItems = async (timetable) => {
     setDeleteDialogOpen(true);
   };
 
- const confirmDelete = async () => {
-  try {
-    // ✅ Utiliser l'endpoint /group avec les paramètres
-    const params = new URLSearchParams({
-      classe: timetableToDelete.class
+  const confirmDelete = async () => {
+    try {
+      // ✅ Utiliser l'endpoint /group avec les paramètres
+      const params = new URLSearchParams({
+        classe: timetableToDelete.class
+      });
+
+      if (timetableToDelete.filiere) {
+        params.append('filiere', timetableToDelete.filiere);
+      }
+
+      if (timetableToDelete.semester) {
+        params.append('semester', timetableToDelete.semester);
+      }
+
+      const response = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`, {
+        method: "DELETE"
+      });
+
+      if (response.ok) {
+        setTimetables(timetables.filter(t => t.id !== timetableToDelete.id));
+        setDeleteDialogOpen(false);
+        setTimetableToDelete(null);
+      } else {
+        throw new Error("Erreur lors de la suppression");
+      }
+    } catch (err) {
+      console.error("Erreur suppression:", err);
+      alert("Erreur lors de la suppression de l'emploi du temps");
+    }
+  };
+  const handleDownload = async (timetable) => {
+    try {
+      // Construire le nom du fichier : Classe_Filiere_Semestre
+      const buildFileName = () => {
+        const parts = [];
+        if (timetable.class) parts.push(timetable.class.toUpperCase());
+        if (timetable.filiere) parts.push(timetable.filiere.toUpperCase());
+        if (timetable.semester) parts.push(timetable.semester.toUpperCase());
+
+        const baseName = parts.length > 0 ? parts.join("_") : "emploi";
+        return `${baseName}.docx`;
+      };
+
+      const customFileName = buildFileName();
+
+      // 1) Si la grille modifiée est ouverte pour ce timetable -> générer à partir de timetableData
+      if (viewingTimetable && timetable.id === viewingTimetable.id && timetableData) {
+        await generateDocxFromTimetable(timetableData, customFileName);
+        return;
+      }
+
+      // 2) Sinon tenter de récupérer les items du groupe, construire la grille et générer le docx
+      const items = await fetchGroupItems(timetable);
+      if (items && items.length > 0) {
+        const parsed = transformBackendTimetable(items);
+        await generateDocxFromTimetable(parsed, customFileName);
+        return;
+      }
+
+      // 3) Fallback : télécharger le fichier stocké sur le serveur avec le nouveau nom
+      if (!timetable.fileName) {
+        alert("Aucun fichier associé !");
+        return;
+      }
+
+      const url = `${BASE_URL}/emploi/${timetable.fileName}/file`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Erreur ${res.status}: ${res.statusText}`);
+      const blob = await res.blob();
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = customFileName; // ✅ Utiliser le nom personnalisé
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 100);
+    } catch (err) {
+      console.error("Erreur téléchargement:", err);
+      alert(`Erreur lors du téléchargement: ${err.message}`);
+    }
+  };
+
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('http://localhost:8082/emploi/upload', {
+      method: 'POST',
+      body: formData // ne pas ajouter headers Content-Type manuellement
     });
-    
-    if (timetableToDelete.filiere) {
-      params.append('filiere', timetableToDelete.filiere);
-    }
-    
-    if (timetableToDelete.semester) {
-      params.append('semester', timetableToDelete.semester);
-    }
 
-    const response = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`, {
-      method: "DELETE"
-    });
-    
-    if (response.ok) {
-      setTimetables(timetables.filter(t => t.id !== timetableToDelete.id));
-      setDeleteDialogOpen(false);
-      setTimetableToDelete(null);
-    } else {
-      throw new Error("Erreur lors de la suppression");
-    }
-  } catch (err) {
-    console.error("Erreur suppression:", err);
-    alert("Erreur lors de la suppression de l'emploi du temps");
-  }
-};
-const handleDownload = async (timetable) => {
-  try {
-    // Construire le nom du fichier : Classe_Filiere_Semestre
-    const buildFileName = () => {
-      const parts = [];
-      if (timetable.class) parts.push(timetable.class.toUpperCase());
-      if (timetable.filiere) parts.push(timetable.filiere.toUpperCase());
-      if (timetable.semester) parts.push(timetable.semester.toUpperCase());
-      
-      const baseName = parts.length > 0 ? parts.join("_") : "emploi";
-      return `${baseName}.docx`;
-    };
-
-    const customFileName = buildFileName();
-
-    // 1) Si la grille modifiée est ouverte pour ce timetable -> générer à partir de timetableData
-    if (viewingTimetable && timetable.id === viewingTimetable.id && timetableData) {
-      await generateDocxFromTimetable(timetableData, customFileName);
-      return;
-    }
-
-    // 2) Sinon tenter de récupérer les items du groupe, construire la grille et générer le docx
-    const items = await fetchGroupItems(timetable);
-    if (items && items.length > 0) {
-      const parsed = transformBackendTimetable(items);
-      await generateDocxFromTimetable(parsed, customFileName);
-      return;
-    }
-
-    // 3) Fallback : télécharger le fichier stocké sur le serveur avec le nouveau nom
-    if (!timetable.fileName) {
-      alert("Aucun fichier associé !");
-      return;
-    }
-    
-    const url = `${BASE_URL}/emploi/${timetable.fileName}/file`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Erreur ${res.status}: ${res.statusText}`);
-    const blob = await res.blob();
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = customFileName; // ✅ Utiliser le nom personnalisé
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(link.href), 100);
-  } catch (err) {
-    console.error("Erreur téléchargement:", err);
-    alert(`Erreur lors du téléchargement: ${err.message}`);
-  }
-};
-
-const uploadFile = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const res = await fetch('http://localhost:8082/emploi/upload', {
-    method: 'POST',
-    body: formData // ne pas ajouter headers Content-Type manuellement
-  });
-
-  const text = await res.text();
-  console.log('Upload response:', res.status, text);
-};
+    const text = await res.text();
+    console.log('Upload response:', res.status, text);
+  };
   // Fonctions utilitaires pour l'affichage
   const getClassLabel = (classValue) => {
     const cls = backendClasses.find(c => c.value === classValue || c.nom === classValue);
     return cls ? cls.nom || cls.label : classValue?.toUpperCase() || "-";
   };
 
- const getFiliereLabel = (filiereValue) => {
-   if (!filiereValue) return "-";
-  return typeof filiereValue === "string" ? filiereValue : String(filiereValue);
- };
+  const getFiliereLabel = (filiereValue) => {
+    if (!filiereValue) return "-";
+    return typeof filiereValue === "string" ? filiereValue : String(filiereValue);
+  };
 
   const getSemesterLabel = (semesterValue) => {
     if (!semesterValue) return "-";
     return semesters[semesterValue] || semesterValue;
     const key = String(semesterValue);
-    return semesters[key] ||semesterValue;
+    return semesters[key] || semesterValue;
 
 
   };
@@ -689,7 +725,7 @@ const uploadFile = async (file) => {
       if (parenMatch) {
         startIndex = startIndex + parenMatch[0].length;
       }
-      
+
       let endIndex = content.length;
       if (prIndex !== -1 && prIndex > coursIndex) {
         endIndex = Math.min(endIndex, prIndex);
@@ -697,20 +733,20 @@ const uploadFile = async (file) => {
       if (amphiIndex !== -1 && amphiIndex > coursIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       cours = content.substring(startIndex, endIndex).trim();
       cours = cours.replace(/\s+/g, " ").trim();
     } else if (tdTpIndex !== -1) {
       const startIndex = tdTpIndex + 5;
       let endIndex = content.length;
-      
+
       if (prIndex !== -1 && prIndex > tdTpIndex) {
         endIndex = Math.min(endIndex, prIndex);
       }
       if (amphiIndex !== -1 && amphiIndex > tdTpIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       cours = content.substring(startIndex, endIndex).trim();
       cours = cours.replace(/\s+/g, " ").trim();
     }
@@ -718,16 +754,16 @@ const uploadFile = async (file) => {
     if (prIndex !== -1) {
       const startIndex = prIndex + 3;
       let endIndex = content.length;
-      
+
       const parenIndex = content.indexOf("(", startIndex);
       if (parenIndex !== -1) {
         endIndex = Math.min(endIndex, parenIndex);
       }
-      
+
       if (amphiIndex !== -1 && amphiIndex > prIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       professeur = content.substring(startIndex, endIndex).trim();
       professeur = professeur.replace(/\s+/g, " ").trim();
     }
@@ -740,7 +776,7 @@ const uploadFile = async (file) => {
     } else {
       const salleVariants = /(?:sa[1l]{2}e|salle)\s*([A-Z0-9]+(?:\s*[A-Z0-9]+)*)/i;
       const salleMatch = content.match(salleVariants);
-      
+
       if (salleMatch && salleMatch[1]) {
         salle = salleMatch[1].trim();
       } else if (salleMatches.length > 0) {
@@ -788,61 +824,61 @@ const uploadFile = async (file) => {
     const documentXml = await zip.file("word/document.xml").async("string");
     const parser = new DOMParser();
     const doc = parser.parseFromString(documentXml, "text/xml");
-    
+
     const tables = doc.getElementsByTagName("w:tbl");
     const extractedTables = [];
-    
+
     for (let i = 0; i < tables.length; i++) {
       const table = tables[i];
       const rows = table.getElementsByTagName("w:tr");
       const tableData = [];
-      
+
       for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
         const row = rows[rowIdx];
         const cells = row.getElementsByTagName("w:tc");
         const rowData = [];
-        
+
         for (let cellIdx = 0; cellIdx < cells.length; cellIdx++) {
           const cell = cells[cellIdx];
           const paragraphs = cell.getElementsByTagName("w:p");
           let cellText = "";
-          
+
           for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
             const paragraph = paragraphs[pIdx];
             const runs = paragraph.getElementsByTagName("w:t");
-            
+
             for (let rIdx = 0; rIdx < runs.length; rIdx++) {
               const textNode = runs[rIdx].childNodes[0];
               if (textNode && textNode.nodeValue) {
                 cellText += textNode.nodeValue;
               }
             }
-            
+
             if (pIdx < paragraphs.length - 1) {
               cellText += " ";
             }
           }
-          
+
           rowData.push(cellText.trim());
         }
-        
+
         tableData.push(rowData);
       }
-      
+
       extractedTables.push(tableData);
     }
-    
+
     return extractedTables;
   };
 
   // Fonction pour parser un tableau et extraire l'emploi du temps
   const parseTableToTimetable = (tableData) => {
-    const timetable = DAYS.map(day => ({ 
-      jour: capitalize(day), 
-      slot1: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot2: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot3: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot4: { type: "Cours", cours: "", professeur: "", salle: "" } 
+    const timetable = DAYS.map(day => ({
+      jour: capitalize(day),
+      slot1: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot2: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot3: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot4: { type: "Cours", cours: "", professeur: "", salle: "" }
     }));
 
     if (!tableData || tableData.length === 0) {
@@ -856,19 +892,19 @@ const uploadFile = async (file) => {
     for (let i = 0; i < Math.min(3, tableData.length); i++) {
       const row = tableData[i];
       const rowText = row.join(" ").toLowerCase();
-      
+
       const hasDays = DAYS.some(day => rowText.includes(day));
       const hasTimeSlots = /8h30|10h45|14h|16h15/.test(rowText);
-      
+
       if (hasDays || hasTimeSlots) {
         headerRowIndex = i;
-        
+
         row.forEach((cell, colIdx) => {
           const cellLower = cell.toLowerCase();
           if (DAYS.some(day => cellLower.includes(day))) {
             dayColumnIndex = colIdx;
           }
-          
+
           if (/8h30|8:30/.test(cellLower)) {
             timeSlotColumns[0] = colIdx;
           }
@@ -894,7 +930,7 @@ const uploadFile = async (file) => {
     }
 
     const startRow = headerRowIndex >= 0 ? headerRowIndex + 1 : 1;
-    
+
     for (let rowIdx = startRow; rowIdx < tableData.length; rowIdx++) {
       const row = tableData[rowIdx];
       if (row.length === 0) continue;
@@ -942,10 +978,25 @@ const uploadFile = async (file) => {
   };
 
   // Composant pour afficher une cellule en mode visualisation (sans édition)
- const TimetableCellView = ({ cellData, isEmpty, onEdit }) => {
-  if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
+  const TimetableCellView = ({ cellData, isEmpty, onEdit }) => {
+    if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
+      return (
+        <div className="relative group min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={onEdit}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <span className="text-muted-foreground italic text-sm">Pas de cours</span>
+        </div>
+      );
+    }
+
     return (
-      <div className="relative group min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors">
+      <div className="relative group min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30 hover:shadow-md transition-all">
         <Button
           variant="ghost"
           size="icon"
@@ -954,85 +1005,70 @@ const uploadFile = async (file) => {
         >
           <Pencil className="h-3.5 w-3.5" />
         </Button>
-        <span className="text-muted-foreground italic text-sm">Pas de cours</span>
+
+        <div className="space-y-2 pr-8">
+          {cellData.type && (
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+              <Badge variant="secondary" className="text-xs">
+                {cellData.type}
+              </Badge>
+            </div>
+          )}
+
+          {cellData.cours && (
+            <div className="flex items-start gap-2">
+              <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <span className="font-semibold text-sm leading-tight text-foreground">
+                {cellData.cours}
+              </span>
+            </div>
+          )}
+
+          {cellData.professeur && (
+            <div className="flex items-center gap-2">
+              <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="text-xs text-muted-foreground">
+                {cellData.professeur}
+              </span>
+            </div>
+          )}
+
+          {cellData.salle && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
+              <Badge variant="outline" className="text-xs">
+                {cellData.salle}
+              </Badge>
+            </div>
+          )}
+        </div>
       </div>
     );
-  }
-
-  return (
-    <div className="relative group min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30 hover:shadow-md transition-all">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={onEdit}
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </Button>
-      
-      <div className="space-y-2 pr-8">
-        {cellData.type && (
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <Badge variant="secondary" className="text-xs">
-              {cellData.type}
-            </Badge>
-          </div>
-        )}
-        
-        {cellData.cours && (
-          <div className="flex items-start gap-2">
-            <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <span className="font-semibold text-sm leading-tight text-foreground">
-              {cellData.cours}
-            </span>
-          </div>
-        )}
-        
-        {cellData.professeur && (
-          <div className="flex items-center gap-2">
-            <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span className="text-xs text-muted-foreground">
-              {cellData.professeur}
-            </span>
-          </div>
-        )}
-        
-        {cellData.salle && (
-          <div className="flex items-center gap-2">
-            <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-            <Badge variant="outline" className="text-xs">
-              {cellData.salle}
-            </Badge>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+  };
   // Modifier handleView pour afficher des données de démonstration
- 
-const handleView = async (timetable) => {
-  setViewingTimetable(timetable);
-  setError(null);
-  setLoading(true);
-  setProgress(0);
 
-  try {
-    // Utiliser les items déjà groupés si présents
-    let items = timetable.items || [];
+  const handleView = async (timetable) => {
+    setViewingTimetable(timetable);
+    setError(null);
+    setLoading(true);
+    setProgress(0);
 
-    // Construire la grille à partir des entrées du backend
-    const parsed = transformBackendTimetable(items);
-    setTimetableData(parsed);
-    setProgress(100);
-  } catch (err) {
-    console.log("Erreur pendant la génération de la grille:", err);
-    setError("Impossible de générer l'emploi du temps.");
-  } finally {
-    setLoading(false);
-    setTimeout(() => setProgress(0), 500);
-  }
+    try {
+      // Utiliser les items déjà groupés si présents
+      let items = timetable.items || [];
+
+      // Construire la grille à partir des entrées du backend
+      const parsed = transformBackendTimetable(items);
+      setTimetableData(parsed);
+      setProgress(100);
+    } catch (err) {
+      console.log("Erreur pendant la génération de la grille:", err);
+      setError("Impossible de générer l'emploi du temps.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setProgress(0), 500);
+    }
 
 
     // Essayer d'extraire le fichier réel si disponible (optionnel)
@@ -1047,11 +1083,11 @@ const handleView = async (timetable) => {
             const blob = await response.blob();
             const file = new File([blob], timetable.fileName, { type: blob.type });
             const tables = await extractTablesFromDocx(file);
-            
+
             if (tables.length > 0) {
               let bestTable = tables[0];
               if (tables.length > 1) {
-                bestTable = tables.reduce((max, table) => 
+                bestTable = tables.reduce((max, table) =>
                   table.length > max.length ? table : max
                 );
               }
@@ -1172,7 +1208,7 @@ const handleView = async (timetable) => {
                     ))}
                   </TableBody>
                 </Table>
-                
+
               </div>
             )}
           </div>
@@ -1180,7 +1216,7 @@ const handleView = async (timetable) => {
       </Dialog>
 
       <Card>
-        
+
         <CardContent>
           {timetables.length === 0 ? (
             <div className="text-center py-8">
@@ -1235,7 +1271,7 @@ const handleView = async (timetable) => {
                       </Badge>
                     </TableCell>
                     <TableCell>{formatDate(timetable.uploadDate)}</TableCell>
-                   
+
                     <TableCell>
                       <div className="flex justify-end gap-2">
                         <Button
@@ -1254,7 +1290,7 @@ const handleView = async (timetable) => {
                         >
                           <Download className="h-4 w-4" />
                         </Button>
-                        
+
                         <Button
                           variant="destructive"
                           size="sm"
@@ -1293,71 +1329,71 @@ const handleView = async (timetable) => {
       </AlertDialog>
 
 
-{/* Dialog d'édition de cellule */}
-                  <Dialog open={editingCell !== null} onOpenChange={(open) => !open && setEditingCell(null)}>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle>Modifier le cours</DialogTitle>
-                        <DialogDescription>
-                          Modifiez les informations du cours. Cliquez sur Enregistrer lorsque vous avez terminé.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="type">Type</Label>
-                          <Select
-                            value={editForm.type}
-                            onValueChange={(value) => setEditForm({ ...editForm, type: value })}
-                          >
-                            <SelectTrigger id="type">
-                              <SelectValue placeholder="Sélectionner le type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Cours">Cours</SelectItem>
-                              <SelectItem value="TD/TP">TD/TP</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="cours">
-                            {editForm.type === "TD/TP" ? "Sujet (TD/TP)" : "Cours"}
-                          </Label>
-                          <Input
-                            id="cours"
-                            placeholder={editForm.type === "TD/TP" ? "Nom du sujet" : "Nom du cours"}
-                            value={editForm.cours}
-                            onChange={(e) => setEditForm({ ...editForm, cours: e.target.value })}
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="professeur">Professeur</Label>
-                          <Input
-                            id="professeur"
-                            placeholder="Nom du professeur"
-                            value={editForm.professeur}
-                            onChange={(e) => setEditForm({ ...editForm, professeur: e.target.value })}
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="salle">Salle / Amphi</Label>
-                          <Input
-                            id="salle"
-                            placeholder="Numéro de salle ou Amphi"
-                            value={editForm.salle}
-                            onChange={(e) => setEditForm({ ...editForm, salle: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditingCell(null)}>
-                          Annuler
-                        </Button>
-                        <Button onClick={handleSaveEdit}>
-                          Enregistrer
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+      {/* Dialog d'édition de cellule */}
+      <Dialog open={editingCell !== null} onOpenChange={(open) => !open && setEditingCell(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Modifier le cours</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations du cours. Cliquez sur Enregistrer lorsque vous avez terminé.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="type">Type</Label>
+              <Select
+                value={editForm.type}
+                onValueChange={(value) => setEditForm({ ...editForm, type: value })}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Sélectionner le type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Cours">Cours</SelectItem>
+                  <SelectItem value="TD/TP">TD/TP</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="cours">
+                {editForm.type === "TD/TP" ? "Sujet (TD/TP)" : "Cours"}
+              </Label>
+              <Input
+                id="cours"
+                placeholder={editForm.type === "TD/TP" ? "Nom du sujet" : "Nom du cours"}
+                value={editForm.cours}
+                onChange={(e) => setEditForm({ ...editForm, cours: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="professeur">Professeur</Label>
+              <Input
+                id="professeur"
+                placeholder="Nom du professeur"
+                value={editForm.professeur}
+                onChange={(e) => setEditForm({ ...editForm, professeur: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="salle">Salle / Amphi</Label>
+              <Input
+                id="salle"
+                placeholder="Numéro de salle ou Amphi"
+                value={editForm.salle}
+                onChange={(e) => setEditForm({ ...editForm, salle: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingCell(null)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit}>
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

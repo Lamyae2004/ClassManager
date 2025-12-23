@@ -17,7 +17,7 @@ public interface TeacherClient {
     @GetMapping("/teachers")
     List<TeacherDTO> getAllTeachers();
 
-    @GetMapping("/teachers/{id}")
+    @GetMapping("/api/users/teachers")
     TeacherDTO getTeacherById(@PathVariable Long id);
 
 

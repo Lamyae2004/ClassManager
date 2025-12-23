@@ -42,6 +42,8 @@ public class SeanceService {
         seance.setClasseId(request.getClasseId());
         seance.setCreneauId(request.getCreneauId());
         seance.setDate(LocalDate.parse(request.getDate()));
+        seance.setMatiereId(request.getMatiereId());
+        seance.setSalleId(request.getSalleId());
 
         List<Absence> absences = request.getAbsences().stream().map(a -> {
             Absence absence = new Absence();
