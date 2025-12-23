@@ -8,6 +8,8 @@ import com.class_manager.user_auth_service.repository.UserRepository;
 import com.class_manager.user_auth_service.service.OtpService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -105,6 +107,13 @@ public class AuthenticationController {
         userRepository.save(UserMapper.toEntity(user));
         return ResponseEntity.ok("Account Activated successfully");
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        service.clearJwtCookie(response);
+        return ResponseEntity.ok().build();
+    }
+
 
 
 }

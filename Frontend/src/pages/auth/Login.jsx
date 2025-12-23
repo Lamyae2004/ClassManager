@@ -22,12 +22,12 @@ const Login = () => {
     } else {
 
           try{
-            const res = await axios.post("http://localhost:9090/api/v1/auth/authenticate",{email,password}, {
+            const res = await axios.post("http://localhost:8080/api/v1/auth/authenticate",{email,password}, {
           headers: {
             "Content-Type": "application/json" 
           }, withCredentials: true 
         });
-          const res2 = await axios.get("http://localhost:9090/api/users/profile", {
+          const res2 = await axios.get("http://localhost:8080/api/users/profile", {
         withCredentials: true,
       });
 

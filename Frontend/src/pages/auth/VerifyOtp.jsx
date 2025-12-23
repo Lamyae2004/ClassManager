@@ -18,8 +18,8 @@ const VerifyOtp =({ mode })=>{
         }
         try {
           const url = mode === "validate"
-          ? `http://localhost:9090/api/v1/auth/validate-account/verify/${email}/${otp}`
-          : `http://localhost:9090/api/v1/auth/forgot-password/verify/${email}/${otp}`;
+          ? `http://localhost:8080/api/v1/auth/validate-account/verify/${email}/${otp}`
+          : `http://localhost:8080/api/v1/auth/forgot-password/verify/${email}/${otp}`;
           const res = await axios.post(url);
           alert(res.data);
          const dest =   mode === "validate" ? "/setUpPassword": "/resetPassword";

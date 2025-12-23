@@ -28,6 +28,18 @@ spring:
           predicates:
               - Path=/api/users/**
 
+        - id: auth-users
+          uri: lb://USER-AUTH-SERVICE
+          predicates:
+              - Path=/api/v1/auth/**
+
+        - id: admin-service
+          uri: lb://USER-AUTH-SERVICE
+          predicates:
+            - Path=/admin/**
+
+
+
 
 
 eureka:

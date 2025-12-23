@@ -39,19 +39,6 @@ const data = {
     { name: "Class Manager", logo: GalleryVerticalEnd, plan: "" },
 
   ],
-  navMain: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        { title: "General", url: "#" },
-        { title: "Team", url: "#" },
-        { title: "Billing", url: "#" },
-        { title: "Limits", url: "#" },
-      ],
-    },
-  ],
   projects: [
 
     { name: "Gestion des emplois", url: "#", icon: Calendar },
@@ -77,10 +64,9 @@ export function AppSidebar(props) {
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={filtredProjects} />
-        <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser  />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

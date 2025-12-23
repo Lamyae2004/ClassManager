@@ -17,7 +17,7 @@ const AddTeachers = ()=>{
         const formData = new FormData();
         formData.append("file", file);
         try {
-          const res = await axios.post("http://localhost:9090/admin/createTeachers",formData,{ withCredentials: true });
+          const res = await axios.post("http://localhost:8080/admin/createTeachers",formData,{ withCredentials: true });
           alert(res.data);
         } catch (error) {
           console.error(error);

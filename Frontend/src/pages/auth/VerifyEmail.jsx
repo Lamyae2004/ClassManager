@@ -16,8 +16,8 @@ const VerifyEmail = ({ mode })=>{
         try {
           const url =
         mode === "validate"
-          ? `http://localhost:9090/api/v1/auth/validate-account/request/${email}`
-          : `http://localhost:9090/api/v1/auth/forgot-password/request/${email}`;
+          ? `http://localhost:8080/api/v1/auth/validate-account/request/${email}`
+          : `http://localhost:8080/api/v1/auth/forgot-password/request/${email}`;
           const res = await axios.post(url);
           alert(res.data);
           const dest =   mode === "validate" ? "/verifyOtp": "/forgotOtp";
