@@ -7,7 +7,8 @@ import com.class_manager.user_auth_service.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +22,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -111,5 +112,17 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    public void clearJwtCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+        logger.info("Set-Cookie envoyé: {}", cookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }
