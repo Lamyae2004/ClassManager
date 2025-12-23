@@ -19,8 +19,8 @@ const SetUpPassword = ({ mode }) =>{
         }
        try {
            const url = mode === "validate"
-          ? `http://localhost:9090/api/v1/auth/validate-account/set-password/${email}`
-          : `http://localhost:9090/api/v1/auth/forgot-password/change/${email}`;
+          ? `http://localhost:8080/api/v1/auth/validate-account/set-password/${email}`
+          : `http://localhost:8080/api/v1/auth/forgot-password/change/${email}`;
           const res = await axios.post(url,{password,repeatPassword: confirmPassword});
           alert(res.data);
           navigate("/login");

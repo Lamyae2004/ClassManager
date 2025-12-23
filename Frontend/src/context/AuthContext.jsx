@@ -9,7 +9,7 @@ export const AuthProvider = ({children})=>{
     const navigate = useNavigate();
 
     useEffect(()=>{
-         axios.get("http://localhost:9090/api/users/profile", { withCredentials: true })
+         axios.get("http://localhost:8080/api/users/profile", { withCredentials: true })
       .then(res => setUser(res.data))
       .catch(err => {
         setUser(null);
