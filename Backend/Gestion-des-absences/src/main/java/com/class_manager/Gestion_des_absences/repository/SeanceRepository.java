@@ -11,5 +11,7 @@ import java.util.List;
 @Repository
 public interface SeanceRepository extends JpaRepository<Seance, Long> {
 
+    List<Seance> findByClasseId(Long classeId);
 
+    List<Seance> findByClasseIdAndProfId(Long classeId, Long profId);
 }

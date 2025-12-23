@@ -1,8 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import {
-  classes, etudiants, emploi, seances, absences, matieres, creneaux, salles
-} from "./data";
+import React, { useState, useEffect } from "react";
+
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter
 } from "@/components/ui/card";
@@ -31,10 +29,109 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-export default function HistoriqueAbsences({ role = "admin", currentProfId = null }) {
+export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2 }) {
   const [classe, setClasse] = useState(null);
   const [matiere, setMatiere] = useState(null);
   const [searchStudent, setSearchStudent] = useState("");
+  const [classes, setClasses] = useState([]);
+
+
+  const [seances, setSeances] = useState([]);
+  const [absences, setAbsences] = useState([]);
+  const [etudiants, setEtudiants] = useState([]);
+  const [emploi, setEmploi] = useState([]);
+  const [matieres, setMatieres] = useState([]);
+  const [creneaux, setCreneaux] = useState([]);
+  const [salles, setSalles] = useState([]);
+
+
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      let url = role === "admin"
+        ? `http://localhost:8080/emploi/classes`  // toutes les classes pour admin
+        : `http://localhost:8080/emploi/classes/prof/${currentUserId}`; // seulement celles du prof
+      const res = await fetch(url);
+      const data = await res.json();
+      setClasses(data);
+    };
+    fetchClasses();
+  }, [currentUserId, role]);
+
+
+
+
+
+  useEffect(() => {
+    if (!classe) return;
+
+    const fetchMatieres = async () => {
+      try {
+        let url = role === "admin"
+          ? `http://localhost:8082/matieres/classe/${classe}`
+          : `http://localhost:8082/matieres/classe/prof/${classe}/${currentUserId}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        console.log("Matieres reçues:", data); // <-- Vérifier ici
+        setMatieres(data);
+      } catch (err) {
+        console.error("Erreur fetchMatieres:", err);
+        setMatieres([]);
+      }
+    };
+
+    fetchMatieres();
+  }, [classe, currentUserId, role]);
+
+
+
+
+  useEffect(() => {
+
+    if (!classe) return; // si aucune classe sélectionnée, ne rien faire
+
+    const fetchSeances = async () => {
+      try {
+        const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
+        const text = await res.clone().text();
+    console.log("Réponse brute fetchSeances:", text); 
+        if (!res.ok) {
+          console.error("Erreur lors de la récupération des séances:", res.status, res.statusText);
+          setSeances([]); // reset pour éviter l'erreur .filter
+          return;
+        }
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setSeances(data);
+        } else {
+          console.warn("Data reçue n'est pas un tableau :", data);
+          setSeances([]);
+        }
+      } catch (error) {
+        console.error("Erreur fetchSeances:", error);
+        setSeances([]);
+      }
+    };
+
+    fetchSeances();
+  }, [classe, currentUserId]);
+
+
+  useEffect(() => {
+  if (!classe) return;
+
+  const fetchEmploi = async () => {
+    const res = await fetch(`http://localhost:8082/emploi/classe/${classe}`);
+    const data = await res.json();
+    setEmploi(data);
+  };
+
+  fetchEmploi();
+}, [classe]);
+
+
 
   // Filtrer les séances selon la classe, matière et rôle
   const seancesClasse = seances
@@ -43,7 +140,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
       if (!edt) return false;
       if (edt.id_classe !== Number(classe)) return false;
       if (matiere && edt.id_matiere !== Number(matiere)) return false;
-      if (role === "prof" && edt.id_prof !== currentProfId) return false;
+      if (role === "prof" && edt.id_prof !== currentUserId) return false;
       return true;
     })
     .sort((a, b) => new Date(b.date_seance) - new Date(a.date_seance));
@@ -51,7 +148,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
   // Filtrer les étudiants selon la classe et le rôle
   const etudiantsClasse = etudiants
     .filter(e => e.id_classe === Number(classe))
-    .filter(e => role === "prof" ? emploi.some(emp => emp.id_classe === Number(classe) && emp.id_prof === currentProfId) : true)
+    .filter(e => role === "prof" ? emploi.some(emp => emp.id_classe === Number(classe) && emp.id_prof === currentUserId) : true)
     .filter(e => {
       if (!searchStudent) return true;
       const search = searchStudent.toLowerCase();
@@ -79,8 +176,8 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
     if (absence.present) {
       return (
         <div className="flex items-center justify-center">
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="bg-green-50 text-green-700 border-green-200 px-3 py-1"
           >
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -92,7 +189,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
 
     if (absence.justifie) {
       const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
-      
+
       return (
         <div className="flex items-center justify-center">
           <div className="flex flex-col items-center gap-2">
@@ -102,7 +199,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                 Justifié
               </div>
             </Badge>
-            
+
             {hasFile && (
               <div className="flex items-center gap-2 mt-1">
                 <TooltipProvider>
@@ -123,7 +220,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                
+
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -150,7 +247,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                 </TooltipProvider>
               </div>
             )}
-            
+
             {!hasFile && (
               <HoverCard>
                 <HoverCardTrigger asChild>
@@ -185,7 +282,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
               Non justifié
             </div>
           </Badge>
-          
+
           {/* Option: Bouton pour ajouter un justificatif (si admin/prof) */}
           {(role === "admin" || role === "prof") && (
             <Button
@@ -211,8 +308,8 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
     if (absence.present) {
       return (
         <div className="flex items-center justify-center">
-          <Badge 
-            variant="outline" 
+          <Badge
+            variant="outline"
             className="bg-green-50 text-green-700 border-green-200 px-2 py-0.5"
           >
             <CheckCircle className="h-3 w-3" />
@@ -223,7 +320,7 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
 
     if (absence.justifie) {
       const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
-      
+
       return (
         <TooltipProvider>
           <Tooltip>
@@ -350,8 +447,16 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                   <SelectContent>
                     {classes.map(c => (
                       <SelectItem key={c.id} value={c.id.toString()}>
-                        {c.nom}
+                        <div className="flex items-center justify-between w-full">
+                          <span>{c.nom}</span>
+                          {c.filiere && (
+                            <Badge variant="outline" className="ml-2">
+                              {c.filiere}
+                            </Badge>
+                          )}
+                        </div>
                       </SelectItem>
+
                     ))}
                   </SelectContent>
                 </Select>
@@ -366,17 +471,13 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                       <SelectValue placeholder="Sélectionner un module" />
                     </SelectTrigger>
                     <SelectContent>
-                      {emploi
-                        .filter(e => e.id_classe === Number(classe) && (role !== "prof" || e.id_prof === currentProfId))
-                        .map(e => {
-                          const m = matieres.find(m => m.id_matiere === e.id_matiere);
-                          return (
-                            <SelectItem key={e.id_edt} value={e.id_matiere.toString()}>
-                              {m?.nom_matiere}
-                            </SelectItem>
-                          );
-                        })}
+                      {matieres.map(m => (
+                        <SelectItem key={m.id} value={m.id.toString()}>
+                          {m.nom}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
+
                   </Select>
                 </div>
               )}
@@ -563,9 +664,9 @@ export default function HistoriqueAbsences({ role = "admin", currentProfId = nul
                                   )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                
+
                                   {renderJustificationCompact(absence)}
-                                 
+
                                 </TableCell>
                               </TableRow>
                             );

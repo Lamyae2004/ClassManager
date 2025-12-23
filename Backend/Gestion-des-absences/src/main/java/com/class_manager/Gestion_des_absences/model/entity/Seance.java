@@ -1,5 +1,6 @@
 package com.class_manager.Gestion_des_absences.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Seance {
     private LocalDate date;
 
     @OneToMany(mappedBy = "seance", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Absence> absences;
 
 

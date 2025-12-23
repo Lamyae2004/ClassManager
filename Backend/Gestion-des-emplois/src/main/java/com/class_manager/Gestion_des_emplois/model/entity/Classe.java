@@ -15,6 +15,9 @@ public class Classe {
 
     private String nom;
 
-    @ManyToOne
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "filiere")
     private Filiere filiere;
+
 }

@@ -10,6 +10,6 @@ public class SeanceDTO {
     private Long profId;
     private Long classeId;
     private Long creneauId;
-    private String date; // format yyyy-MM-dd
+    private String date;
     private List<AbsenceDTO> absences;
 }

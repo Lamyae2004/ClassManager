@@ -12,10 +12,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FiliereController {
 
-    private final FiliereRepository repo;
 
     @GetMapping
-    public List<Filiere> getAll() {
-        return repo.findAll();
+    public Filiere[] getAll() {
+        return Filiere.values();
     }
 }

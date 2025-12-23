@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_absences.model.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class Absence {
 
     @ManyToOne
     @JoinColumn(name = "seance_id")
+    @JsonBackReference
     private Seance seance;
 
     private boolean present;

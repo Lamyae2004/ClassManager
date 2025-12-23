@@ -79,11 +79,6 @@ const transformBackendTimetable = (data) => {
   }));
 
 
-
-
-
-
-
  data.forEach(item => {
     const dayObj = timetableByDay.find(d => d.jour.toLowerCase() === (item.jour || '').toLowerCase());
     if (!dayObj) return;
@@ -122,7 +117,7 @@ useEffect(() => {
         const groups = {};
         data.forEach(item => {
           const className = item.classe?.nom || "unknown";
-          const filiereName = item.classe?.filiere?.nom || "";
+          const filiereName = item.classe?.filiere || "";
           const semesterVal = (item.semestre && (typeof item.semestre === "string" ? item.semestre : item.semestre.nom)) || item.semestre?.nom || item.semester || "";
           const storedFileName = item.fileName || ""; // ✅ Récupérer le fileName de la BDD
           
@@ -177,57 +172,58 @@ useEffect(() => {
   const [backendFilieres, setBackendFilieres] = useState({});
 
   useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        const [cRes, fRes] = await Promise.all([
-          fetch(`${BASE_URL}/classes`),
-          fetch(`${BASE_URL}/filieres`)
-        ]);
+  const fetchMetadata = async () => {
+    try {
+      const cRes = await fetch(`${BASE_URL}/emploi/classes`);
 
-        if (cRes.ok && fRes.ok) {
-          const cData = await cRes.json();
-          const fData = await fRes.json();
-
-          // Organiser les filières par classe
-          const filieresMap = {};
-          const classesMap = new Map();
-
-          (cData || []).forEach(c => {
-            const className = (c.nom || "").toLowerCase().trim();
-            if (!className) return;
-
-            if (!classesMap.has(className)) {
-              classesMap.set(className, {
-                id: c.id,
-                nom: c.nom,
-                value: c.nom
-              });
-            }
-
-            if (c.filiere && c.filiere.nom) {
-              if (!filieresMap[className]) {
-                filieresMap[className] = [];
-              }
-              const exists = filieresMap[className].some(f => f.id === c.filiere.id);
-              if (!exists) {
-                filieresMap[className].push({
-                  id: c.filiere.id,
-                  nom: c.filiere.nom
-                });
-              }
-            }
-          });
-
-          setBackendClasses(Array.from(classesMap.values()));
-          setBackendFilieres(filieresMap);
-        }
-      } catch (err) {
-        console.error("Erreur chargement classes/filières:", err);
+      if (!cRes.ok) {
+        throw new Error("Erreur chargement classes");
       }
-    };
 
-    fetchMetadata();
-  }, []);
+      const cData = await cRes.json();
+
+      const filieresMap = {};
+      const classesMap = new Map();
+
+      (cData || []).forEach(c => {
+        const className = (c.nom || "").toLowerCase().trim();
+        if (!className) return;
+
+        if (!classesMap.has(className)) {
+          classesMap.set(className, {
+            id: c.id,
+            nom: c.nom,
+            value: c.nom
+          });
+        }
+
+        // si la filière est déjà incluse dans classe
+        if (c.filiere) {
+          if (!filieresMap[className]) {
+            filieresMap[className] = [];
+          }
+
+          const exists = filieresMap[className].some(
+            f => f === c.filiere
+          );
+
+          if (!exists) {
+            filieresMap[className].push(c.filiere);
+          }
+        }
+      });
+
+      setBackendClasses(Array.from(classesMap.values()));
+      setBackendFilieres(filieresMap);
+
+    } catch (err) {
+      console.error("Erreur chargement classes/filières:", err);
+    }
+  };
+
+  fetchMetadata();
+}, []);
+
 
 
 
