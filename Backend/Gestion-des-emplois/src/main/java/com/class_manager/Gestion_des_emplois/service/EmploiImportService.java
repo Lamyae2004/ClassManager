@@ -1,10 +1,8 @@
 package com.class_manager.Gestion_des_emplois.service;
 import com.class_manager.Gestion_des_emplois.client.TeacherClient;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
+import com.class_manager.Gestion_des_emplois.model.dto.*;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
 import com.class_manager.Gestion_des_emplois.repository.*;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiImportDTO;
-import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,18 +11,36 @@ import java.util.Optional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
 @Service
 @RequiredArgsConstructor
 public class EmploiImportService {
 
     private final ClasseRepository classeRepo;
-    private final FiliereRepository filiereRepo;
     private final MatiereRepository matiereRepo;
     private final SalleRepository salleRepo;
     private final CreneauRepository creneauRepo;
     private final EmploiDuTempsRepository edtRepo;
     private final TeacherClient teacherClient;
+
+
+
+    public List<Matiere> getMatieresByClasseAndProf(Long classeId, Long profId) {
+        return edtRepo.findMatieresByClasseAndProf(classeId, profId);
+    }
+
+
+
+    public List<Matiere> getMatieresByClasse(Long classeId) {
+        return edtRepo.findAll().stream()
+                .filter(e -> e.getClasse() != null && e.getClasse().getId().equals(classeId))
+                .map(EmploiDuTemps::getMatiere)
+                // Collecter par ID pour s'assurer que distinct fonctionne
+                .collect(Collectors.toMap(Matiere::getId, m -> m))
+                .values()
+                .stream()
+                .toList();
+    }
+
 
 
     public List<EmploiDuTempsDTO> getEmploiByClasseProfJour(Long classeId, Long profId, String jour) {
@@ -56,28 +72,30 @@ public class EmploiImportService {
 
     public void importEmploi(ImportRequest request) {
 
-        // 1. Vérifier/créer filière
-        Filiere filiere;
-        if (request.getFiliere() != null && !request.getFiliere().isEmpty()) {
-            filiere = filiereRepo.findByNom(request.getFiliere())
-                    .orElseGet(() -> {
-                        Filiere f = new Filiere();
-                        f.setNom(request.getFiliere());
-                        return filiereRepo.save(f);
-                    });
-        } else {
-            filiere = null;
+        Filiere filiere = null;
+
+        if (request.getFiliere() != null && !request.getFiliere().isBlank()) {
+            try {
+                filiere = Filiere.valueOf(
+                        request.getFiliere().toUpperCase()
+                );
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(
+                        "Filière inconnue : " + request.getFiliere()
+                );
+            }
         }
 
         // 2. Vérifier/créer classe (en tenant compte de la filière)
         Classe classe;
         if (filiere != null) {
             // Chercher classe avec nom ET filière
-            classe = classeRepo.findByNomAndFiliere_Nom(request.getClasse(), filiere.getNom())
+            Filiere finalFiliere = filiere;
+            classe = classeRepo.findByNomAndFiliere(request.getClasse(), filiere)
                     .orElseGet(() -> {
                         Classe c = new Classe();
                         c.setNom(request.getClasse());
-                        c.setFiliere(filiere);
+                        c.setFiliere(finalFiliere);
                         return classeRepo.save(c);
                     });
         } else {
@@ -115,12 +133,14 @@ public class EmploiImportService {
 
             // Prof
             Long profId;
+
             try {
                 // "Pr. Ahmed Benali" → ["Ahmed", "Benali"]
-                String cleanProf = dto.getProf()
+               /* String cleanProf = dto.getProf()
                         .replace("Pr.", "")
                         .replace("pr.", "")
-                        .trim();
+                        .trim();*/
+                String cleanProf = dto.getProf().replaceAll("(?i)^pr\\.?\s*", "").trim();
 
                 String[] names = cleanProf.split("\\s+", 2);
                 if (names.length < 2) {
@@ -136,6 +156,9 @@ public class EmploiImportService {
             } catch (Exception e) {
                 throw new RuntimeException("Prof introuvable : " + dto.getProf());
             }
+
+
+
 
 
             // Salle
@@ -272,7 +295,7 @@ public class EmploiImportService {
                             (e.getClasse() == null || e.getClasse().getFiliere() == null) :
                             (e.getClasse() != null &&
                                     e.getClasse().getFiliere() != null &&
-                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().getNom()));
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().name()));
 
                     boolean matchSemester = (semester == null || semester.isEmpty()) ?
                             (e.getSemestre() == null || e.getSemestre().isEmpty()) :
@@ -297,7 +320,7 @@ public class EmploiImportService {
                             (e.getClasse() == null || e.getClasse().getFiliere() == null) :
                             (e.getClasse() != null &&
                                     e.getClasse().getFiliere() != null &&
-                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().getNom()));
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().name()));
 
                     boolean matchSemester = (semester == null || semester.isEmpty()) ?
                             true :
@@ -326,14 +349,11 @@ public class EmploiImportService {
                 } else {
                     classe = new Classe();
                     classe.setNom(emploi.getClasse().getNom());
-                    if (emploi.getClasse().getFiliere() != null && emploi.getClasse().getFiliere().getNom() != null) {
-                        Filiere fil = filiereRepo.findByNom(emploi.getClasse().getFiliere().getNom())
-                                .orElseGet(() -> {
-                                    Filiere f = new Filiere();
-                                    f.setNom(emploi.getClasse().getFiliere().getNom());
-                                    return filiereRepo.save(f);
-                                });
-                        classe.setFiliere(fil);
+                    if (emploi.getClasse().getFiliere() != null) {
+                        classe.setFiliere(emploi.getClasse().getFiliere());
+
+                    }else {
+                        classe.setFiliere(Filiere.NONE);
                     }
                     classe = classeRepo.save(classe);
                 }

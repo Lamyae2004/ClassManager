@@ -1,5 +1,5 @@
 "use client";
-const BASE_URL = "http://localhost:8082"; 
+const BASE_URL = "http://localhost:8082";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -22,166 +22,172 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-export  function TimetableUpload() {
-const { id } = useParams();
-// charger les donnée depuis la base de donnée
+export function TimetableUpload() {
+  const { id } = useParams();
+  // charger les donnée depuis la base de donnée
 
-const [classes, setClasses] = useState([]);
-const [filieresList, setFilieresList] = useState([]);
-const [profs, setProfs] = useState([]);
-const [matieres, setMatieres] = useState([]);
-const [salles, setSalles] = useState([]);
-const [progress, setProgress] = useState(0);
-const [documentText, setDocumentText] = useState("");
+  const [classes, setClasses] = useState([]);
+  const [filieresList, setFilieresList] = useState([]);
+  const [profs, setProfs] = useState([]);
+  const [matieres, setMatieres] = useState([]);
+  const [salles, setSalles] = useState([]);
+  const [progress, setProgress] = useState(0);
+  const [documentText, setDocumentText] = useState("");
+  const [timetable, setTimetable] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [jszipReady, setJszipReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [timetableName, setTimetableName] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedFiliere, setSelectedFiliere] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [showFiliereSelect, setShowFiliereSelect] = useState(false);
+  const [availableSemesters, setAvailableSemesters] = useState([]);
+  const [editingCell, setEditingCell] = useState(null);
+  const [editForm, setEditForm] = useState({ type: "Cours", cours: "", professeur: "", salle: "" });
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
 
+  const CLASSES_LIST = [
+    { value: "CP1", label: "CP1" },
+    { value: "CP2", label: "CP2" },
+    { value: "CI1", label: "CI1" },
+    { value: "CI2", label: "CI2" },
+    { value: "CI3", label: "CI3" },
+  ];
 
-
-const [timetable, setTimetable] = useState(null);
-const [selectedFile, setSelectedFile] = useState(null);
-const [jszipReady, setJszipReady] = useState(false);
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState(null);
-const [isEditMode, setIsEditMode] = useState(false);
-const [timetableName, setTimetableName] = useState("");
-const [selectedClass, setSelectedClass] = useState("");
-const [selectedFiliere, setSelectedFiliere] = useState("");
-const [selectedSemester, setSelectedSemester] = useState("");
-const [showFiliereSelect, setShowFiliereSelect] = useState(false);
-const [availableSemesters, setAvailableSemesters] = useState([]);
-const [editingCell, setEditingCell] = useState(null);
-const [editForm, setEditForm] = useState({ type: "Cours", cours: "", professeur: "", salle: "" });
-const [isUploading, setIsUploading] = useState(false);
-const [uploadStatus, setUploadStatus] = useState("");
+  const CI_CLASSES = ["ci1", "ci2", "ci3"];
+  const FILIERES_CI = ["RST", "INFO", "CIVIL", "INDUS", "MECA", "ELEC"];
 
 
   const DAYS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
   const TIME_SLOTS = ["8h30→10h30", "10h45→12h45", "14h → 16h", "16h15→18h15"];
   // map statique des semestres par classe (modifiable)
-const SEMESTERS_MAP = {
-  cp1: [{ value: "S1", label: "S1" }, { value: "S2", label: "S2" }],
-  cp2: [{ value: "S3", label: "S3" }, { value: "S4", label: "S4" }],
-  ci1: [{ value: "S5", label: "S5" }, { value: "S6", label: "S6" }],
-  ci2: [{ value: "S7", label: "S7" }, { value: "S8", label: "S8" }],
-  ci3: [{ value: "S9", label: "S9" }]
-};
-
-
-const normalizeCreneauLabelToRange = (label) => label; // placeholder
-const sampleTimetables = {};
-const filieres = {}; 
-
-// Hook pour récupérer les classes et filières depuis le backend
- const useClassesAndFilieres = () => {
-  const [classes, setClasses] = useState([]);
-  const [filieres, setFilieres] = useState({});
-
-useEffect(() => {
-  const fetchAll = async () => {
-    try {
-      const [cRes, fRes] = await Promise.all([
-        fetch(`${BASE_URL}/classes`),
-        fetch(`${BASE_URL}/filieres`)
-      ]);
-
-      if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
-
-      const [cData, fData] = await Promise.all([cRes.json(), fRes.json()]);
-
-      setClasses(cData || []);
-      setFilieres(fData || []);
-
-    } catch (err) {
-      console.error("Erreur fetching metadata:", err);
-    }
+  const SEMESTERS_MAP = {
+    cp1: [{ value: "S1", label: "S1" }, { value: "S2", label: "S2" }],
+    cp2: [{ value: "S3", label: "S3" }, { value: "S4", label: "S4" }],
+    ci1: [{ value: "S5", label: "S5" }, { value: "S6", label: "S6" }],
+    ci2: [{ value: "S7", label: "S7" }, { value: "S8", label: "S8" }],
+    ci3: [{ value: "S9", label: "S9" }]
   };
 
-  fetchAll();
-}, []);
 
+  const normalizeCreneauLabelToRange = (label) => label; // placeholder
+  const sampleTimetables = {};
+  const filieres = {};
 
-  return { classes, filieres };
-};
+  // Hook pour récupérer les classes et filières depuis le backend
+  const useClassesAndFilieres = () => {
+    const [classes, setClasses] = useState([]);
+    const [filieres, setFilieres] = useState({});
 
-useEffect(() => {
-  const fetchAll = async () => {
-    try {
-      const [cRes, fRes, pRes, mRes, sRes] = await Promise.all([
-        fetch(`${BASE_URL}/classes`),
-        fetch(`${BASE_URL}/filieres`),
-        fetch(`${BASE_URL}/profs`),
-        fetch(`${BASE_URL}/matieres`),
-        fetch(`${BASE_URL}/salles`)
-      ]);
-      if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
+    useEffect(() => {
+      const fetchAll = async () => {
+        try {
+          const [cRes, fRes] = await Promise.all([
+            fetch(`${BASE_URL}/emploi/classes`),
+            fetch(`${BASE_URL}/filieres`)
+          ]);
 
-      const [cData, fData, pData, mData, sData] = await Promise.all([
-        cRes.json(), fRes.json(), pRes.json(), mRes.json(), sRes.json()
-      ]);
+          if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
 
-      console.log("Classes brutes du backend:", cData);
-      console.log("Filières brutes du backend:", fData);
+          const [cData, fData] = await Promise.all([cRes.json(), fRes.json()]);
 
-      // Grouper les classes par nom et construire la map des filières
-      // Format backend: [{"id":1,"nom":"ci1","filiere":{"id":1,"nom":"GI"}}, ...]
-      const classesMap = new Map();
-      const filieresMap = {};
+          setClasses(cData || []);
+          setFilieres(fData || []);
 
-      (cData || []).forEach(c => {
-        const className = (c.nom || "").toLowerCase().trim();
-        if (!className) return;
-
-        // Grouper les classes par nom
-        if (!classesMap.has(className)) {
-          classesMap.set(className, {
-            id: c.id,
-            nom: c.nom,
-            filieres: []
-          });
+        } catch (err) {
+          console.error("Erreur fetching metadata:", err);
         }
+      };
 
-        // Ajouter la filière à la map par classe
-        if (c.filiere && c.filiere.nom) {
-          if (!filieresMap[className]) {
-            filieresMap[className] = [];
-          }
-          
-          // Vérifier si la filière n'est pas déjà dans la liste
-          const exists = filieresMap[className].some(f => f.id === c.filiere.id);
-          if (!exists) {
-            filieresMap[className].push({
-              id: c.filiere.id,
-              nom: c.filiere.nom
+      fetchAll();
+    }, []);
+
+
+    return { classes, filieres };
+  };
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const [cRes, fRes, pRes, mRes, sRes] = await Promise.all([
+          fetch(`${BASE_URL}/emploi/classes`),
+          fetch(`${BASE_URL}/filieres`),
+          fetch(`${BASE_URL}/profs`),
+          fetch(`${BASE_URL}/matieres`),
+          fetch(`${BASE_URL}/salles`)
+        ]);
+        if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
+
+        const [cData, fData, pData, mData, sData] = await Promise.all([
+          cRes.json(), fRes.json(), pRes.json(), mRes.json(), sRes.json()
+        ]);
+
+        console.log("Classes brutes du backend:", cData);
+        console.log("Filières brutes du backend:", fData);
+
+
+        const classesMap = new Map();
+        const filieresMap = {};
+
+        (cData || []).forEach(c => {
+          const className = (c.nom || "").toLowerCase().trim();
+          if (!className) return;
+
+          // Grouper les classes par nom
+          if (!classesMap.has(className)) {
+            classesMap.set(className, {
+              id: c.id,
+              nom: c.nom,
+              filieres: []
             });
           }
 
-          // Ajouter aussi dans l'objet classe
-          const classObj = classesMap.get(className);
-          const filiereExists = classObj.filieres.some(f => f.id === c.filiere.id);
-          if (!filiereExists) {
-            classObj.filieres.push(c.filiere);
+          // Ajouter la filière à la map par classe
+          if (c.filiere && c.filiere !== "NONE") {
+            if (!filieresMap[className]) {
+              filieresMap[className] = [];
+            }
+
+            // Vérifier si la filière n'est pas déjà dans la liste
+            const exists = filieresMap[className].some(f => f.id === c.filiere.id);
+            if (!exists) {
+              filieresMap[className].push({
+                id: c.filiere.id,
+                nom: c.filiere.nom
+              });
+            }
+
+            // Ajouter aussi dans l'objet classe
+            const classObj = classesMap.get(className);
+            if (!classObj.filieres.includes(c.filiere)) {
+              classObj.filieres.push(c.filiere);
+            }
           }
-        }
-      });
+        });
 
-      // Convertir la map en array pour les classes uniques
-      const uniqueClasses = Array.from(classesMap.values());
+        // Convertir la map en array pour les classes uniques
+        const uniqueClasses = Array.from(classesMap.values());
 
-      console.log("Classes traitées:", uniqueClasses);
-      console.log("Filières par classe (filieresMap):", filieresMap);
-      console.log("Clés disponibles dans filieresMap:", Object.keys(filieresMap));
+        console.log("Classes traitées:", uniqueClasses);
+        console.log("Filières par classe (filieresMap):", filieresMap);
+        console.log("Clés disponibles dans filieresMap:", Object.keys(filieresMap));
 
-      setClasses(uniqueClasses);
-      setFilieresList(filieresMap);
-      setProfs(pData || []);
-      setMatieres(mData || []);
-      setSalles(sData || []);
-    } catch (err) {
-      console.error("Erreur fetching metadata:", err);
-    }
-  };
+        setClasses(uniqueClasses);
+        setFilieresList(filieresMap);
+        setProfs(pData || []);
+        setMatieres(mData || []);
+        setSalles(sData || []);
+      } catch (err) {
+        console.error("Erreur fetching metadata:", err);
+      }
+    };
 
-  fetchAll();
-}, []);
+    fetchAll();
+  }, []);
 
   // Charger JSZip depuis CDN (même code que TimetableExtractor)
   useEffect(() => {
@@ -288,7 +294,7 @@ useEffect(() => {
       if (parenMatch) {
         startIndex = startIndex + parenMatch[0].length;
       }
-      
+
       let endIndex = content.length;
       if (prIndex !== -1 && prIndex > coursIndex) {
         endIndex = Math.min(endIndex, prIndex);
@@ -296,20 +302,20 @@ useEffect(() => {
       if (amphiIndex !== -1 && amphiIndex > coursIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       cours = content.substring(startIndex, endIndex).trim();
       cours = cours.replace(/\s+/g, " ").trim();
     } else if (tdTpIndex !== -1) {
       const startIndex = tdTpIndex + 5;
       let endIndex = content.length;
-      
+
       if (prIndex !== -1 && prIndex > tdTpIndex) {
         endIndex = Math.min(endIndex, prIndex);
       }
       if (amphiIndex !== -1 && amphiIndex > tdTpIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       cours = content.substring(startIndex, endIndex).trim();
       cours = cours.replace(/\s+/g, " ").trim();
     }
@@ -317,19 +323,19 @@ useEffect(() => {
     if (prIndex !== -1) {
       const startIndex = prIndex + 3;
       let endIndex = content.length;
-      
+
       const parenIndex = content.indexOf("(", startIndex);
       if (parenIndex !== -1) {
         endIndex = Math.min(endIndex, parenIndex);
       }
-      
+
       if (amphiIndex !== -1 && amphiIndex > prIndex) {
         endIndex = Math.min(endIndex, amphiIndex);
       }
-      
+
       professeur = content.substring(startIndex, endIndex).trim();
       professeur = professeur.replace(/\s+/g, " ").trim();
-      
+
       // Ajouter "Pr." avant le nom si ce n'est pas déjà présent
       if (professeur && !professeur.toLowerCase().startsWith("pr.") && !professeur.toLowerCase().startsWith("pr ")) {
         professeur = `Pr. ${professeur}`;
@@ -344,7 +350,7 @@ useEffect(() => {
     } else {
       const salleVariants = /(?:sa[1l]{2}e|salle)\s*([A-Z0-9]+(?:\s*[A-Z0-9]+)*)/i;
       const salleMatch = content.match(salleVariants);
-      
+
       if (salleMatch && salleMatch[1]) {
         salle = salleMatch[1].trim();
       } else if (salleMatches.length > 0) {
@@ -392,61 +398,61 @@ useEffect(() => {
     const documentXml = await zip.file("word/document.xml").async("string");
     const parser = new DOMParser();
     const doc = parser.parseFromString(documentXml, "text/xml");
-    
+
     const tables = doc.getElementsByTagName("w:tbl");
     const extractedTables = [];
-    
+
     for (let i = 0; i < tables.length; i++) {
       const table = tables[i];
       const rows = table.getElementsByTagName("w:tr");
       const tableData = [];
-      
+
       for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
         const row = rows[rowIdx];
         const cells = row.getElementsByTagName("w:tc");
         const rowData = [];
-        
+
         for (let cellIdx = 0; cellIdx < cells.length; cellIdx++) {
           const cell = cells[cellIdx];
           const paragraphs = cell.getElementsByTagName("w:p");
           let cellText = "";
-          
+
           for (let pIdx = 0; pIdx < paragraphs.length; pIdx++) {
             const paragraph = paragraphs[pIdx];
             const runs = paragraph.getElementsByTagName("w:t");
-            
+
             for (let rIdx = 0; rIdx < runs.length; rIdx++) {
               const textNode = runs[rIdx].childNodes[0];
               if (textNode && textNode.nodeValue) {
                 cellText += textNode.nodeValue;
               }
             }
-            
+
             if (pIdx < paragraphs.length - 1) {
               cellText += " ";
             }
           }
-          
+
           rowData.push(cellText.trim());
         }
-        
+
         tableData.push(rowData);
       }
-      
+
       extractedTables.push(tableData);
     }
-    
+
     return extractedTables;
   };
 
   // Fonction pour parser un tableau et extraire l'emploi du temps
   const parseTableToTimetable = (tableData) => {
-    const timetable = DAYS.map(day => ({ 
-      jour: capitalize(day), 
-      slot1: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot2: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot3: { type: "Cours", cours: "", professeur: "", salle: "" }, 
-      slot4: { type: "Cours", cours: "", professeur: "", salle: "" } 
+    const timetable = DAYS.map(day => ({
+      jour: capitalize(day),
+      slot1: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot2: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot3: { type: "Cours", cours: "", professeur: "", salle: "" },
+      slot4: { type: "Cours", cours: "", professeur: "", salle: "" }
     }));
 
     if (!tableData || tableData.length === 0) {
@@ -460,19 +466,19 @@ useEffect(() => {
     for (let i = 0; i < Math.min(3, tableData.length); i++) {
       const row = tableData[i];
       const rowText = row.join(" ").toLowerCase();
-      
+
       const hasDays = DAYS.some(day => rowText.includes(day));
       const hasTimeSlots = /8h30|10h45|14h|16h15/.test(rowText);
-      
+
       if (hasDays || hasTimeSlots) {
         headerRowIndex = i;
-        
+
         row.forEach((cell, colIdx) => {
           const cellLower = cell.toLowerCase();
           if (DAYS.some(day => cellLower.includes(day))) {
             dayColumnIndex = colIdx;
           }
-          
+
           if (/8h30|8:30/.test(cellLower)) {
             timeSlotColumns[0] = colIdx;
           }
@@ -498,7 +504,7 @@ useEffect(() => {
     }
 
     const startRow = headerRowIndex >= 0 ? headerRowIndex + 1 : 1;
-    
+
     for (let rowIdx = startRow; rowIdx < tableData.length; rowIdx++) {
       const row = tableData[rowIdx];
       if (row.length === 0) continue;
@@ -552,7 +558,7 @@ useEffect(() => {
       const documentXml = await zip.file("word/document.xml").async("string");
       const parser = new DOMParser();
       const doc = parser.parseFromString(documentXml, "text/xml");
-      
+
       const textNodes = doc.getElementsByTagName("w:t");
       let text = "";
       for (let i = 0; i < textNodes.length; i++) {
@@ -572,57 +578,57 @@ useEffect(() => {
 
 
   const TimetableCell = ({ cellData, isEmpty }) => {  // ✅ Enlever onEdit
-  if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
+    if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
+      return (
+        <div className="min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20">
+          <span className="text-muted-foreground italic text-sm">Pas de cours</span>
+        </div>
+      );
+    }
+
     return (
-      <div className="min-h-[100px] p-3 flex items-center justify-center border border-dashed border-muted-foreground/30 rounded-lg bg-muted/20">
-        <span className="text-muted-foreground italic text-sm">Pas de cours</span>
+      <div className="min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30">
+        {/* ✅ Supprimer le bouton avec le crayon */}
+        <div className="space-y-2">
+          {cellData.type && (
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+              <Badge variant="secondary" className="text-xs">
+                {cellData.type}
+              </Badge>
+            </div>
+          )}
+
+          {cellData.cours && (
+            <div className="flex items-start gap-2">
+              <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <span className="font-semibold text-sm leading-tight text-foreground">
+                {cellData.cours}
+              </span>
+            </div>
+          )}
+
+          {cellData.professeur && (
+            <div className="flex items-center gap-2">
+              <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="text-xs text-muted-foreground">
+                {cellData.professeur}
+              </span>
+            </div>
+          )}
+
+          {cellData.salle && (
+            <div className="flex items-center gap-2">
+              <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
+              <Badge variant="outline" className="text-xs">
+                {cellData.salle}
+              </Badge>
+            </div>
+          )}
+        </div>
       </div>
     );
-  }
-
-  return (
-    <div className="min-h-[100px] p-3 border rounded-lg bg-gradient-to-br from-background to-muted/30">
-      {/* ✅ Supprimer le bouton avec le crayon */}
-      <div className="space-y-2">
-        {cellData.type && (
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <Badge variant="secondary" className="text-xs">
-              {cellData.type}
-            </Badge>
-          </div>
-        )}
-        
-        {cellData.cours && (
-          <div className="flex items-start gap-2">
-            <GraduationCap className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <span className="font-semibold text-sm leading-tight text-foreground">
-              {cellData.cours}
-            </span>
-          </div>
-        )}
-        
-        {cellData.professeur && (
-          <div className="flex items-center gap-2">
-            <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span className="text-xs text-muted-foreground">
-              {cellData.professeur}
-            </span>
-          </div>
-        )}
-        
-        {cellData.salle && (
-          <div className="flex items-center gap-2">
-            <Building2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400 shrink-0" />
-            <Badge variant="outline" className="text-xs">
-              {cellData.salle}
-            </Badge>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+  };
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -659,7 +665,7 @@ useEffect(() => {
 
         let bestTable = tables[0];
         if (tables.length > 1) {
-          bestTable = tables.reduce((max, table) => 
+          bestTable = tables.reduce((max, table) =>
             table.length > max.length ? table : max
           );
         }
@@ -684,192 +690,187 @@ useEffect(() => {
     }
   };
 
-const handleClassChange = (value) => {
+ const handleClassChange = (value) => {
   setSelectedClass(value);
   setSelectedFiliere("");
   setSelectedSemester("");
 
   const classKey = (value || "").toLowerCase().trim();
 
-  console.log("=== HANDLECLASSCHANGE DEBUG ===");
-  console.log("Classe sélectionnée (value):", value);
-  console.log("Clé classe normalisée (classKey):", classKey);
-  console.log("Type de filieresList:", typeof filieresList);
-  console.log("Toutes les filières (filieresList):", filieresList);
-  console.log("Clés disponibles:", Object.keys(filieresList || {}));
-  console.log("Filières pour cette classe [" + classKey + "]:", filieresList[classKey]);
-  console.log("Existe ?", filieresList.hasOwnProperty(classKey));
+  // afficher filière uniquement pour CI
+  const isCI = ["ci1", "ci2", "ci3"].includes(classKey);
+  setShowFiliereSelect(isCI);
 
-  // afficher filière si filieresList a des entrées pour cette classe
-  const hasFilieres = filieresList && filieresList[classKey] && Array.isArray(filieresList[classKey]) && filieresList[classKey].length > 0;
-  console.log("hasFilieres:", hasFilieres);
-  console.log("================================");
-  
-  setShowFiliereSelect(Boolean(hasFilieres));
+  // charger les semestres
+  setAvailableSemesters(SEMESTERS_MAP[classKey] || []);
 
-  // charger semestres statiques à partir de SEMESTERS_MAP
-  const sems = SEMESTERS_MAP[classKey] || [];
-  setAvailableSemesters(sems);
+  console.log("Classe sélectionnée :", value);
+  console.log("isCI :", isCI);
 };
-const buildImportPayload = (classe, filiere, timetableData, semester, fileName) => {
-  const emplois = [];
 
-  timetableData.forEach(day => {
-    TIME_SLOTS.forEach((slot, index) => {
-      const slotKey = `slot${index + 1}`;
-      const cellData = day[slotKey];
+  const buildImportPayload = (classe, filiere, timetableData, semester, fileName) => {
+    const emplois = [];
 
-      if (cellData && (cellData.cours || cellData.professeur || cellData.salle)) {
-        const creneauFormatted = slot
-          .replace(/h/g, ':')
-          .replace(/→/g, '-')
-          .replace(/\s+/g, '');
+    timetableData.forEach(day => {
+      TIME_SLOTS.forEach((slot, index) => {
+        const slotKey = `slot${index + 1}`;
+        const cellData = day[slotKey];
 
-        emplois.push({
-          jour: day.jour,
-          creneau: creneauFormatted,
-          matiere: cellData.cours || "",
-          prof: cellData.professeur || "",
-          salle: cellData.salle || "",
-          semestre: semester || ""   
-        });
-      }
+        if (cellData && (cellData.cours || cellData.professeur || cellData.salle)) {
+          const creneauFormatted = slot
+            .replace(/h/g, ':')
+            .replace(/→/g, '-')
+            .replace(/\s+/g, '');
+
+          emplois.push({
+            jour: day.jour,
+            creneau: creneauFormatted,
+            matiere: cellData.cours || "",
+            prof: cellData.professeur || "",
+            salle: cellData.salle || "",
+            semestre: semester || ""
+          });
+        }
+      });
     });
-  });
 
-  return {
-    classe: classe,
-    filiere: filiere || null,
-    semestre: semester || "",
-    fileName: fileName,  // ✅ Ajout du fileName
-    emplois: emplois
+    return {
+      classe: classe,
+      filiere: filiere || null,
+      semestre: semester || "",
+      fileName: fileName,  
+      emplois: emplois
+    };
   };
-};
 
-const handleSubmit = async () => {
-  if (!selectedFile && !isEditMode) {
-    setUploadStatus("Veuillez sélectionner un fichier PDF ou DOCX.");
-    return;
-  }
-  if (!selectedClass) {
-    setUploadStatus("Veuillez sélectionner une classe.");
-    return;
-  }
-  if (showFiliereSelect && !selectedFiliere) {
-    setUploadStatus("Veuillez sélectionner une filière.");
-    return;
-  }
-  if (!selectedSemester) {
-    setUploadStatus("Veuillez sélectionner un semestre.");
-    return;
-  }
-  if (!timetable) {
-    setUploadStatus("Aucun emploi extrait à sauvegarder.");
-    return;
-  }
+  
 
-  setIsUploading(true);
-  setUploadStatus("");
-
-  try {
-    // ✅ Upload du fichier
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    const uploadRes = await fetch(`${BASE_URL}/emploi/upload`, {
-      method: "POST",
-      body: formData, // ✅ ici
-    });
-
-    if (!uploadRes.ok) {
-      throw new Error("Erreur lors de l'upload du fichier");
+  const handleSubmit = async () => {
+    if (!selectedFile && !isEditMode) {
+      setUploadStatus("Veuillez sélectionner un fichier PDF ou DOCX.");
+      return;
+    }
+    if (!selectedClass) {
+      setUploadStatus("Veuillez sélectionner une classe.");
+      return;
+    }
+    if (showFiliereSelect && !selectedFiliere) {
+      setUploadStatus("Veuillez sélectionner une filière.");
+      return;
+    }
+    if (!selectedSemester) {
+      setUploadStatus("Veuillez sélectionner un semestre.");
+      return;
+    }
+    if (!timetable) {
+      setUploadStatus("Aucun emploi extrait à sauvegarder.");
+      return;
     }
 
-    const uploadData = await uploadRes.json();
-    const uploadedFileName = uploadData.fileName || selectedFile.name;
+    setIsUploading(true);
+    setUploadStatus("");
 
-    // ✅ Import des données
-    const payload = buildImportPayload(
-      selectedClass, 
-      selectedFiliere, 
-      timetable, 
-      selectedSemester,
-      uploadedFileName
-    );
+    try {
+      // ✅ Upload du fichier
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-    const importRes = await fetch(`${BASE_URL}/emploi/import`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+      const uploadRes = await fetch(`${BASE_URL}/emploi/upload`, {
+        method: "POST",
+        body: formData, // ✅ ici
+      });
 
-    if (!importRes.ok) {
-      const text = await importRes.text();
-      throw new Error(text || "Erreur import");
+      if (!uploadRes.ok) {
+        throw new Error("Erreur lors de l'upload du fichier");
+      }
+
+      const uploadData = await uploadRes.json();
+      const uploadedFileName = uploadData.fileName || selectedFile.name;
+
+      // ✅ Import des données
+      const payload = buildImportPayload(
+        selectedClass,
+        selectedFiliere,
+        timetable,
+        selectedSemester,
+        uploadedFileName
+      );
+      console.log("Payload à envoyer :", payload);
+
+
+      const importRes = await fetch(`http://localhost:8082/emploi/import`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!importRes.ok) {
+        const text = await importRes.text();
+        throw new Error(text || "Erreur import");
+      }
+
+      setUploadStatus("success");
+      setTimeout(() => window.location.href = "/timetable", 1000);
+    } catch (err) {
+      console.error(err);
+      setUploadStatus("error");
+    } finally {
+      setIsUploading(false);
     }
-
-    setUploadStatus("success");
-    setTimeout(() => window.location.href = "/timetable", 1000);
-  } catch (err) {
-    console.error(err);
-    setUploadStatus("error");
-  } finally {
-    setIsUploading(false);
-  }
-};
+  };
 
 
   const handleBack = () => {
     window.location.href = '/timetable';
   };
-const handleUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  setSelectedFile(file);
+    setSelectedFile(file);
 
-  const formData = new FormData();
-  formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    setIsUploading(true);
-    setUploadStatus("");
+    try {
+      setIsUploading(true);
+      setUploadStatus("");
+
+      const res = await fetch(`${BASE_URL}/emploi/upload`, {
+        method: "POST",
+        body: formData
+      });
+
+      if (!res.ok) {
+        throw new Error("Erreur lors de l'envoi");
+      }
+
+      const msg = await res.text();
+      setUploadStatus(msg);
+    } catch (err) {
+      console.error(err);
+      setUploadStatus("Échec de l'upload !");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
 
     const res = await fetch(`${BASE_URL}/emploi/upload`, {
-      method: "POST",
+      method: 'POST',
       body: formData
     });
 
-    if (!res.ok) {
-      throw new Error("Erreur lors de l'envoi");
-    }
+    const data = await res.json();
+    console.log('Upload response:', data);
 
-    const msg = await res.text();
-    setUploadStatus(msg);
-  } catch (err) {
-    console.error(err);
-    setUploadStatus("Échec de l'upload !");
-  } finally {
-    setIsUploading(false);
-  }
-};
-
-
-const uploadFile = async (file) => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const res = await fetch(`${BASE_URL}/emploi/upload`, {
-    method: 'POST',
-    body: formData
-  });
-
-  const data = await res.json();
-  console.log('Upload response:', data);
-
-  // data.fileName contient le nom réel du fichier enregistré côté serveur
-  return data.fileName;
-};
+    // data.fileName contient le nom réel du fichier enregistré côté serveur
+    return data.fileName;
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -877,10 +878,10 @@ const uploadFile = async (file) => {
         <Button variant="outline" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-      
+
       </div>
 
-    
+
 
       <Card className="w-full max-w-7xl mx-auto">
         <CardHeader>
@@ -889,7 +890,7 @@ const uploadFile = async (file) => {
             {isEditMode ? "Modifier l'Emploi du Temps" : "Ajouter un Emploi du Temps"}
           </CardTitle>
           <CardDescription>
-            {isEditMode 
+            {isEditMode
               ? "Modifiez les informations de l'emploi du temps existant."
               : "Téléchargez un fichier PDF contenant l'emploi du temps et sélectionnez les informations correspondantes."
             }
@@ -903,8 +904,8 @@ const uploadFile = async (file) => {
                 <Input
                   id="file-upload"
                   type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.docx"               
-                    onChange={handleFileChange}
+                  accept=".pdf,.png,.jpg,.jpeg,.docx"
+                  onChange={handleFileChange}
                   className="hidden"
                   disabled={!jszipReady || loading || isUploading}
                 />
@@ -1035,55 +1036,51 @@ const uploadFile = async (file) => {
               <SelectTrigger id="class-select">
                 <SelectValue placeholder="Sélectionnez une classe" />
               </SelectTrigger>
+
               <SelectContent>
-                {classes.map((classe) => (
-                  <SelectItem key={classe.id} value={classe.nom}>
-                    {classe.nom}
+                {CLASSES_LIST.map((classe) => (
+                  <SelectItem key={classe.value} value={classe.value}>
+                    {classe.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
+
           </div>
 
-{ /* Sélecteur de filière (uniquement pour CI) */ }
-{showFiliereSelect && (
-  // compute normalized key from selectedClass to access the map
-  (() => {
-    const classKey = (selectedClass || "").toLowerCase().trim();
-    const currentFilieres = filieresList && filieresList[classKey] ? filieresList[classKey] : [];
-    return (
-      <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
-        <SelectTrigger id="filiere-select">
-          <SelectValue placeholder="Sélectionnez une filière" />
-        </SelectTrigger>
-        <SelectContent>
-          {currentFilieres.map((filiere) => (
-            <SelectItem key={filiere.id} value={filiere.nom}>
-              {filiere.nom}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  })()
-)}
+          { /* Sélecteur de filière (uniquement pour CI) */}
+          {showFiliereSelect &&  (
+            <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
+              <SelectTrigger id="filiere-select">
+                <SelectValue placeholder="Sélectionnez une filière" />
+              </SelectTrigger>
+              <SelectContent>
+                {FILIERES_CI.map((filiere) => (
+                  <SelectItem key={filiere} value={filiere}>
+                    {filiere}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
 
           {/* Sélecteur de semestre */}
           <div className="space-y-2">
             <Label htmlFor="semester-select">Semestre</Label>
-            <Select 
-              value={selectedSemester} 
+            <Select
+              value={selectedSemester}
               onValueChange={setSelectedSemester}
               disabled={availableSemesters.length === 0}
             >
               <SelectTrigger id="semester-select">
-                <SelectValue 
+                <SelectValue
                   placeholder={
-                    selectedClass 
+                    selectedClass
                       ? `Sélectionnez un semestre (${availableSemesters.length} disponible${availableSemesters.length > 1 ? 's' : ''})`
                       : "Sélectionnez d'abord une classe"
-                  } 
+                  }
                 />
               </SelectTrigger>
               <SelectContent>
@@ -1104,8 +1101,8 @@ const uploadFile = async (file) => {
             <Button variant="outline" onClick={handleBack} className="flex-1">
               Annuler
             </Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isUploading}
               className="flex-1"
               size="lg"
@@ -1151,11 +1148,11 @@ const uploadFile = async (file) => {
         </CardContent>
       </Card>
 
-      
+
 
 
     </div>
 
-    
+
   );
 }

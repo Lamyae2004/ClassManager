@@ -36,7 +36,7 @@ export default function AbsencePage() {
 
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 9;
+    const profConnecte = 6;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -100,7 +100,7 @@ export default function AbsencePage() {
     // 🔹 Créneaux filtrés selon classe + jour + prof
     useEffect(() => {
         if (!classe) return;
-        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/Vendredi`;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
 
         fetch(url)
             .then(res => {
@@ -137,7 +137,7 @@ export default function AbsencePage() {
             }))
         };
 
-        fetch("http://localhost:8080/absences", {
+        fetch("http://localhost:8083/absences", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
@@ -161,6 +161,20 @@ export default function AbsencePage() {
     const totalStudents = filteredStudents.length;
     const presentCount = Object.values(presences).filter(v => v === true).length;
     const absentCount = Object.values(presences).filter(v => v === false).length;
+
+    const formatHeure = (heure) => {
+        if (!heure) return "";
+
+        // Ex: "14:", "14", "14:0" → "14:00"
+        const [h, m] = heure.split(":");
+        const heureFormattee = h.padStart(2, "0");
+        const minuteFormattee = (m && m.length > 0 ? m : "00").padEnd(2, "0");
+
+        return `${heureFormattee}:${minuteFormattee}`;
+    };
+
+
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
@@ -204,8 +218,16 @@ export default function AbsencePage() {
                                     <SelectContent>
                                         {classeList.map(c => (
                                             <SelectItem key={c.id} value={c.id.toString()}>
-                                                {c.nom} ({c.filiere})
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span>{c.nom}</span>
+                                                    {c.filiere && (
+                                                        <Badge variant="outline" className="ml-2">
+                                                            {c.filiere}
+                                                        </Badge>
+                                                    )}
+                                                </div>
                                             </SelectItem>
+
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -224,7 +246,10 @@ export default function AbsencePage() {
                                                 <SelectItem key={c.id} value={c.id.toString()}>
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="h-3 w-3" />
-                                                        <span>{c.heureDebut} - {c.heureFin}</span>
+                                                        <span>
+                                                            {formatHeure(c.heureDebut)} - {formatHeure(c.heureFin)}
+                                                        </span>
+
                                                         <Badge variant="secondary" className="ml-2">
                                                             {c.matiereNom}
                                                         </Badge>
@@ -334,29 +359,29 @@ export default function AbsencePage() {
 
                                                 <TableCell className="text-center">
                                                     <RadioGroup
-                                                        value={presences[e.id_etudiant] === true ? "present" : ""}
-                                                        onValueChange={() => handlePresenceChange(e.id_etudiant, true)}
+                                                        value={presences[e.id] === true ? "present" : ""}
+                                                        onValueChange={() => handlePresenceChange(e.id, true)}
                                                         className="flex justify-center"
                                                     >
-                                                        <RadioGroupItem value="present" id={`present-${e.id_etudiant}`} />
+                                                        <RadioGroupItem value="present" id={`present-${e.id}`} />
                                                     </RadioGroup>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <RadioGroup
-                                                        value={presences[e.id_etudiant] === false ? "absent" : ""}
-                                                        onValueChange={() => handlePresenceChange(e.id_etudiant, false)}
+                                                        value={presences[e.id] === false ? "absent" : ""}
+                                                        onValueChange={() => handlePresenceChange(e.id, false)}
                                                         className="flex justify-center"
                                                     >
-                                                        <RadioGroupItem value="absent" id={`absent-${e.id_etudiant}`} />
+                                                        <RadioGroupItem value="absent" id={`absent-${e.id}`} />
                                                     </RadioGroup>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    {presences[e.id_etudiant] === true ? (
+                                                    {presences[e.id] === true ? (
                                                         <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
                                                             <CheckCircle className="h-3 w-3 mr-1" />
                                                             Présent
                                                         </Badge>
-                                                    ) : presences[e.id_etudiant] === false ? (
+                                                    ) : presences[e.id] === false ? (
                                                         <Badge variant="outline" className="text-red-600 border-red-200">
                                                             <XCircle className="h-3 w-3 mr-1" />
                                                             Absent

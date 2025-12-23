@@ -19,7 +19,8 @@ public class ClasseService {
                 .map(classe -> new ClasseDTO(
                         classe.getId(),
                         classe.getNom(),
-                        classe.getFiliere() != null ? classe.getFiliere().getNom() : null
+                        classe.getFiliere() != null ? classe.getFiliere().name() : null
+
                 ))
                 .toList();
     }

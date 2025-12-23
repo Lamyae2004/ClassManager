@@ -30,6 +30,27 @@ public class UserController {
     public record UserResponse(Long id, String email, String firstname, String lastname, String role) {}
     private final TeacherRepository teacherRepository;
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        UserResponse response = new UserResponse(
+                user.getId().longValue(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRole().name()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
+
+
     @GetMapping("/profile")
     public ResponseEntity<UserResponse> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
