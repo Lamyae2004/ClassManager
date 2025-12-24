@@ -9,11 +9,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmploiDuTempsDTO {
-    private Long id;          // id de l'emploi
-    private Long creneauId;
-    private String heureDebut;
-    private String heureFin;
+    private Long id;
+
+    private Long classeId;
+    private String classeNom;
+
+    private Long matiereId;
     private String matiereNom;
+
+    private Long salleId;
     private String salleNom;
+
+    private Long creneauId;
+    private String creneauDebut;
+    private String creneauFin;
+
     private Long profId;
+
+    private String jour;
+
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 @RestController
-@RequestMapping("/matieres")
+@RequestMapping("/emploi/matieres")
 @RequiredArgsConstructor
 public class MatiereController {
 

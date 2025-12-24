@@ -36,7 +36,7 @@ export default function AbsencePage() {
 
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 6;
+    const profConnecte = 2;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -77,7 +77,7 @@ export default function AbsencePage() {
         //const token = localStorage.getItem("token");
 
         fetch(
-            `http://localhost:8080/auth/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
+            `http://localhost:8080/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
 
         )
             .then(res => {
@@ -100,7 +100,7 @@ export default function AbsencePage() {
     // 🔹 Créneaux filtrés selon classe + jour + prof
     useEffect(() => {
         if (!classe) return;
-        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/Lundi`;
 
         fetch(url)
             .then(res => {
@@ -118,18 +118,24 @@ export default function AbsencePage() {
 
 
     // Trouver le créneau sélectionné
-    const selectedCreneau = todayCreneaux.find(c => c.id_edt === Number(creneau));
+    const selectedCreneau = todayCreneaux.find(c => c.id === Number(creneau));
+    //const selectedCreneau = todayCreneaux.find(c => c.id_edt === Number(creneau));
     const horaire = selectedCreneau ? creneaux.find(cr => cr.id === selectedCreneau.id_creneau) : null;
     const matiere = selectedCreneau && matieres.find(m => m.id_matiere === selectedCreneau.id_matiere);
     const salle = selectedCreneau && salles.find(s => s.id_salle === selectedCreneau.id_salle);
 
     const handleSave = () => {
-        if (!classe || !creneau) return;
-
+         if (!classe || !creneau || !selectedCreneau) {
+        alert("Veuillez sélectionner un créneau valide.");
+        return;
+    }
         const data = {
             profId: profConnecte,
             classeId: Number(classe),
-            creneauId: Number(creneau),
+            creneauId: selectedCreneau.creneauId,
+            matiereId: selectedCreneau.matiereId,
+salleId: selectedCreneau.salleId,
+
             date: new Date().toISOString().split("T")[0],
             absences: Object.entries(presences).map(([etudiantId, present]) => ({
                 etudiantId: Number(etudiantId),
@@ -247,9 +253,8 @@ export default function AbsencePage() {
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="h-3 w-3" />
                                                         <span>
-                                                            {formatHeure(c.heureDebut)} - {formatHeure(c.heureFin)}
+                                                            {formatHeure(c.creneauDebut)} - {formatHeure(c.creneauFin)}
                                                         </span>
-
                                                         <Badge variant="secondary" className="ml-2">
                                                             {c.matiereNom}
                                                         </Badge>

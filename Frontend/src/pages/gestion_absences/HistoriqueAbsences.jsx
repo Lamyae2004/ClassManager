@@ -37,7 +37,6 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
 
 
   const [seances, setSeances] = useState([]);
-  const [absences, setAbsences] = useState([]);
   const [etudiants, setEtudiants] = useState([]);
   const [emploi, setEmploi] = useState([]);
   const [matieres, setMatieres] = useState([]);
@@ -68,8 +67,8 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
     const fetchMatieres = async () => {
       try {
         let url = role === "admin"
-          ? `http://localhost:8082/matieres/classe/${classe}`
-          : `http://localhost:8082/matieres/classe/prof/${classe}/${currentUserId}`;
+          ? `http://localhost:8080/emploi/matieres/classe/${classe}`
+          : `http://localhost:8080/emploi/matieres/classe/prof/${classe}/${currentUserId}`;
         const res = await fetch(url);
         const data = await res.json();
         console.log("Matieres reçues:", data); // <-- Vérifier ici
@@ -87,6 +86,24 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
 
 
   useEffect(() => {
+  const fetchStudents = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/users/students');
+      const data = await res.json();
+      console.log("Étudiants reçus :", data); 
+      setEtudiants(data);
+    } catch (err) {
+      console.error("Erreur fetchStudents:", err);
+      setEtudiants([]);
+    }
+  };
+  fetchStudents();
+}, []);
+
+
+
+
+  useEffect(() => {
 
     if (!classe) return; // si aucune classe sélectionnée, ne rien faire
 
@@ -94,7 +111,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
       try {
         const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
         const text = await res.clone().text();
-    console.log("Réponse brute fetchSeances:", text); 
+        console.log("Réponse brute fetchSeances:", text);
         if (!res.ok) {
           console.error("Erreur lors de la récupération des séances:", res.status, res.statusText);
           setSeances([]); // reset pour éviter l'erreur .filter
@@ -120,30 +137,45 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
 
 
   useEffect(() => {
-  if (!classe) return;
+    if (!classe) return;
 
-  const fetchEmploi = async () => {
-    const res = await fetch(`http://localhost:8082/emploi/classe/${classe}`);
-    const data = await res.json();
-    setEmploi(data);
-  };
+    const fetchEmploi = async () => {
+      const res = await fetch(`http://localhost:8080/emploi/classe/${classe}`);
+      const data = await res.json();
+       console.log("emplois reçus :", data); 
+      setEmploi(data);
+    };
 
-  fetchEmploi();
-}, [classe]);
+    fetchEmploi();
+  }, [classe]);
 
 
 
   // Filtrer les séances selon la classe, matière et rôle
   const seancesClasse = seances
     .filter(s => {
-      const edt = emploi.find(e => e.id_edt === s.id_edt);
-      if (!edt) return false;
-      if (edt.id_classe !== Number(classe)) return false;
-      if (matiere && edt.id_matiere !== Number(matiere)) return false;
-      if (role === "prof" && edt.id_prof !== currentUserId) return false;
+      // séance doit appartenir à la classe
+      if (s.classeId !== Number(classe)) return false;
+
+      // rôle prof
+      if (role === "teacher" && s.profId !== currentUserId) return false;
+
+      // filtre matière (via emploi du temps)
+      if (matiere && emploi.length > 0) {
+        const edt = emploi.find(e =>
+          Number(e.classeId) === Number(s.classeId) &&
+         Number(e.profId) === Number(s.profId) &&
+          Number(e.creneauId) === Number(s.creneauId)
+        );
+
+        if (!edt) return false;
+        if (Number(edt.matiereId) !== Number(matiere)) return false;
+      }
+
       return true;
     })
-    .sort((a, b) => new Date(b.date_seance) - new Date(a.date_seance));
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
 
   // Filtrer les étudiants selon la classe et le rôle
   const etudiantsClasse = etudiants
@@ -158,18 +190,21 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
   // Statistiques globales
   const stats = {
     totalSeances: seancesClasse.length,
+
     totalAbsences: seancesClasse.reduce((total, seance) => {
-      const absencesSeance = absences.filter(a => a.id_seance === seance.id_seance && !a.present);
-      return total + absencesSeance.length;
+      const absencesSeance = seance.absences || [];
+      return total + absencesSeance.filter(a => !a.present).length;
     }, 0),
+
     etudiantsAbsents: new Set(
       seancesClasse.flatMap(seance =>
-        absences
-          .filter(a => a.id_seance === seance.id_seance && !a.present)
-          .map(a => a.id_etudiant)
+        (seance.absences || [])
+          .filter(a => !a.present)
+          .map(a => a.etudiantId)
       )
     ).size
   };
+
 
   // Fonction pour formater la justification
   const renderJustification = (absence) => {
@@ -232,7 +267,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
                           // Télécharger le fichier
                           const link = document.createElement('a');
                           link.href = `/${absence.justificatif}`;
-                          link.download = `justificatif_${absence.id_absence}.pdf`;
+                          link.download = `justificatif_${absence.id}.pdf`;
                           link.click();
                         }}
                       >
@@ -291,7 +326,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
               className="h-7 px-2 text-xs border-dashed"
               onClick={() => {
                 // Logique pour ajouter un justificatif
-                console.log("Ajouter justificatif pour:", absence.id_absence);
+                console.log("Ajouter justificatif pour:", absence.id);
               }}
             >
               <FileCheck className="h-3 w-3 mr-1" />
@@ -361,7 +396,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
                       onClick={() => {
                         const link = document.createElement('a');
                         link.href = `/${absence.justificatif}`;
-                        link.download = `justificatif_${absence.id_absence}.pdf`;
+                        link.download = `justificatif_${absence.id}.pdf`;
                         link.click();
                       }}
                     >
@@ -398,7 +433,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
                   size="sm"
                   className="h-6 px-2 text-xs w-full"
                   onClick={() => {
-                    console.log("Ajouter justificatif pour:", absence.id_absence);
+                    console.log("Ajouter justificatif pour:", absence.id);
                   }}
                 >
                   <FileCheck className="h-3 w-3 mr-1" />
@@ -567,39 +602,62 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
             </div>
 
             {seancesClasse.map(seance => {
-              const edt = emploi.find(e => e.id_edt === seance.id_edt);
-              const matiere = matieres.find(m => m.id_matiere === edt?.id_matiere);
-              const creneau = creneaux.find(c => c.id === edt?.id_creneau);
-              const salle = salles.find(s => s.id_salle === edt?.id_salle);
-              let absencesSeance = absences.filter(a => a.id_seance === seance.id_seance);
+              const edt = emploi.find(e =>
+                Number(e.classeId) === Number(seance.classeId) &&
+                Number(e.profId) === Number(seance.profId) &&
+                Number(e.creneauId) === Number(seance.creneauId)
+              );
+              const absencesSeance = seance.absences || [];
 
-              // Appliquer filtre étudiant
-              if (searchStudent) {
-                absencesSeance = absencesSeance.filter(a => {
-                  const e = etudiants.find(et => et.id_etudiant === a.id_etudiant);
-                  return `${e.nom} ${e.prenom}`.toLowerCase().startsWith(searchStudent.toLowerCase());
-                });
-              }
+              const matiereNom = edt?.matiereNom || "Matière inconnue";
+              const salleNom = edt?.salleNom || "Salle inconnue";
+              const creneauLabel = edt
+                ? `${edt.creneauDebut} - ${edt.creneauFin}`
+                : "Créneau inconnu";
+
+// Appliquer filtre étudiant
+// Appliquer filtre étudiant
+const filteredAbsences = searchStudent
+  ? absencesSeance.filter(a => {
+      const e = etudiants.find(et => et.id === a.etudiantId);
+      if (!e) return false;
+
+      const search = searchStudent.toLowerCase();
+      // Vérifie si le prénom ou le nom commence par la recherche
+      return (
+        e.firstname.toLowerCase().startsWith(search) ||
+        e.lastname.toLowerCase().startsWith(search) ||
+        `${e.firstname} ${e.lastname}`.toLowerCase().startsWith(search) ||
+        `${e.lastname} ${e.firstname}`.toLowerCase().startsWith(search)
+      );
+    })
+  : absencesSeance;
+
+
 
               const absentsCount = absencesSeance.filter(a => !a.present).length;
               const presentsCount = absencesSeance.filter(a => a.present).length;
-              const dateFormatee = new Date(seance.date_seance).toLocaleDateString('fr-FR', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+              const dateFormatee = new Date(seance.date).toLocaleDateString("fr-FR", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
               });
 
+
               return (
-                <Card key={seance.id_seance} className="overflow-hidden">
+                <Card key={seance.id} className="overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center gap-3">
                           <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100">
                             <BookOpen className="h-3 w-3 mr-1" />
-                            {matiere?.nom_matiere || "Matière inconnue"}
+                            {matiereNom}
                           </Badge>
                           <Badge variant="outline" className="flex items-center gap-1">
                             <Building className="h-3 w-3" />
-                            {salle?.nom_salle || "Salle inconnue"}
+                            {salleNom}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -609,7 +667,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {creneau ? `${creneau.debut} - ${creneau.fin}` : "Créneau inconnu"}
+                            {creneauLabel}
                           </span>
                         </div>
                       </div>
@@ -638,16 +696,16 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {absencesSeance.map((absence, index) => {
-                            const etu = etudiants.find(e => e.id_etudiant === absence.id_etudiant);
+                          {filteredAbsences.map((absence, index) => {
+                            const etu = etudiants.find(e => e.id === absence.etudiantId);
                             return (
-                              <TableRow key={absence.id_absence} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <TableRow key={absence.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                 <TableCell className="text-center font-medium text-gray-900">
                                   {index + 1}
                                 </TableCell>
                                 <TableCell>
                                   <div className="font-medium text-gray-900">
-                                    {etu?.nom} {etu?.prenom}
+                                   {etu?.firstname} {etu?.lastname}
                                   </div>
                                 </TableCell>
                                 <TableCell className="text-center">

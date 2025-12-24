@@ -10,14 +10,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @FeignClient(
-        name = "USER-AUTH-SERVICE",
-        url = "http://localhost:9090"
+        name = "USER-AUTH-SERVICE"
 )
 public interface TeacherClient {
     @GetMapping("/teachers")
     List<TeacherDTO> getAllTeachers();
 
-    @GetMapping("/teachers/{id}")
+    @GetMapping("/api/users/teachers")
     TeacherDTO getTeacherById(@PathVariable Long id);
 
 

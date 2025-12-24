@@ -1,7 +1,9 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
+import com.class_manager.Gestion_des_emplois.client.TeacherClient;
 import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
 import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
+import com.class_manager.Gestion_des_emplois.model.dto.TeacherDTO;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
 import com.class_manager.Gestion_des_emplois.repository.MatiereRepository;
@@ -23,6 +25,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/emploi")
@@ -31,6 +34,14 @@ public class EmploiImportController {
 
     private final EmploiImportService emploiService;
     private static final String EMPLOI_DIR = "uploads/emplois/";
+    private final TeacherClient teacherClient ;
+
+    @GetMapping("/classe/{classeId}")
+    public List<EmploiDuTempsDTO> getEmploiByClasse(@PathVariable Long classeId) {
+        return emploiService.getEmploiByClasse(classeId);
+    }
+
+
 
     @GetMapping("/classe/{classeId}/prof/{profId}/jour/{jour}")
 
@@ -168,12 +179,49 @@ public class EmploiImportController {
     }
 
     // ✅ Optionnel : Récupérer un emploi spécifique pour l'édition
-    @GetMapping("/{id}")
+   /* @GetMapping("/{id}")
     public ResponseEntity<EmploiDuTemps> getEmploiById(@PathVariable Long id) {
         return emploiService.getEmploiById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }*/
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getEmploiWithTeacher(@PathVariable Long id) {
+        Optional<EmploiDuTemps> emploiOpt = emploiService.getEmploiById(id);
+
+        if (emploiOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        EmploiDuTemps emploi = emploiOpt.get();
+
+        // Récupérer le professeur via Feign
+        TeacherDTO teacher = null;
+        try {
+            teacher = teacherClient.getTeacherById(emploi.getProfId());
+        } catch (Exception e) {
+            // fallback si erreur
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("emploi", emploi);
+        if (teacher != null) {
+            Map<String, String> profInfo = new HashMap<>();
+            profInfo.put("firstname", teacher.getFirstname());
+            profInfo.put("lastname", teacher.getLastname());
+            response.put("prof", profInfo);
+        }
+
+        return ResponseEntity.ok(response);
     }
+
+
+
+
+
+
+
 
     @DeleteMapping("/group")
     public ResponseEntity<Void> deleteEmploiGroup(

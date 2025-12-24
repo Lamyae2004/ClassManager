@@ -24,6 +24,42 @@ public class EmploiImportService {
 
 
 
+    public List<EmploiDuTempsDTO> getEmploiByClasse(Long classeId) {
+        return edtRepo.findByClasseId(classeId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    private EmploiDuTempsDTO toDTO(EmploiDuTemps e) {
+        EmploiDuTempsDTO dto = new EmploiDuTempsDTO();
+
+        dto.setId(e.getId());
+        dto.setJour(e.getJour());
+
+        dto.setClasseId(e.getClasse().getId());
+        dto.setClasseNom(e.getClasse().getNom());
+
+        dto.setMatiereId(e.getMatiere().getId());
+        dto.setMatiereNom(e.getMatiere().getNom());
+
+        dto.setSalleId(e.getSalle().getId());
+        dto.setSalleNom(e.getSalle().getNom());
+
+        dto.setCreneauId(e.getCreneau().getId());
+        dto.setCreneauDebut(e.getCreneau().getHeureDebut());
+        dto.setCreneauFin(e.getCreneau().getHeureFin());
+        dto.setProfId(e.getProfId());
+        return dto;
+    }
+
+
+
+
+
+
+
+
     public List<Matiere> getMatieresByClasseAndProf(Long classeId, Long profId) {
         return edtRepo.findMatieresByClasseAndProf(classeId, profId);
     }
@@ -43,14 +79,13 @@ public class EmploiImportService {
 
 
 
-    public List<EmploiDuTempsDTO> getEmploiByClasseProfJour(Long classeId, Long profId, String jour) {
-
+    public List<EmploiDuTempsDTO> getEmploiByClasseProfJour(
+            Long classeId, Long profId, String jour) {
 
         return edtRepo.findAll()
                 .stream()
                 .filter(e ->
                         e.getClasse() != null &&
-                                e.getClasse().getId() != null &&
                                 e.getClasse().getId().equals(classeId) &&
                                 e.getProfId() != null &&
                                 e.getProfId().equals(profId) &&
@@ -59,12 +94,28 @@ public class EmploiImportService {
                 )
                 .map(e -> new EmploiDuTempsDTO(
                         e.getId(),
+
+                        // Classe
+                        e.getClasse() != null ? e.getClasse().getId() : null,
+                        e.getClasse() != null ? e.getClasse().getNom() : null,
+
+                        // Matière
+                        e.getMatiere() != null ? e.getMatiere().getId() : null,
+                        e.getMatiere() != null ? e.getMatiere().getNom() : null,
+
+                        // Salle
+                        e.getSalle() != null ? e.getSalle().getId() : null,
+                        e.getSalle() != null ? e.getSalle().getNom() : null,
+
+                        // Créneau
                         e.getCreneau() != null ? e.getCreneau().getId() : null,
                         e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
                         e.getCreneau() != null ? e.getCreneau().getHeureFin() : null,
-                        e.getMatiere() != null ? e.getMatiere().getNom() : null,
-                        e.getSalle() != null ? e.getSalle().getNom() : null,
-                        e.getProfId()
+                        // Prof
+                        e.getProfId(),
+                        // Jour
+                        e.getJour()
+
                 ))
                 .toList();
     }
@@ -135,11 +186,7 @@ public class EmploiImportService {
             Long profId;
 
             try {
-                // "Pr. Ahmed Benali" → ["Ahmed", "Benali"]
-               /* String cleanProf = dto.getProf()
-                        .replace("Pr.", "")
-                        .replace("pr.", "")
-                        .trim();*/
+
                 String cleanProf = dto.getProf().replaceAll("(?i)^pr\\.?\s*", "").trim();
 
                 String[] names = cleanProf.split("\\s+", 2);
@@ -147,8 +194,8 @@ public class EmploiImportService {
                     throw new RuntimeException("Nom du prof invalide : " + dto.getProf());
                 }
 
-                String firstname = names[0];
-                String lastname = names[1];
+                String firstname = names[0].toLowerCase();
+                String lastname = names[1].toLowerCase();
 
                 var teacher = teacherClient.getTeacherByFullName(firstname, lastname);
                 profId = teacher.getId();
@@ -156,10 +203,6 @@ public class EmploiImportService {
             } catch (Exception e) {
                 throw new RuntimeException("Prof introuvable : " + dto.getProf());
             }
-
-
-
-
 
             // Salle
             Salle salle = salleRepo.findByNom(dto.getSalle())
@@ -190,6 +233,7 @@ public class EmploiImportService {
     public Optional<EmploiDuTemps> getEmploiById(Long id) {
         return edtRepo.findById(id);
     }
+
 
 
 

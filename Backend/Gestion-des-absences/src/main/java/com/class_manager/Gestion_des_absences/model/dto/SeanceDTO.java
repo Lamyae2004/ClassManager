@@ -11,5 +11,7 @@ public class SeanceDTO {
     private Long classeId;
     private Long creneauId;
     private String date;
+    private Long matiereId;
+    private Long salleId;
     private List<AbsenceDTO> absences;
 }

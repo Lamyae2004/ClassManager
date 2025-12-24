@@ -1,6 +1,7 @@
 server:
   port: 8082
 
+
   eureka:
     client:
       service-url:
@@ -15,7 +16,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_emplois
     username: postgres
-    password: root
+    password: admin
 
 
   servlet:
