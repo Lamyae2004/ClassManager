@@ -36,7 +36,7 @@ export default function AbsencePage() {
 
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 2;
+    const profConnecte = 202;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];

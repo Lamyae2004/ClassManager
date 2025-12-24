@@ -29,7 +29,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2 }) {
+export default function HistoriqueAbsences({ role = "teacher", currentUserId = 202 }) {
   const [classe, setClasse] = useState(null);
   const [matiere, setMatiere] = useState(null);
   const [searchStudent, setSearchStudent] = useState("");
