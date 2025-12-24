@@ -110,7 +110,7 @@ export function TimetableUpload() {
     return { classes, filieres };
   };
 
-  useEffect(() => {
+ /* useEffect(() => {
     const fetchAll = async () => {
       try {
         const [cRes, fRes, pRes, mRes, sRes] = await Promise.all([
@@ -187,7 +187,7 @@ export function TimetableUpload() {
     };
 
     fetchAll();
-  }, []);
+  }, []);*/
 
   // Charger JSZip depuis CDN (même code que TimetableExtractor)
   useEffect(() => {
@@ -775,7 +775,7 @@ export function TimetableUpload() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const uploadRes = await fetch(`http://localhost:8082/emploi/upload`, {
+      const uploadRes = await fetch(`http://localhost:8080/emploi/upload`, {
         method: "POST",
         body: formData, // ✅ ici
       });
@@ -798,7 +798,7 @@ export function TimetableUpload() {
       console.log("Payload à envoyer :", payload);
 
 
-      const importRes = await fetch(`http://localhost:8082/emploi/import`, {
+      const importRes = await fetch(`http://localhost:8080/emploi/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -860,7 +860,7 @@ export function TimetableUpload() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`http://localhost:8082/emploi/upload`, {
+    const res = await fetch(`http://localhost:8080/emploi/upload`, {
       method: 'POST',
       body: formData
     });

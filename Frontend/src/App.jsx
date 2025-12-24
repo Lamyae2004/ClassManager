@@ -27,7 +27,7 @@ function App() {
           <Route path="forgotOtp" element={<VerifyOtp mode="forgot" />}/>
           <Route path="resetPassword" element={<SetUpPassword mode="forgot" />}/>
           <Route path="/" element={<Page />}>         
-          <Route index element={<div>Bienvenue sur le dashboard</div>} />        
+          <Route index element={<div>    </div>} />        
           <Route path="upload" element={<TimetableUpload />} />
           <Route path="timetable" element={<TimetableList />} />
           <Route path="upload/edit/:id" element={<TimetableUpload />} />

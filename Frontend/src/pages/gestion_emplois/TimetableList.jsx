@@ -1,5 +1,5 @@
 "use client";
-const BASE_URL = "http://localhost:8082";
+const BASE_URL = "http://localhost:8080";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
@@ -447,6 +447,7 @@ export function TimetableList() {
         emploiToUpdate = createdEmploi;
       } else {
         // ✅ Si l'emploi existe, le mettre à jour normalement
+        console.log("EMPLOI TO UPDATE =", emploiToUpdate);
         const updateResponse = await fetch(`${BASE_URL}/emploi/${emploiToUpdate.id}/cell`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -610,7 +611,7 @@ export function TimetableList() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch('http://localhost:8082/emploi/upload', {
+    const res = await fetch('http://localhost:8080/emploi/upload', {
       method: 'POST',
       body: formData // ne pas ajouter headers Content-Type manuellement
     });

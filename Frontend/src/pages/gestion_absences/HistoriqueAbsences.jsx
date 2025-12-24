@@ -109,7 +109,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
 
     const fetchSeances = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/absences/classes/${classe}/user/${currentUserId}`);
+        const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
         const text = await res.clone().text();
         console.log("Réponse brute fetchSeances:", text);
         if (!res.ok) {

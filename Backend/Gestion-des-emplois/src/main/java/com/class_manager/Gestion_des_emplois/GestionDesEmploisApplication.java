@@ -18,7 +18,7 @@ public class GestionDesEmploisApplication {
 	}
 
 
-	@Bean
+	/*@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
@@ -29,6 +29,6 @@ public class GestionDesEmploisApplication {
 						.allowedHeaders("*");
 			}
 		};
-	}
+	}*/
 
 }
