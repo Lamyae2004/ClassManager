@@ -25,9 +25,16 @@ const VerifyOtp =({ mode })=>{
          const dest =   mode === "validate" ? "/setUpPassword": "/resetPassword";
           navigate(dest, { state: { email } });
         } catch (error) {
-          console.error(error);
-           setMessage(error.response?.data || "Erreur lors de l’envoi"); 
-          alert("Erreur lors de l’envoi");
+            let msg;
+            if (typeof error.response?.data === "string") {
+              msg = error.response.data;
+            } else if (error.response?.data?.message) {
+              msg = error.response.data.message;
+            } else {
+              msg = "OTP incorrect, veuillez réessayer.";
+            }
+            setMessage(msg);
+        
         }
     };
  return(
