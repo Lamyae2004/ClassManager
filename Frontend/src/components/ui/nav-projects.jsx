@@ -1,5 +1,6 @@
 "use client";
-
+import React, { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 import {
   Folder,
   Forward,
@@ -29,17 +30,28 @@ import { Link } from "react-router-dom";
 
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
+  const { user, loading } = useContext(AuthContext);
+
+   if (loading || !user) return null;
 
   
+  const role = user.role;
+
+
   const projectMenus = {
     "Gestion des emplois": [
-      { icon: Folder, label: "Créer un emploi", link: "/upload" },
-      { icon: Forward, label: "Consulter un emploi", link: "/timetable" },
+      ...(user.role !== "TEACHER"
+      ? [{ icon: Folder, label: "Créer un emploi", link: "/upload" }]
+      : []),
+      { icon: Forward, label: "Consulter un emploi",
+      // Redirection selon le rôle
+      link: role === "ADMIN" ? "/timetable" : "/timetable/prof" },
       { separator: true },
-      { icon: Trash2, label: "Extraire un emploi", link: "/extract" },
     ],
     "Gestion des absences": [
-      { icon: UserCheck, label: "Enregistrer l'absence", link: "/absences/create" },
+     ...(user.role !== "ADMIN"
+      ? [{ icon: UserCheck, label: "Enregistrer l'absence", link: "/absences/create" }]
+      : []),
       { icon: ClipboardList, label: "Consulter les absences", link: "/absences/consulter" },
       { separator: true },
      

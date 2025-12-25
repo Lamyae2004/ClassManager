@@ -6,6 +6,11 @@ import com.class_manager.Gestion_des_emplois.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import java.util.List;
@@ -21,6 +26,33 @@ public class EmploiImportService {
     private final CreneauRepository creneauRepo;
     private final EmploiDuTempsRepository edtRepo;
     private final TeacherClient teacherClient;
+
+
+
+    public List<EmploiProfDTO> getEmploiDuJourForProf(Long profId) {
+        // Obtenir le jour actuel en français (ou utiliser exactement le format stocké dans la DB)
+        String today = LocalDate.now().getDayOfWeek()
+                .getDisplayName(TextStyle.FULL, Locale.FRENCH);
+
+        return edtRepo.findAll().stream()
+                .filter(e -> e.getProfId() != null &&
+                        e.getProfId().equals(profId) &&
+                        e.getJour() != null &&
+                        e.getJour().equalsIgnoreCase(today))
+                .map(e -> new EmploiProfDTO(
+                        e.getJour(),
+                        e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
+                        e.getCreneau() != null ? e.getCreneau().getHeureFin() : null,
+                        e.getMatiere() != null ? e.getMatiere().getNom() : null,
+                        e.getClasse() != null ? e.getClasse().getNom() : null,
+                        e.getClasse() != null && e.getClasse().getFiliere() != null ?
+                                e.getClasse().getFiliere().name() : null,
+                        e.getSalle() != null ? e.getSalle().getNom() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 
 
 
@@ -68,12 +100,11 @@ public class EmploiImportService {
 
     public List<Matiere> getMatieresByClasse(Long classeId) {
         return edtRepo.findAll().stream()
-                .filter(e -> e.getClasse() != null && e.getClasse().getId().equals(classeId))
+                .filter(e -> e.getClasse() != null
+                        && e.getClasse().getId().equals(classeId))
                 .map(EmploiDuTemps::getMatiere)
-                // Collecter par ID pour s'assurer que distinct fonctionne
-                .collect(Collectors.toMap(Matiere::getId, m -> m))
-                .values()
-                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
                 .toList();
     }
 

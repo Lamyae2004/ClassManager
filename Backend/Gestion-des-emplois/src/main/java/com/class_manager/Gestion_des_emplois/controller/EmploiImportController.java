@@ -1,9 +1,7 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
 import com.class_manager.Gestion_des_emplois.client.TeacherClient;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
-import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
-import com.class_manager.Gestion_des_emplois.model.dto.TeacherDTO;
+import com.class_manager.Gestion_des_emplois.model.dto.*;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
 import com.class_manager.Gestion_des_emplois.repository.MatiereRepository;
@@ -16,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +33,14 @@ public class EmploiImportController {
     private final EmploiImportService emploiService;
     private static final String EMPLOI_DIR = "uploads/emplois/";
     private final TeacherClient teacherClient ;
+
+
+    @GetMapping("/prof/{id}")
+    public List<EmploiProfDTO> getEmploiProf(@PathVariable("id") Long profId) {
+        return emploiService.getEmploiDuJourForProf(profId);
+    }
+
+
 
     @GetMapping("/classe/{classeId}")
     public List<EmploiDuTempsDTO> getEmploiByClasse(@PathVariable Long classeId) {

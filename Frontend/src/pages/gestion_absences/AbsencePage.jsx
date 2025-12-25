@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import { etudiants, creneaux, emploi, matieres, salles } from "./data";
 import {
     Card,
@@ -22,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Calendar, Clock, Users, CheckCircle, XCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { AuthContext } from "@/context/AuthContext";
 
 export default function AbsencePage() {
     const [classe, setClasse] = useState(null);
@@ -32,11 +33,12 @@ export default function AbsencePage() {
     const [classeList, setClasseList] = useState([]);
     const [todayCreneaux, setTodayCreneaux] = useState([]);
     const [students, setStudents] = useState([]);
-
+    
+    const { user} = useContext(AuthContext);
 
 
     // 🔹 Prof connecté (simulé pour l'exemple)
-    const profConnecte = 202;
+    const profConnecte = user.id;
 
     // 🔹 Détecter automatiquement le jour actuel
     const jours = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -100,7 +102,7 @@ export default function AbsencePage() {
     // 🔹 Créneaux filtrés selon classe + jour + prof
     useEffect(() => {
         if (!classe) return;
-        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/Lundi`;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
 
         fetch(url)
             .then(res => {
