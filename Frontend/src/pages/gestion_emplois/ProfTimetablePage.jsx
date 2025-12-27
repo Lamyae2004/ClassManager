@@ -89,6 +89,7 @@ const ProfTimetablePage = () => {
             setLoading(true);
             try {
                 const res = await fetch(`http://localhost:8080/emploi/prof/${user.id}`);
+                console.log(res);
                 if (!res.ok) throw new Error("Impossible de charger l'emploi du temps");
                 const data = await res.json();
                 const parsed = transformBackendTimetable(data);
