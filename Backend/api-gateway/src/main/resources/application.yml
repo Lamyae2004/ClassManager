@@ -38,9 +38,10 @@ spring:
           predicates:
             - Path=/admin/**
 
-
-
-
+        - id: responsible-service
+          uri: lb://class-responsibility-service
+          predicates:
+            - Path=/api/responsible/**
 
 eureka:
   client:
