@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_emplois.client;
 
 
+import com.class_manager.Gestion_des_emplois.model.dto.EtudiantDTO;
 import com.class_manager.Gestion_des_emplois.model.dto.TeacherDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,11 +14,15 @@ import java.util.List;
         name = "USER-AUTH-SERVICE"
 )
 public interface TeacherClient {
-    @GetMapping("/teachers")
+    @GetMapping("/api/users/teachers")
     List<TeacherDTO> getAllTeachers();
 
     @GetMapping("/api/users/teachers")
     TeacherDTO getTeacherById(@PathVariable Long id);
+
+
+    @GetMapping("/api/users/students/{studentId}")
+    EtudiantDTO getEtudiantById(@PathVariable Long studentId);
 
 
     @GetMapping("/api/users/teachers/search")
@@ -25,7 +30,6 @@ public interface TeacherClient {
             @RequestParam String firstname,
             @RequestParam String lastname
     );
-
 
 
 }

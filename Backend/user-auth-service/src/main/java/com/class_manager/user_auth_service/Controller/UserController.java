@@ -99,4 +99,11 @@ public class UserController {
         return TeacherDtoMapper.fromEntity(teacher);
     }
 
+    @GetMapping("students/{studentId}")
+    public StudentDto getStudentById(
+            @PathVariable Long studentId
+    ) {
+        return userService.getStudentById(studentId);
+    }
+
 }

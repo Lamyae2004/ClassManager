@@ -458,5 +458,36 @@ public class EmploiImportService {
 // ...existing code...
 
 
+    public List<EmploiDuTempsDTO> getEmploiForStudent(
+            String classeName,
+            String filiereName,
+            String semester
+    ) {
+
+        return edtRepo.findAll()
+                .stream()
+                .filter(e -> {
+                    boolean matchClasse =
+                            e.getClasse() != null &&
+                                    classeName.equalsIgnoreCase(e.getClasse().getNom());
+
+                    boolean matchFiliere =
+                            e.getClasse() != null &&
+                                    e.getClasse().getFiliere() != null &&
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().name());
+
+                    boolean matchSemester =
+                            semester == null || semester.isEmpty() ||
+                                    (e.getSemestre() != null &&
+                                            semester.equalsIgnoreCase(e.getSemestre().name()));
+
+                    return matchClasse && matchFiliere && matchSemester;
+                })
+                .map(this::toDTO)
+                .toList();
+    }
+
+
+
 
 }

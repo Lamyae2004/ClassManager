@@ -54,4 +54,11 @@ public class UserService {
                 .map(UserMapper::toAdminDto)
                 .toList();
     }
+
+    public StudentDto getStudentById(Long studentId) {
+        return studentRepo.findById(studentId)
+                .map(UserMapper::toStudentDto)
+                .orElseThrow(() ->
+                        new RuntimeException("Étudiant introuvable"));
+    }
 }
