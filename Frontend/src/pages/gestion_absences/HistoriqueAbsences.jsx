@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect,useContext  } from "react";
+import { AuthContext } from "@/context/AuthContext";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter
 } from "@/components/ui/card";
@@ -29,7 +29,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 
-export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2 }) {
+export default function HistoriqueAbsences() {
   const [classe, setClasse] = useState(null);
   const [matiere, setMatiere] = useState(null);
   const [searchStudent, setSearchStudent] = useState("");
@@ -43,11 +43,14 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
   const [creneaux, setCreneaux] = useState([]);
   const [salles, setSalles] = useState([]);
 
-
+    const { user} = useContext(AuthContext);
+     
+    const role = user.role;
+  const currentUserId = user.id;
 
   useEffect(() => {
     const fetchClasses = async () => {
-      let url = role === "admin"
+      let url = role === "ADMIN"
         ? `http://localhost:8080/emploi/classes`  // toutes les classes pour admin
         : `http://localhost:8080/emploi/classes/prof/${currentUserId}`; // seulement celles du prof
       const res = await fetch(url);
@@ -66,7 +69,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
 
     const fetchMatieres = async () => {
       try {
-        let url = role === "admin"
+        let url = role === "ADMIN"
           ? `http://localhost:8080/emploi/matieres/classe/${classe}`
           : `http://localhost:8080/emploi/matieres/classe/prof/${classe}/${currentUserId}`;
         const res = await fetch(url);
@@ -158,7 +161,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
       if (s.classeId !== Number(classe)) return false;
 
       // rôle prof
-      if (role === "teacher" && s.profId !== currentUserId) return false;
+      if (role === "TEACHER" && s.profId !== currentUserId) return false;
 
       // filtre matière (via emploi du temps)
       if (matiere && emploi.length > 0) {
@@ -180,7 +183,7 @@ export default function HistoriqueAbsences({ role = "teacher", currentUserId = 2
   // Filtrer les étudiants selon la classe et le rôle
   const etudiantsClasse = etudiants
     .filter(e => e.id_classe === Number(classe))
-    .filter(e => role === "prof" ? emploi.some(emp => emp.id_classe === Number(classe) && emp.id_prof === currentUserId) : true)
+    .filter(e => role === "TEACHER" ? emploi.some(emp => emp.id_classe === Number(classe) && emp.id_prof === currentUserId) : true)
     .filter(e => {
       if (!searchStudent) return true;
       const search = searchStudent.toLowerCase();

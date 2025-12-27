@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_absences.client;
 
 
+import com.class_manager.Gestion_des_absences.model.dto.StudentDTO;
 import com.class_manager.Gestion_des_absences.model.dto.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 
 //@FeignClient(name = "USER-AUTH-SERVICE")
@@ -29,4 +31,11 @@ public interface UserClient {
             @RequestParam String firstname,
             @RequestParam String lastname
     );
+
+
+    @GetMapping("/api/users/students")
+    List<StudentDTO> getAllStudents();
+
+
+
 }

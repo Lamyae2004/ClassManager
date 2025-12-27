@@ -42,7 +42,7 @@
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
-  --foreground: #252525;
+  --foreground: #0D47A1;
   --card: #ffffff;
   --card-foreground: #252525;
   --popover: #ffffff;
@@ -64,12 +64,12 @@
   --chart-3: #818cf8;
   --chart-4: #fbbf24;
   --chart-5: #f472b6;
-  --sidebar: #fcfcfc;
-  --sidebar-foreground: #252525;
+  --sidebar: #ffffff ;
+  --sidebar-foreground: #488df5;
   --sidebar-primary: #000000;
   --sidebar-primary-foreground: #fcfcfc;
   --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #000000;
+  --sidebar-accent-foreground: #4e12f5;
   --sidebar-border: #ebebeb;
   --sidebar-ring: #bdbdbd;
 }

@@ -1,5 +1,6 @@
 "use client";
-
+import React, { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 import {
   Folder,
   Forward,
@@ -29,26 +30,39 @@ import { Link } from "react-router-dom";
 
 export function NavProjects({ projects }) {
   const { isMobile } = useSidebar();
+  const { user, loading } = useContext(AuthContext);
 
-  
+  if (loading || !user) return null;
+
+
+  const role = user.role;
+
+
   const projectMenus = {
     "Gestion des emplois": [
-      { icon: Folder, label: "Créer un emploi", link: "/upload" },
-      { icon: Forward, label: "Consulter un emploi", link: "/timetable" },
+      ...(user.role !== "TEACHER"
+        ? [{ icon: Folder, label: "Créer un emploi", link: "/upload" }]
+        : []),
+      {
+        icon: Forward, label: "Consulter un emploi",
+        // Redirection selon le rôle
+        link: role === "ADMIN" ? "/timetable" : "/timetable/prof"
+      },
       { separator: true },
-      { icon: Trash2, label: "Extraire un emploi", link: "/extract" },
     ],
     "Gestion des absences": [
-      { icon: UserCheck, label: "Enregistrer l'absence", link: "/absences/create" },
+      ...(user.role !== "ADMIN"
+        ? [{ icon: UserCheck, label: "Enregistrer l'absence", link: "/absences/create" }]
+        : []),
       { icon: ClipboardList, label: "Consulter les absences", link: "/absences/consulter" },
       { separator: true },
-     
+
     ],
     "Gestion des annonces": [
       { icon: Folder, label: "Créer une annonce", link: "/annonces/creer" },
       { icon: Forward, label: "Consulter les annonces", link: "/annonces/consulter" },
     ],
-      "Gestion des users": [
+    "Gestion des users": [
       { icon: Folder, label: "Ajouter les étudiants", link: "/add-Students" },
       { icon: Folder, label: "Ajouter les professeurs", link: "/add-Teachers" },
     ],
@@ -58,12 +72,19 @@ export function NavProjects({ projects }) {
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarMenu>
-        
+
         {projects.map((item) => (
-          
+
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <a href={item.url} className="
+    flex items-center gap-2 px-3 py-2 rounded-md
+    text-sidebar-foreground
+    hover:bg-sidebar-accent
+    hover:text-sidebar-accent-foreground
+    transition-colors
+  "
+              >
                 <item.icon />
                 <span>{item.name}</span>
               </a>
@@ -99,12 +120,7 @@ export function NavProjects({ projects }) {
           </SidebarMenuItem>
         ))}
 
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+
       </SidebarMenu>
     </SidebarGroup>
   );
