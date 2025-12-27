@@ -44,7 +44,8 @@ const data = {
     { name: "Gestion des emplois", url: "#", icon: Calendar },
     { name: "Gestion des absences", url: "#", icon: ClipboardCheck },
     { name: "Gestion des annonces", url: "#", icon: Map },
-    { name: "Gestion des users", url: "#", icon: User },
+    { name: "Gestion des users", url: "#", icon: User},
+     { name: "Gestion des responsables", url: "#", icon: User},
   ],
 };
 

@@ -52,6 +52,10 @@ export function NavProjects({ projects }) {
       { icon: Folder, label: "Ajouter les étudiants", link: "/add-Students" },
       { icon: Folder, label: "Ajouter les professeurs", link: "/add-Teachers" },
     ],
+     "Gestion des responsables": [
+      { icon: Folder, label: "Assign respo", link: "/assign-reponsible" },
+      { icon: Folder, label: "Historiques", link: "/responsablesHistory" },
+    ],
 
   };
 

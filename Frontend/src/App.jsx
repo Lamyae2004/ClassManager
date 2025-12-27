@@ -11,6 +11,9 @@ import AddTeachers from "./pages/gestion_users/AddTeachers";
 import { AuthProvider } from "./context/AuthContext";
 import AbsencePage from './pages/gestion_absences/AbsencePage.jsx';
 import HistoriqueAbsences from "./pages/gestion_absences/HistoriqueAbsences.jsx";
+import AssignResponsible from "./pages/gestion_responsable/AssignResponsible";
+import ResponsibleDetails from "./pages/gestion_responsable/ResponsibleDetails";
+import ResponsibleHistory from "./pages/gestion_responsable/ResponsibleHistory";
 
 
 
@@ -35,6 +38,10 @@ function App() {
           <Route path="add-Teachers" element={<AddTeachers />} />
           <Route path="absences/create" element={<AbsencePage />} />
           <Route path="absences/consulter" element={<HistoriqueAbsences />} />
+          <Route path="assign-reponsible" element={<AssignResponsible />} />
+          <Route path="/responsable-details" element={<ResponsibleDetails />} />
+          <Route path="/responsablesHistory" element={<ResponsibleHistory />} />
+
         </Route>
       </Routes>
     </AuthProvider>
