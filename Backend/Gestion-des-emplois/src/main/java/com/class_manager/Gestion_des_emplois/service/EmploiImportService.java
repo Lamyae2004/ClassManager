@@ -67,12 +67,15 @@ public class EmploiImportService {
         // Obtenir le jour actuel en français (ou utiliser exactement le format stocké dans la DB)
         String today = LocalDate.now().getDayOfWeek()
                 .getDisplayName(TextStyle.FULL, Locale.FRENCH);
+        System.out.println("Today = '" + today + "'");
 
         return edtRepo.findAll().stream()
                 .filter(e -> e.getProfId() != null &&
-                        e.getProfId().equals(profId) &&
-                        e.getJour() != null &&
-                        e.getJour().equalsIgnoreCase(today))
+                        e.getProfId().equals(profId)
+                                //&&
+                       // e.getJour() != null &&
+                        //e.getJour().equalsIgnoreCase(today)
+                )
                 .map(e -> new EmploiProfDTO(
                         e.getJour(),
                         e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
