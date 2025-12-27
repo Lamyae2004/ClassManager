@@ -13,7 +13,7 @@ public class EmailService {
     public void sendSimpleMessage(MailBody mailBody){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(mailBody.to());
-        message.setFrom("lamyae.himidi@uit.ac.ma");
+        message.setFrom("inasse.mossalli@uit.ac.ma");
         message.setSubject(mailBody.subject());
         message.setText(mailBody.text());
         javaMailSender.send(message);

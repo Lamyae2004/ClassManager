@@ -14,7 +14,10 @@ import com.class_manager.user_auth_service.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -24,6 +27,76 @@ public class UserService {
     private final StudentRepository studentRepo;
     private final TeacherRepository teacherRepo;
     private final AdminRepository adminRepo;
+
+
+
+    public List<Map<String, Object>> getAllClassesWithId() {
+        List<Object[]> classesRaw = userRepo.countStudentsPerClass(); // ex: { "CP1INFO", 30 }
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Object[] row : classesRaw) {
+            String className = row[0].toString(); // ex: "CP1INFO"
+
+            // Extraire le Niveau
+            Niveau niveau = null;
+            for (Niveau n : Niveau.values()) {
+                if (className.startsWith(n.name())) {
+                    niveau = n;
+                    break;
+                }
+            }
+
+            // Extraire la Filiere
+            Filiere filiere = null;
+            for (Filiere f : Filiere.values()) {
+                if (className.endsWith(f.name())) {
+                    filiere = f;
+                    break;
+                }
+            }
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", className); // ou générer un id si tu veux
+            map.put("nom", className); // ex: "CP1INFO"
+            map.put("niveau", niveau != null ? niveau.name() : "UNKNOWN");
+            map.put("filiere", filiere != null ? filiere.name() : "NONE");
+
+            result.add(map);
+        }
+
+        return result;
+    }
+
+    public int countStudentsByClassAndFiliere(
+            String niveauStr,   // ex: "CI2"
+            String filiereStr,  // ex: "MECA"
+            boolean activated
+    ) {
+        Niveau niveau;
+        Filiere filiere;
+
+        try {
+            niveau = Niveau.valueOf(niveauStr);    // conversion string -> enum
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Niveau inconnu : " + niveauStr);
+        }
+
+        try {
+            filiere = Filiere.valueOf(filiereStr); // conversion string -> enum
+        } catch (IllegalArgumentException e) {
+            filiere = Filiere.NONE; // par défaut si filière invalide
+        }
+
+        return userRepo.countByNiveauAndFiliereAndActivated(
+                niveau,
+                filiere,
+                activated
+        );
+    }
+
+
+
+
 
     public List<Student> getStudentsByClasse(Filiere filiere, Niveau niveau) {
         return studentRepo.findByNiveauAndFiliere( niveau,filiere);

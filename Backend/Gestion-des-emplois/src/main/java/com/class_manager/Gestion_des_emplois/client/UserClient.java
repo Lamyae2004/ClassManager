@@ -1,20 +1,18 @@
-package com.class_manager.Gestion_des_absences.client;
+package com.class_manager.Gestion_des_emplois.client;
 
 
-import com.class_manager.Gestion_des_absences.model.dto.StudentDTO;
-import com.class_manager.Gestion_des_absences.model.dto.UserDTO;
+import com.class_manager.Gestion_des_emplois.model.dto.UserDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 
 //@FeignClient(name = "USER-AUTH-SERVICE")
 
-@FeignClient(name = "API-GATEWAY", url = "http://localhost:8080")
+@FeignClient(name = "user-client", url = "http://localhost:8080")
 public interface UserClient {
 
     // Récupérer tous les utilisateurs
@@ -31,11 +29,4 @@ public interface UserClient {
             @RequestParam String firstname,
             @RequestParam String lastname
     );
-
-
-    @GetMapping("/api/users/students")
-    List<StudentDTO> getAllStudents();
-
-
-
 }

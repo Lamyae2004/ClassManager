@@ -1,12 +1,9 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
 import com.class_manager.Gestion_des_emplois.client.TeacherClient;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
-import com.class_manager.Gestion_des_emplois.model.dto.ImportRequest;
-import com.class_manager.Gestion_des_emplois.model.dto.TeacherDTO;
+import com.class_manager.Gestion_des_emplois.client.EtudiantClient;
+import com.class_manager.Gestion_des_emplois.model.dto.*;
 import com.class_manager.Gestion_des_emplois.model.entity.*;
-import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
-import com.class_manager.Gestion_des_emplois.repository.MatiereRepository;
 import com.class_manager.Gestion_des_emplois.service.EmploiImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.UrlResource;
@@ -16,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.class_manager.Gestion_des_emplois.model.dto.EmploiCellUpdateDTO;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/emploi")
@@ -35,6 +33,7 @@ public class EmploiImportController {
     private final EmploiImportService emploiService;
     private static final String EMPLOI_DIR = "uploads/emplois/";
     private final TeacherClient teacherClient ;
+    private final EtudiantClient etudiantClient;
 
     @GetMapping("/classe/{classeId}")
     public List<EmploiDuTempsDTO> getEmploiByClasse(@PathVariable Long classeId) {
@@ -230,6 +229,58 @@ public class EmploiImportController {
             @RequestParam(required = false) String semester) {
         emploiService.deleteEmploisByGroup(classe, filiere, semester);
         return ResponseEntity.noContent().build();
+    }
+
+    //pour les etudiants emploi de temps
+
+
+    @GetMapping("/student")
+    public List<EmploiDuTempsDTO> getEmploiForStudent(
+            @RequestParam String classe,
+            @RequestParam String filiere,
+            @RequestParam(required = false) String semester
+    ) {
+        return emploiService.getEmploiForStudent(classe, filiere, semester);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<?> getEmploiByEtudiantId(@PathVariable Long studentId) {
+
+        EtudiantDTO etudiant = teacherClient.getEtudiantById(studentId);
+        if (etudiant == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<EmploiDuTempsDTO> emplois =
+                emploiService.getEmploiForStudent(
+                        etudiant.getNiveau(),
+                        etudiant.getFiliere(),
+                        null
+                );
+
+        // 🔥 1 appel FEIGN seulement
+        List<TeacherDTO> teachers = teacherClient.getAllTeachers();
+
+        // Map profId -> "Nom Prénom"
+        Map<Long, String> profMap = teachers.stream()
+                .collect(Collectors.toMap(
+                        TeacherDTO::getId,
+                        t -> t.getFirstname() + " " + t.getLastname()
+                ));
+
+        // Enrichissement
+        List<EmploiAvecProfResponse> emploisAvecProf = emplois.stream()
+                .map(e -> new EmploiAvecProfResponse(
+                        e,
+                        profMap.getOrDefault(e.getProfId(), "Inconnu")
+                ))
+                .toList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("etudiant", etudiant);
+        response.put("emploi", emploisAvecProf);
+
+        return ResponseEntity.ok(response);
     }
 
 }

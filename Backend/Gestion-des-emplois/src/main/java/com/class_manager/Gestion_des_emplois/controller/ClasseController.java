@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_emplois.controller;
 
 import com.class_manager.Gestion_des_emplois.model.dto.ClasseDTO;
+import com.class_manager.Gestion_des_emplois.model.dto.EmploiDuTempsDTO;
 import com.class_manager.Gestion_des_emplois.model.entity.Classe;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
 import com.class_manager.Gestion_des_emplois.service.ClasseService;

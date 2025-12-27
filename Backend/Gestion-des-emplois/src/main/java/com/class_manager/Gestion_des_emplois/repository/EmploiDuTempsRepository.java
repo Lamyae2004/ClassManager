@@ -28,6 +28,8 @@ public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, Lo
     @Query("SELECT DISTINCT e.matiere FROM EmploiDuTemps e WHERE e.classe.id = :classeId AND e.profId = :profId")
     List<Matiere> findMatieresByClasseAndProf(@Param("classeId") Long classeId, @Param("profId") Long profId);
 
+    @Query("SELECT DISTINCT e.classe FROM EmploiDuTemps e WHERE e.profId = :profId")
+    List<Classe> findDistinctClassesByProfId(Long profId);
 
 }
 

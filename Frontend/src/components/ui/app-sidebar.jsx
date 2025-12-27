@@ -13,6 +13,7 @@ import {
   Settings2,
   SquareTerminal,
   User,
+  GraduationCap
 } from "lucide-react";
 
 import { NavMain } from "@/components/ui/nav-main";
@@ -36,7 +37,7 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
-    { name: "Class Manager", logo: GalleryVerticalEnd, plan: "" },
+    { name: "Class Manager", logo: GraduationCap, plan: "" },
 
   ],
   projects: [
@@ -59,14 +60,21 @@ export function AppSidebar(props) {
     return true;
    })
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+    <Sidebar 
+      collapsible="icon"
+      className="bg-sidebar text-sidebar-foreground"
+      //className="transition-colors duration-200 rounded-md"
+      {...props}
+    >
+      <SidebarHeader className="border-b border-sidebar-border">
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={filtredProjects} />
+        <NavProjects projects={filtredProjects}
+        className="!hover:bg-[#7d6cff] hover:text-[#ffffff] transition-colors duration-200 rounded-md"
+  activeClassName="bg-[#5a4edc] text-[#ffffff]"/>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border">
         <NavUser  />
       </SidebarFooter>
       <SidebarRail />

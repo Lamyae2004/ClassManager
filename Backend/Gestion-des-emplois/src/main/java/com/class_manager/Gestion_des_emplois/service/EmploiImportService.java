@@ -6,9 +6,11 @@ import com.class_manager.Gestion_des_emplois.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.*;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +23,70 @@ public class EmploiImportService {
     private final CreneauRepository creneauRepo;
     private final EmploiDuTempsRepository edtRepo;
     private final TeacherClient teacherClient;
+
+
+    public List<Map<String, Object>> getStudentsStatusPerClass(Long profId) {
+
+        List<Classe> classes = edtRepo.findDistinctClassesByProfId(profId);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Classe classe : classes) {
+            String className = classe.getNom();
+            String filiereName = classe.getFiliere().name(); // récupérer la filière
+
+            int active = teacherClient
+                    .countStudentsByClass(className, filiereName, true)
+                    .get("count");
+
+            int inactive = teacherClient
+                    .countStudentsByClass(className, filiereName, false)
+                    .get("count");
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("classe", className);
+            map.put("filiere", filiereName);   // ajout de la filière
+            map.put("activeStudents", active);
+            map.put("inactiveStudents", inactive);
+
+            result.add(map);
+        }
+
+        return result;
+    }
+
+
+
+
+
+    public int getMyClassesCount(Long profId) {
+        List<Classe> classes = edtRepo.findDistinctClassesByProfId(profId);
+        return classes.size(); // le nombre de classes distinctes
+    }
+
+    public List<EmploiProfDTO> getEmploiDuJourForProf(Long profId) {
+        // Obtenir le jour actuel en français (ou utiliser exactement le format stocké dans la DB)
+        String today = LocalDate.now().getDayOfWeek()
+                .getDisplayName(TextStyle.FULL, Locale.FRENCH);
+
+        return edtRepo.findAll().stream()
+                .filter(e -> e.getProfId() != null &&
+                        e.getProfId().equals(profId) &&
+                        e.getJour() != null &&
+                        e.getJour().equalsIgnoreCase(today))
+                .map(e -> new EmploiProfDTO(
+                        e.getJour(),
+                        e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
+                        e.getCreneau() != null ? e.getCreneau().getHeureFin() : null,
+                        e.getMatiere() != null ? e.getMatiere().getNom() : null,
+                        e.getClasse() != null ? e.getClasse().getNom() : null,
+                        e.getClasse() != null && e.getClasse().getFiliere() != null ?
+                                e.getClasse().getFiliere().name() : null,
+                        e.getSalle() != null ? e.getSalle().getNom() : null
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 
 
 
@@ -68,12 +134,11 @@ public class EmploiImportService {
 
     public List<Matiere> getMatieresByClasse(Long classeId) {
         return edtRepo.findAll().stream()
-                .filter(e -> e.getClasse() != null && e.getClasse().getId().equals(classeId))
+                .filter(e -> e.getClasse() != null
+                        && e.getClasse().getId().equals(classeId))
                 .map(EmploiDuTemps::getMatiere)
-                // Collecter par ID pour s'assurer que distinct fonctionne
-                .collect(Collectors.toMap(Matiere::getId, m -> m))
-                .values()
-                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
                 .toList();
     }
 
@@ -456,6 +521,37 @@ public class EmploiImportService {
         return edtRepo.save(newEmploi);
     }
 // ...existing code...
+
+
+    public List<EmploiDuTempsDTO> getEmploiForStudent(
+            String classeName,
+            String filiereName,
+            String semester
+    ) {
+
+        return edtRepo.findAll()
+                .stream()
+                .filter(e -> {
+                    boolean matchClasse =
+                            e.getClasse() != null &&
+                                    classeName.equalsIgnoreCase(e.getClasse().getNom());
+
+                    boolean matchFiliere =
+                            e.getClasse() != null &&
+                                    e.getClasse().getFiliere() != null &&
+                                    filiereName.equalsIgnoreCase(e.getClasse().getFiliere().name());
+
+                    boolean matchSemester =
+                            semester == null || semester.isEmpty() ||
+                                    (e.getSemestre() != null &&
+                                            semester.equalsIgnoreCase(e.getSemestre().name()));
+
+                    return matchClasse && matchFiliere && matchSemester;
+                })
+                .map(this::toDTO)
+                .toList();
+    }
+
 
 
 
