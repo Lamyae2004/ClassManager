@@ -34,8 +34,11 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers(request ->
+                                "true".equals(request.getHeader("X-Internal-Call"))
+                        ).permitAll()
                         .anyRequest().permitAll()
-                        //.authenticated()
+
 
                 )
                 .sessionManagement(session->session

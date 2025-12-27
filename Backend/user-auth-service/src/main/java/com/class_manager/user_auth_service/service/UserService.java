@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -53,5 +54,26 @@ public class UserService {
                 .stream()
                 .map(UserMapper::toAdminDto)
                 .toList();
+    }
+
+    public StudentDto getStudentById(Long studentId) {
+        return studentRepo.findById(studentId)
+                .map(UserMapper::toStudentDto)
+                .orElseThrow(() ->
+                        new RuntimeException("Étudiant introuvable"));
+    }
+
+    public StudentDto getRandomStudent(Niveau niveau, Filiere filiere) {
+        List<Student> students =
+                studentRepo.findByNiveauAndFiliere(niveau, filiere);
+
+        if (students.isEmpty()) {
+            throw new IllegalArgumentException("Aucun étudiant disponible pour cette filière et ce niveau");
+        }
+
+        Student random =
+                students.get(new Random().nextInt(students.size()));
+
+        return UserMapper.toStudentDto(random);
     }
 }

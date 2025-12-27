@@ -5,6 +5,8 @@ import com.class_manager.user_auth_service.model.dto.AdminDto;
 import com.class_manager.user_auth_service.model.dto.StudentDto;
 import com.class_manager.user_auth_service.model.dto.TeacherDto;
 import com.class_manager.user_auth_service.model.dto.TeacherDtoMapper;
+import com.class_manager.user_auth_service.model.entity.Filiere;
+import com.class_manager.user_auth_service.model.entity.Niveau;
 import com.class_manager.user_auth_service.model.entity.Teacher;
 import com.class_manager.user_auth_service.model.entity.User;
 import com.class_manager.user_auth_service.repository.UserRepository;
@@ -97,6 +99,21 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("Prof non trouvé"));
 
         return TeacherDtoMapper.fromEntity(teacher);
+    }
+
+    @GetMapping("students/random")
+    public StudentDto getRandomStudent(
+            @RequestParam Niveau niveau,
+            @RequestParam Filiere filiere
+    ) {
+        return userService.getRandomStudent(niveau, filiere);
+    }
+
+    @GetMapping("students/{studentId}")
+    public StudentDto getStudentById(
+            @PathVariable Long studentId
+    ) {
+        return userService.getStudentById(studentId);
     }
 
 }
