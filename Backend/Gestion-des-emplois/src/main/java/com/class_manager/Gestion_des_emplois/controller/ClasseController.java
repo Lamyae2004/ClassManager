@@ -5,10 +5,7 @@ import com.class_manager.Gestion_des_emplois.model.entity.Classe;
 import com.class_manager.Gestion_des_emplois.repository.ClasseRepository;
 import com.class_manager.Gestion_des_emplois.service.ClasseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,7 +27,17 @@ public class ClasseController {
         return classeService.getClassesByTeacherId(id);
     }
 
-
+    @GetMapping("/search")
+    public ClasseDTO getClassByNiveauAndFiliere(
+            @RequestParam("niveau") String niveau,
+            @RequestParam("filiere") String filiere
+    ) {
+        return classeService.getClassByNiveauAndFiliere(niveau,filiere);
+    }
+    @GetMapping("/{id}")
+    public ClasseDTO getClasseById(@PathVariable Long id) {
+        return classeService.getClassById(id);
+    }
 
 
 }
