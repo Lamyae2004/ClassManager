@@ -77,7 +77,7 @@ export default function AbsencePage() {
         //const token = localStorage.getItem("token");
 
         fetch(
-            `http://localhost:8080/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
+            `http://localhost:8080/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`
 
         )
             .then(res => {
@@ -147,6 +147,7 @@ salleId: selectedCreneau.salleId,
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
+
         })
             .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);

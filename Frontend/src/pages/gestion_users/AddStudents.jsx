@@ -19,6 +19,13 @@ const addStudents = () =>{
            return;
          }
         const formData = new FormData();
+       
+      if ((niveau === "CP1" ||  niveau === "CP2")&& field != "NONE" ) {
+           alert("Si CP1 ou CP2 la filière devra etre none !");
+           return;
+         }
+
+       
         formData.append("file", file);
         formData.append("niveau", niveau);
         formData.append("filiere", field);
@@ -50,6 +57,7 @@ const addStudents = () =>{
                 <SelectItem value="RST">Génie Réseaux et Systèmes</SelectItem>
                 <SelectItem value="MECA">Génie Mécatronique</SelectItem>
                 <SelectItem value="ELEC">Génie Electrique</SelectItem>
+                <SelectItem value="NONE">None</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -777,7 +777,7 @@ export function TimetableUpload() {
 
       const uploadRes = await fetch(`http://localhost:8080/emploi/upload`, {
         method: "POST",
-        body: formData, // ✅ ici
+        body: formData
       });
 
       if (!uploadRes.ok) {
@@ -802,6 +802,7 @@ export function TimetableUpload() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
+
       });
 
       if (!importRes.ok) {
@@ -839,6 +840,7 @@ export function TimetableUpload() {
       const res = await fetch(`http://localhost:8080/emploi/upload`, {
         method: "POST",
         body: formData
+
       });
 
       if (!res.ok) {
@@ -862,7 +864,8 @@ export function TimetableUpload() {
 
     const res = await fetch(`http://localhost:8080/emploi/upload`, {
       method: 'POST',
-      body: formData
+      body: formData 
+
     });
 
     const data = await res.json();

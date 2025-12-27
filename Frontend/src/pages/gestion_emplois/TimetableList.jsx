@@ -613,7 +613,8 @@ export function TimetableList() {
 
     const res = await fetch('http://localhost:8080/emploi/upload', {
       method: 'POST',
-      body: formData // ne pas ajouter headers Content-Type manuellement
+      body: formData 
+
     });
 
     const text = await res.text();
