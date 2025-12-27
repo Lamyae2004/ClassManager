@@ -40,6 +40,23 @@ public class EmploiImportController {
         return emploiService.getEmploiByClasse(classeId);
     }
 
+    @GetMapping("/students-status/{profId}")
+    public ResponseEntity<List<Map<String, Object>>> getStudentsStatusByClass(
+            @PathVariable Long profId) {
+
+        return ResponseEntity.ok(
+                emploiService.getStudentsStatusPerClass(profId)
+        );
+    }
+
+    @GetMapping("/my-classes/{profId}")
+    public ResponseEntity<Map<String, Integer>> getMyClasses(@PathVariable Long profId) {
+        int myClasses = emploiService.getMyClassesCount(profId);
+        Map<String, Integer> response = new HashMap<>();
+        response.put("myClasses", myClasses);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/prof/{id}")
     public List<EmploiProfDTO> getEmploiProf(@PathVariable("id") Long profId) {
         return emploiService.getEmploiDuJourForProf(profId);
