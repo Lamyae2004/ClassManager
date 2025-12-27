@@ -40,6 +40,10 @@ public class EmploiImportController {
         return emploiService.getEmploiByClasse(classeId);
     }
 
+    @GetMapping("/prof/{id}")
+    public List<EmploiProfDTO> getEmploiProf(@PathVariable("id") Long profId) {
+        return emploiService.getEmploiDuJourForProf(profId);
+    }
 
 
     @GetMapping("/classe/{classeId}/prof/{profId}/jour/{jour}")
