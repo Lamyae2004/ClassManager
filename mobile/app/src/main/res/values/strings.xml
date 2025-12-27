@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Strings existantes -->
+    <string name="app_name">Class Manager</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="first_login">First login? Validate your account</string>
+    <string name="verify_email">Verify your Email</string>
+    <string name="institutional_email">Institutional Email</string>
+    <string name="send_message">Send Message</string>
+    <string name="otp">OTP</string>
+    <string name="validate_otp">Validate OTP</string>
+    <string name="set_up_password">Set Up your Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="submit">Submit</string>
+    <string name="all_fields_required">All fields are required!</string>
+    <string name="passwords_do_not_match">Passwords do not match</string>
+    <string name="loading">Loading...</string>
+
+    <!-- Nouvelles strings pour le design moderne -->
+    <!-- Content Descriptions -->
+    <string name="app_logo">ClassManager Logo</string>
+    <string name="error_icon">Error icon</string>
+    <string name="arrow_icon">Arrow icon</string>
+    <string name="first_login_icon">First login icon</string>
+
+    <!-- Nouveaux textes pour l'écran de login -->
+    <string name="welcome_title">Welcome!</string>
+    <string name="welcome_subtitle">Sign in to continue</string>
+    <string name="app_tagline">Manage your classes intelligently</string>
+    <string name="or_divider">OR</string>
+    <string name="first_login_title">First login?</string>
+    <string name="first_login_description">Activate your account</string>
+    <string name="copyright_text">© 2025 ClassManager - All rights reserved</string>
+
+    <!-- Messages d'erreur supplémentaires -->
+    <string name="error_empty_fields">Please fill in all fields</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_login_failed">Login failed. Check your credentials.</string>
+    <string name="error_network">Network connection error</string>
+
+    <!-- Messages de succès -->
+    <string name="success_login">Login successful!</string>
+
+    <!-- Schedule Screen -->
+    <string name="schedule_icon">Schedule icon</string>
+    <string name="professor_icon">Professor icon</string>
+    <string name="room_icon">Room icon</string>
+    <string name="duration_icon">Duration icon</string>
+
+    <!-- Schedule Status -->
+    <string name="status_ongoing">ONGOING</string>
+    <string name="status_upcoming">UPCOMING</string>
+    <string name="status_completed">COMPLETED</string>
+    <string name="status_cancelled">CANCELLED</string>
+</resources>

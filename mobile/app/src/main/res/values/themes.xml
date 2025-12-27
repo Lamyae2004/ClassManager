@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base theme -->
+    <style name="Base.Theme.Classmanagerandroid"
+        parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/primary_500</item>
+        <item name="colorPrimaryContainer">@color/primary_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/secondary_500</item>
+        <item name="colorSecondaryContainer">@color/secondary_700</item>
+        <item name="colorOnSecondary">@color/white</item>
+
+        <item name="android:statusBarColor">?attr/colorPrimaryContainer</item>
+    </style>
+
+    <!-- App theme -->
+    <style name="Theme.Classmanagerandroid"
+        parent="Base.Theme.Classmanagerandroid" />
+
+</resources>
