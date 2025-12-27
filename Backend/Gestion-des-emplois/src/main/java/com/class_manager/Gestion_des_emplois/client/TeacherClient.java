@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(
         name = "USER-AUTH-SERVICE"
@@ -24,6 +25,13 @@ public interface TeacherClient {
     TeacherDTO getTeacherByFullName(
             @RequestParam String firstname,
             @RequestParam String lastname
+    );
+
+    @GetMapping("/api/users/students/count-by-class")
+    Map<String, Integer> countStudentsByClass(
+            @RequestParam String niveau,
+            @RequestParam String filiere,
+            @RequestParam boolean activated
     );
 
 

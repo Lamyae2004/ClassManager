@@ -6,6 +6,14 @@
   text-align: center;
 }
 
+:root {
+  --sidebar: 0 0% 100%;              /* blanc */
+  --sidebar-foreground: 222 47% 11%; /* texte sombre */
+  --sidebar-accent: 240 100% 96%;    /* hover violet clair */
+  --sidebar-accent-foreground: 240 80% 35%;
+  --sidebar-border: 220 13% 91%;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

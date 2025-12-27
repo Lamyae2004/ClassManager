@@ -9,11 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +25,43 @@ public class EmploiImportService {
     private final TeacherClient teacherClient;
 
 
+    public List<Map<String, Object>> getStudentsStatusPerClass(Long profId) {
+
+        List<Classe> classes = edtRepo.findDistinctClassesByProfId(profId);
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (Classe classe : classes) {
+            String className = classe.getNom();
+            String filiereName = classe.getFiliere().name(); // récupérer la filière
+
+            int active = teacherClient
+                    .countStudentsByClass(className, filiereName, true)
+                    .get("count");
+
+            int inactive = teacherClient
+                    .countStudentsByClass(className, filiereName, false)
+                    .get("count");
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("classe", className);
+            map.put("filiere", filiereName);   // ajout de la filière
+            map.put("activeStudents", active);
+            map.put("inactiveStudents", inactive);
+
+            result.add(map);
+        }
+
+        return result;
+    }
+
+
+
+
+
+    public int getMyClassesCount(Long profId) {
+        List<Classe> classes = edtRepo.findDistinctClassesByProfId(profId);
+        return classes.size(); // le nombre de classes distinctes
+    }
 
     public List<EmploiProfDTO> getEmploiDuJourForProf(Long profId) {
         // Obtenir le jour actuel en français (ou utiliser exactement le format stocké dans la DB)

@@ -2,23 +2,140 @@ package com.class_manager.Gestion_des_absences.service;
 
 
 import com.class_manager.Gestion_des_absences.client.UserClient;
-import com.class_manager.Gestion_des_absences.model.dto.SeanceDTO;
-import com.class_manager.Gestion_des_absences.model.dto.UserDTO;
+import com.class_manager.Gestion_des_absences.model.dto.*;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
 import com.class_manager.Gestion_des_absences.model.entity.Role;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
+import com.class_manager.Gestion_des_absences.repository.AbsenceRepository;
 import com.class_manager.Gestion_des_absences.repository.SeanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SeanceService {
     private final SeanceRepository seanceRepository;
     private final UserClient userClient;
+    private final AbsenceRepository absenceRepository;
+
+    public List<StudentsStatusByClassDTO> getStudentsStatusByClassForProf(
+            Long profId,
+            double absenceThreshold // ex: 0.25
+    ) {
+
+        // 1️⃣ Tous les étudiants
+        List<StudentDTO> students = userClient.getAllStudents();
+        Map<Long, StudentDTO> studentMap = students.stream()
+                .collect(Collectors.toMap(StudentDTO::getId, s -> s));
+
+        // 2️⃣ Absences
+        Map<Long, Long> absencesMap = absenceRepository
+                .countAbsencesByStudentForProf(profId)
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (Long) r[0],
+                        r -> (Long) r[1]
+                ));
+
+        // 3️⃣ Total séances
+        Map<Long, Long> totalMap = absenceRepository
+                .countTotalSeancesByStudentForProf(profId)
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (Long) r[0],
+                        r -> (Long) r[1]
+                ));
+
+        // 4️⃣ Regroupement par classe + filière
+        Map<String, StudentsStatusByClassDTO> result = new HashMap<>();
+
+        for (Long studentId : totalMap.keySet()) {
+
+            StudentDTO student = studentMap.get(studentId);
+            if (student == null) continue;
+
+            long absences = absencesMap.getOrDefault(studentId, 0L);
+            long total = totalMap.get(studentId);
+
+            double rate = (double) absences / total;
+
+            String key = student.getNiveau() + "-" + student.getFiliere();
+
+            result.putIfAbsent(key,
+                    new StudentsStatusByClassDTO(
+                            student.getNiveau(),
+                            student.getFiliere(),
+                            0,
+                            0
+                    )
+            );
+
+            StudentsStatusByClassDTO dto = result.get(key);
+
+            if (rate > absenceThreshold) {
+                dto.setInactiveStudents(dto.getInactiveStudents() + 1);
+            } else {
+                dto.setActiveStudents(dto.getActiveStudents() + 1);
+            }
+        }
+
+        return new ArrayList<>(result.values());
+    }
+
+
+
+    public List<ClassAbsenceRateDTO> getAbsenceRateByClassAndFiliere() {
+
+        List<StudentDTO> students = userClient.getAllStudents();
+
+        Map<Long, StudentDTO> studentMap = students.stream()
+                .collect(Collectors.toMap(StudentDTO::getId, s -> s));
+
+        List<Object[]> absences = absenceRepository.countAbsencesByStudent();
+
+        Map<String, Long> absenceCountByClass = new HashMap<>();
+        Map<String, Long> studentCountByClass = new HashMap<>();
+
+        for (Object[] row : absences) {
+            Long studentId = (Long) row[0];
+            Long count = (Long) row[1];
+
+            StudentDTO student = studentMap.get(studentId);
+            if (student == null) continue;
+
+            String key = student.getNiveau() + "-" + student.getFiliere();
+
+            absenceCountByClass.merge(key, count, Long::sum);
+            studentCountByClass.merge(key, 1L, Long::sum);
+        }
+
+        List<ClassAbsenceRateDTO> result = new ArrayList<>();
+
+        for (String key : absenceCountByClass.keySet()) {
+            double rate = (absenceCountByClass.get(key) * 100.0)
+                    / studentCountByClass.get(key);
+
+            String[] parts = key.split("-");
+            result.add(new ClassAbsenceRateDTO(
+                    parts[0],
+                    parts[1],
+                    Math.round(rate * 100.0) / 100.0
+            ));
+        }
+
+        return result;
+    }
+
+
+
+
 
     public List<Seance> getSeancesByClasseAndUser(Long classeId, Long userId) {
 

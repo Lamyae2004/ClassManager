@@ -12,7 +12,7 @@ import { AuthProvider } from "./context/AuthContext";
 import AbsencePage from './pages/gestion_absences/AbsencePage.jsx';
 import HistoriqueAbsences from "./pages/gestion_absences/HistoriqueAbsences.jsx";
 import ProfTimetablePage from "./pages/gestion_emplois/ProfTimetablePage.jsx";
-
+import DashboardPage from "./pages/DashboardPage";
 
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
           <Route path="forgotOtp" element={<VerifyOtp mode="forgot" />}/>
           <Route path="resetPassword" element={<SetUpPassword mode="forgot" />}/>
           <Route path="/" element={<Page />}>         
-          <Route index element={<div>    </div>} />        
+          <Route index element={<DashboardPage />} />    
           <Route path="upload" element={<TimetableUpload />} />
           <Route path="timetable" element={<TimetableList />} />
           <Route path="timetable/prof" element={<ProfTimetablePage />} />
