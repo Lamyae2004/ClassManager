@@ -10,4 +10,16 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
+    <!-- Message "Pas de cours" -->
+    <TextView
+        android:id="@+id/tvNoCours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Pas de cours"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone" />
+
+
 </FrameLayout>

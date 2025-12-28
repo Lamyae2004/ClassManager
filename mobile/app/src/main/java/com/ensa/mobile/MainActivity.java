@@ -2,6 +2,7 @@ package com.ensa.mobile;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private TokenManager tokenManager;
     private TextView headerUserName;
     private TextView headerUserRole;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +48,10 @@ public class MainActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawerLayout);
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        NavigationView navigationView = findViewById(R.id.navigationView);
+        navigationView = findViewById(R.id.navigationView);
 
-
+        // --- CONFIGURATION DU MENU SELON LE RÔLE ---
+        setupMenuBasedOnRole();
 
         // --- AJOUT DU HEADER DYNAMIQUE ---
         View headerView = navigationView.getHeaderView(0);
@@ -64,31 +67,30 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START)
         );
 
-
         // --- Ajout du popup profil ---
         LinearLayout profileCompact = findViewById(R.id.profileCompact);
         profileCompact.setOnClickListener(view -> {
             PopupMenu popup = new PopupMenu(MainActivity.this, view);
             popup.getMenuInflater().inflate(R.menu.profile_menu, popup.getMenu());
-            
+
             // Update popup menu items with user info
             MenuItem nameItem = popup.getMenu().findItem(R.id.headerUserName);
             MenuItem roleItem = popup.getMenu().findItem(R.id.headerUserRole);
-            
+
             String fullName = tokenManager.getFullName();
             if (fullName.isEmpty()) {
                 fullName = tokenManager.getEmail();
             }
             String role = tokenManager.getRole();
             String roleDisplay = role.equalsIgnoreCase("TEACHER") ? "Teacher" : "Student";
-            
+
             if (nameItem != null) {
                 nameItem.setTitle(fullName);
             }
             if (roleItem != null) {
                 roleItem.setTitle(roleDisplay);
             }
-            
+
             popup.show();
         });
 
@@ -115,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
                         .commit();
             }
 
-
             // Gestion du logout
             if (item.getItemId() == R.id.nav_logout) {
                 handleLogout();
@@ -125,6 +126,27 @@ public class MainActivity extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+    }
+
+    /**
+     * Configure le menu du NavigationView selon le rôle de l'utilisateur
+     */
+    private void setupMenuBasedOnRole() {
+        String role = tokenManager.getRole();
+        Menu menu = navigationView.getMenu();
+        MenuItem absenceItem = menu.findItem(R.id.nav_absence);
+
+        if (role != null && role.equalsIgnoreCase("STUDENT")) {
+            // Afficher "Mes absences" pour les étudiants
+            if (absenceItem != null) {
+                absenceItem.setVisible(true);
+            }
+        } else if (role != null && role.equalsIgnoreCase("TEACHER")) {
+            // Masquer "Mes absences" pour les professeurs
+            if (absenceItem != null) {
+                absenceItem.setVisible(false);
+            }
+        }
     }
 
     /**
@@ -152,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                     tokenManager.saveFirstname(user.getFirstname());
                     tokenManager.saveLastname(user.getLastname());
                     tokenManager.saveRole(user.getRole());
-                    
+
                     // Update nav header (if TextViews exist)
                     if (headerUserName != null && headerUserRole != null) {
                         String fullName = user.getFirstname() + " " + user.getLastname();

@@ -131,14 +131,23 @@ public class LoginActivity extends AppCompatActivity {
             public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     UserResponse user = response.body();
-                    tokenManager.saveRole(user.getRole());
+
+                    // DÉCLARER role ICI, au début
+                    String role = user.getRole();
+
+                    // Sauvegarder les infos de base
+                    tokenManager.saveRole(role);
                     tokenManager.saveFirstname(user.getFirstname());
                     tokenManager.saveLastname(user.getLastname());
-                    tokenManager.saveStudentId(user.getId());       // stocke l'ID
-                    tokenManager.saveClasse(user.getClasse());      // classe
-                    tokenManager.saveFiliere(user.getFiliere());    // filière
-                    tokenManager.saveNiveau(user.getNiveau());      // niveau
-                    String role = user.getRole();
+                    tokenManager.saveStudentId(user.getId());
+                    tokenManager.saveClasse(user.getClasse());
+                    tokenManager.saveFiliere(user.getFiliere());
+                    tokenManager.saveNiveau(user.getNiveau());
+
+                    // Sauvegarder l'ID selon le rôle
+                    if (role != null && role.equalsIgnoreCase("TEACHER")) {
+                        tokenManager.saveTeacherId(user.getId());
+                    }
 
                     // Check if role is TEACHER or STUDENT (case-insensitive)
                     if (role != null && (role.equalsIgnoreCase("TEACHER") || role.equalsIgnoreCase("STUDENT"))) {

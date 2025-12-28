@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Section principale -->
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_emploi"
             android:title="Emploi de temps"
             android:icon="@drawable/ic_calendar"/>
 
+        <!-- Cet item sera ajouté dynamiquement pour les STUDENTS -->
         <item
             android:id="@+id/nav_absence"
             android:title="Mes absences"
-            android:icon="@drawable/ic_absence"/>
+            android:icon="@drawable/ic_absence"
+            android:visible="false"/>
     </group>
 
-    <!-- Séparateur et Déconnexion -->
     <item android:title="">
         <menu>
             <item
@@ -23,5 +22,4 @@
                 android:icon="@drawable/ic_logout"/>
         </menu>
     </item>
-
 </menu>
