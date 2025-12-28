@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- User info items -->
+    <item
+        android:id="@+id/headerUserName"
+        android:title="Nom Utilisateur"
+        android:enabled="false" />  <!-- disable click -->
+
+    <item
+        android:id="@+id/headerUserRole"
+        android:title="Rôle"
+        android:enabled="false" />  <!-- disable click -->
+
+    <!-- Divider / Section -->
+
+
+</menu>

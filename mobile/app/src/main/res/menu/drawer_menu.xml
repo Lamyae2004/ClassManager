@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Section principale -->
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_emploi"
+            android:title="Emploi de temps"
+            android:icon="@drawable/ic_calendar"/>
+
+        <item
+            android:id="@+id/nav_absence"
+            android:title="Mes absences"
+            android:icon="@drawable/ic_absence"/>
+    </group>
+
+    <!-- Séparateur et Déconnexion -->
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/nav_logout"
+                android:title="Déconnexion"
+                android:icon="@drawable/ic_logout"/>
+        </menu>
+    </item>
+
+</menu>
