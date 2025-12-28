@@ -90,6 +90,15 @@ public class TokenManager {
     public long getStudentId() {
         return prefs.getLong("studentId", -1);
     }
+    // Sauvegarder l'ID du professeur
+    public void saveTeacherId(Long id) {
+        prefs.edit().putLong("teacher_id", id).apply();
+    }
+
+    // Récupérer l'ID du professeur
+    public long getTeacherId() {
+        return prefs.getLong("teacher_id", -1);
+    }
 
     public void saveClasse(String classe) {
         prefs.edit().putString("classe", classe).apply();

@@ -2,6 +2,7 @@ package com.ensa.mobile.emploitemps.api;
 
 import com.ensa.mobile.emploitemps.models.EmploiDuTempsDTO;
 import com.ensa.mobile.emploitemps.models.EmploiEtudiantResponse;
+import com.ensa.mobile.emploitemps.models.EmploiProfDTO;
 
 import java.util.List;
 import retrofit2.Call;
@@ -23,4 +24,6 @@ public interface EmploiApiService {
             @Path("id") Long studentId
     );
 
+    @GET("emploi/prof/{id}")
+    Call<List<EmploiProfDTO>> getEmploiByProfId(@Path("id") Long profId);
 }

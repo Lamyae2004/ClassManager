@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ensa.mobile.R;
@@ -18,6 +19,7 @@ import com.ensa.mobile.emploitemps.adapters.EmploiAdapter;
 import com.ensa.mobile.emploitemps.api.EmploiRetrofitClient;
 import com.ensa.mobile.emploitemps.models.EmploiDuTempsDTO;
 import com.ensa.mobile.emploitemps.models.EmploiEtudiantResponse;
+import com.ensa.mobile.emploitemps.models.EmploiProfDTO;
 import com.ensa.mobile.emploitemps.models.EmploiWrapperDTO;
 import com.ensa.mobile.utils.TokenManager;
 
@@ -39,6 +41,7 @@ public class FragmentJour extends Fragment {
 
     private String jour;
     private RecyclerView recyclerView;
+    private TextView tvNoCours;
     private EmploiAdapter adapter;
     private List<EmploiDuTempsDTO> data = new ArrayList<>();
 
@@ -72,6 +75,7 @@ public class FragmentJour extends Fragment {
         Log.d(TAG, "onViewCreated - initialisation RecyclerView");
 
         recyclerView = view.findViewById(R.id.recyclerViewJour);
+        tvNoCours = view.findViewById(R.id.tvNoCours);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new EmploiAdapter(data);
         recyclerView.setAdapter(adapter);
@@ -121,9 +125,34 @@ public class FragmentJour extends Fragment {
             default: return 0;
         }
     }
-
+    private void updateUI() {
+        if (data.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            tvNoCours.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            tvNoCours.setVisibility(View.GONE);
+        }
+    }
     private void loadEmploi() {
+        TokenManager tokenManager = TokenManager.getInstance(requireContext());
+        String role = tokenManager.getRole();
 
+        if (role == null) {
+            Toast.makeText(requireContext(), "Rôle non défini", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Charger l'emploi selon le rôle
+        if (role.equalsIgnoreCase("STUDENT")) {
+            loadEmploiStudent();
+        } else if (role.equalsIgnoreCase("TEACHER")) {
+            loadEmploiProf();
+        }
+    }
+
+    // Méthode pour les étudiants (votre code existant)
+    private void loadEmploiStudent() {
         long studentId = TokenManager.getInstance(requireContext()).getStudentId();
 
         if (studentId == -1) {
@@ -144,35 +173,95 @@ public class FragmentJour extends Fragment {
                                    Response<EmploiEtudiantResponse> response) {
 
                 if (response.isSuccessful() && response.body() != null) {
-
                     List<EmploiWrapperDTO> wrappers = response.body().getEmplois();
-
                     data.clear();
+
                     for (EmploiWrapperDTO w : wrappers) {
                         EmploiDuTempsDTO e = w.toEmploiDTO();
 
                         if (e.getJour() != null && e.getJour().equalsIgnoreCase(jour)) {
                             e.setEtat(calculerEtat(e.getJour(), e.getCreneauDebut(), e.getCreneauFin()));
-
                             data.add(e);
-
                         }
                     }
                     adapter.notifyDataSetChanged();
-
-
+                    updateUI();
                 }
             }
 
             @Override
             public void onFailure(Call<EmploiEtudiantResponse> call, Throwable t) {
                 Toast.makeText(requireContext(),
-                        "Erreur réseau",
+                        "Erreur réseau: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
     }
 
+    // Méthode existante pour les professeurs (gardez-la telle quelle)
+    private void loadEmploiProf() {
+        long profId = TokenManager.getInstance(requireContext()).getTeacherId();
+
+        if (profId == -1) {
+            Toast.makeText(requireContext(), "Professeur non connecté", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Call<List<EmploiProfDTO>> call =
+                EmploiRetrofitClient.getInstance()
+                        .getEmploiApiService()
+                        .getEmploiByProfId(profId);
+
+        call.enqueue(new Callback<List<EmploiProfDTO>>() {
+            @Override
+            public void onResponse(Call<List<EmploiProfDTO>> call,
+                                   Response<List<EmploiProfDTO>> response) {
+
+                if (response.isSuccessful() && response.body() != null) {
+                    data.clear();
+
+                    for (EmploiProfDTO profDTO : response.body()) {
+                        // Filtrer par jour
+                        if (profDTO.getJour() != null && profDTO.getJour().equalsIgnoreCase(jour)) {
+
+                            // Convertir EmploiProfDTO → EmploiDuTempsDTO
+                            EmploiDuTempsDTO dto = new EmploiDuTempsDTO();
+                            dto.setJour(profDTO.getJour());
+                            dto.setCreneauDebut(profDTO.getCreneauDebut());
+                            dto.setCreneauFin(profDTO.getCreneauFin());
+                            dto.setMatiereNom(profDTO.getMatiereNom());
+                            dto.setSalleNom(profDTO.getSalleNom());
+
+                            // Pour le prof : afficher "Classe - Filière" au lieu du nom du prof
+                            dto.setProfNom(profDTO.getClasseNom() + " - " + profDTO.getFiliere());
+
+                            // Calculer l'état
+                            dto.setEtat(calculerEtat(profDTO.getJour(),
+                                    profDTO.getCreneauDebut(),
+                                    profDTO.getCreneauFin()));
+
+                            data.add(dto);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                    updateUI();
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Erreur lors du chargement de l'emploi",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<EmploiProfDTO>> call, Throwable t) {
+                Toast.makeText(requireContext(),
+                        "Erreur réseau: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    }
 
 
-}
+
