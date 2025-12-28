@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -10,16 +11,55 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
-    <!-- Message "Pas de cours" -->
-    <TextView
+    <!-- Message "Pas de cours" avec cercle -->
+    <LinearLayout
         android:id="@+id/tvNoCours"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="Pas de cours"
-        android:textSize="18sp"
-        android:textColor="@android:color/darker_gray"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
 
+        <!-- Cercle avec emoji -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            app:cardCornerRadius="60dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#E6F2FF"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="🗓️"
+                android:textSize="56sp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Titre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aucun cours aujourd'hui"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#1A202C"
+            android:layout_marginBottom="8dp"
+            android:gravity="center" />
+
+        <!-- Sous-titre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profitez de cette journée libre ! 🎉"
+            android:textSize="14sp"
+            android:textColor="#718096"
+            android:gravity="center" />
+
+    </LinearLayout>
 
 </FrameLayout>

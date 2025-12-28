@@ -41,7 +41,7 @@ public class FragmentJour extends Fragment {
 
     private String jour;
     private RecyclerView recyclerView;
-    private TextView tvNoCours;
+    private View tvNoCours;
     private EmploiAdapter adapter;
     private List<EmploiDuTempsDTO> data = new ArrayList<>();
 
