@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_emplois.client;
 
 
+import com.class_manager.Gestion_des_emplois.model.dto.EtudiantActionDTO;
 import com.class_manager.Gestion_des_emplois.model.dto.EtudiantDTO;
 import com.class_manager.Gestion_des_emplois.model.dto.TeacherDTO;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -18,8 +19,15 @@ public interface TeacherClient {
     @GetMapping("/api/users/teachers")
     List<TeacherDTO> getAllTeachers();
 
-    @GetMapping("/api/users/teachers")
-    TeacherDTO getTeacherById(@PathVariable Long id);
+    default TeacherDTO getTeacherById(Long id) {
+        return getAllTeachers().stream()
+                .filter(t -> t.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Teacher not found with id " + id));
+    }
+
+    //@GetMapping("/api/users/teachers")
+    //TeacherDTO getTeacherById(@PathVariable Long id);
 
 
     @GetMapping("/api/users/students/{studentId}")
@@ -37,6 +45,11 @@ public interface TeacherClient {
             @RequestParam String niveau,
             @RequestParam String filiere,
             @RequestParam boolean activated
+    );
+    @GetMapping("/api/users/students")
+    List<EtudiantActionDTO> getStudentsByClasse(
+            @RequestParam String filiere,
+            @RequestParam String niveau
     );
 
 

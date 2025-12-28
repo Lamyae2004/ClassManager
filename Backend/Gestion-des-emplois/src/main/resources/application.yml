@@ -18,6 +18,19 @@ spring:
     username: postgres
     password: admin
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: nourelhouda.essafi@uit.ac.ma
+    password: "qvsu ezjk tffb vbtr"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
 
   servlet:
     multipart:

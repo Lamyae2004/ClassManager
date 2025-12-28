@@ -1,6 +1,7 @@
 package com.ensa.mobile.emploitemps.models;
 
 public class EmploiProfDTO {
+    private Long id;
     private String jour;
     private String creneauDebut;
     private String creneauFin;
@@ -13,6 +14,9 @@ public class EmploiProfDTO {
     public EmploiProfDTO() {}
 
     // Getters et Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
     public String getJour() { return jour; }
     public void setJour(String jour) { this.jour = jour; }
 

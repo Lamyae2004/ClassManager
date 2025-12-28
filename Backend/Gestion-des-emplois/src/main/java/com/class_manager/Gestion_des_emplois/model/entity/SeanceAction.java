@@ -1,0 +1,43 @@
+package com.class_manager.Gestion_des_emplois.model.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "seance_actions")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SeanceAction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long emploiId;      // Référence à EmploiDuTemps
+
+    @Column(nullable = false)
+    private Long profId;         // ID du professeur
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ActionType action;   // ANNULER ou RETARD
+
+    @Column(length = 500)
+    private String motif;        // Raison
+
+    @Column(nullable = false)
+    private LocalDateTime dateAction;  // Date/heure de l'action
+
+    @Column(nullable = false)
+    private Boolean emailEnvoye = false;  // Email envoyé ou non
+
+    public enum ActionType {
+        ANNULER,
+        RETARD
+    }
+}
