@@ -60,6 +60,9 @@
     <string-array name="document_types">
         <item>Cours</item>
         <item>TD</item>
-        <item>TP</item>
+        <item>TP</item>W
     </string-array>
+
+    <string name="prompt_classe">Sélectionner la classe</string>
+    <string name="prompt_module">Sélectionner le module</string>
 </resources>

@@ -42,9 +42,8 @@
             android:layout_width="0dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-
             android:layout_height="50dp"
-            android:prompt="Sélectionner la classe"
+            android:prompt="@string/prompt_classe"
             android:background="@drawable/input_background"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -59,9 +58,8 @@
             android:layout_width="0dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
-
             android:layout_height="50dp"
-            android:prompt="Sélectionner le module"
+            android:prompt="@string/prompt_module"
             android:background="@drawable/input_background"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
@@ -69,6 +67,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="12dp"/>
+
 
         <!-- Champ Titre -->
         <EditText
