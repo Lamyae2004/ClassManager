@@ -14,7 +14,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/user_auth_db
     username: postgres
     password: admin
-    password: admin
   jpa:
     hibernate:
       ddl-auto: update

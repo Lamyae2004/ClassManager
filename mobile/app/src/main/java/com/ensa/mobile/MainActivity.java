@@ -17,6 +17,7 @@ import com.ensa.mobile.authentification.api.RetrofitClient;
 import com.ensa.mobile.authentification.models.UserResponse;
 import com.ensa.mobile.emploitemps.ui.FragmentEmploi;
 import com.ensa.mobile.authentification.activities.LoginActivity;
+import com.ensa.mobile.gestionDocuments.ui.FragmentDocumentsEtudiants;
 import com.ensa.mobile.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
@@ -114,6 +115,13 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.fragmentContainer, new FragmentAbsenceEtudiant())
+                        .commit();
+            }
+
+            if (item.getItemId() == R.id.nav_documents) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, new FragmentDocumentsEtudiants())
                         .commit();
             }
 

@@ -31,5 +31,14 @@ public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, Lo
     @Query("SELECT DISTINCT e.classe FROM EmploiDuTemps e WHERE e.profId = :profId")
     List<Classe> findDistinctClassesByProfId(Long profId);
 
+    @Query("""
+        SELECT e FROM EmploiDuTemps e
+        WHERE e.classe.nom = :nom
+        AND e.classe.filiere = :filiere
+    """)
+    List<EmploiDuTemps> findByClasseNomAndFiliere(
+            @Param("nom") String nom,
+            @Param("filiere") Filiere filiere
+    );
 }
 
