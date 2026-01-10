@@ -21,7 +21,7 @@ import com.ensa.mobile.gestionDocuments.api.ClasseService;
 import com.ensa.mobile.gestionDocuments.api.EmploiService;
 import com.ensa.mobile.gestionDocuments.models.ClasseEtudiantDto;
 import com.ensa.mobile.gestionDocuments.models.Document;
-import com.ensa.mobile.gestionDocuments.models.Matiere;
+import com.ensa.mobile.gestionDocuments.models.MatiereDto;
 import com.ensa.mobile.gestionDocuments.models.MatiereProfDto;
 import com.ensa.mobile.utils.TokenManager;
 
@@ -41,7 +41,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
     private Spinner spinnerMatiere, spinnerType;
     private DocumentAdapter adapter;
     private List<Document> allDocuments = new ArrayList<>();
-    private List<Matiere> matieres = new ArrayList<>();
+    private List<MatiereDto> matieres = new ArrayList<>();
     private List<String> types = Arrays.asList("Cours", "TP", "TD");
     private ClasseEtudiantDto etudiantClasse;
 
@@ -107,7 +107,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
                                 matiereIdMap.put(mp.getMatiereId(), mp);
 
                                 // Ajouter la matière pour le spinner
-                                matieres.add(new Matiere(mp.getMatiereId(), mp.getMatiere()));
+                                matieres.add(new MatiereDto(mp.getMatiereId(), mp.getMatiere()));
 
                                 // Créer un document statique
                                 String type = types.get(i % types.size());
@@ -136,7 +136,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
     }
 
     private void setupSpinners() {
-        ArrayAdapter<Matiere> matiereAdapter = new ArrayAdapter<>(getContext(),
+        ArrayAdapter<MatiereDto> matiereAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, matieres);
         matiereAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMatiere.setAdapter(matiereAdapter);
@@ -160,7 +160,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
     }
 
     private void filterDocuments() {
-        Matiere selectedMatiere = (Matiere) spinnerMatiere.getSelectedItem();
+        MatiereDto selectedMatiere = (MatiereDto) spinnerMatiere.getSelectedItem();
         String selectedType = (String) spinnerType.getSelectedItem();
 
         List<Document> filtered = new ArrayList<>();
