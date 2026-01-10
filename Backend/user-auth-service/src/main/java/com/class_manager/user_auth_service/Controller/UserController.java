@@ -167,7 +167,9 @@ public class UserController {
 
         return TeacherDtoMapper.fromEntity(teacher);
     }
-    
+
+   
+
     @GetMapping("students/random")
     public StudentDto getRandomStudent(
             @RequestParam Niveau niveau,

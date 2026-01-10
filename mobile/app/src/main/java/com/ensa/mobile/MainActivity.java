@@ -110,6 +110,18 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.fragmentContainer, new FragmentEmploi())
                         .commit();
             }
+            if (item.getItemId() == R.id.nav_documents) {
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(
+                                R.id.fragmentContainer,
+                                new com.ensa.mobile.gestionDocuments.ui.UploadDocumentFragment()
+                        )
+                        .addToBackStack(null)
+                        .commit();
+            }
+
 
             if (item.getItemId() == R.id.nav_absence) {
                 getSupportFragmentManager()
@@ -143,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         String role = tokenManager.getRole();
         Menu menu = navigationView.getMenu();
         MenuItem absenceItem = menu.findItem(R.id.nav_absence);
-
+        MenuItem documentsItem = menu.findItem(R.id.nav_documents);
         if (role != null && role.equalsIgnoreCase("STUDENT")) {
             // Afficher "Mes absences" pour les étudiants
             if (absenceItem != null) {
@@ -153,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
             // Masquer "Mes absences" pour les professeurs
             if (absenceItem != null) {
                 absenceItem.setVisible(false);
+                if (documentsItem != null) documentsItem.setVisible(true);
             }
         }
     }
