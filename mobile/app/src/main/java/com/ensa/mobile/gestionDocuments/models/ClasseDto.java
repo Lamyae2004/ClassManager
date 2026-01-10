@@ -23,4 +23,3 @@ public class ClasseDto {
         return nom + " - " + filiere;
     }
 }
-

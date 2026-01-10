@@ -11,4 +11,6 @@ public interface TeacherRepository extends JpaRepository<Teacher,Long> {
             String firstname, String lastname
     );
 
+    @Override
+    Optional<Teacher> findById(Long aLong);
 }

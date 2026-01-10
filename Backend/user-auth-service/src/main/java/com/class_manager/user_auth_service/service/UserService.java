@@ -1,12 +1,10 @@
 package com.class_manager.user_auth_service.service;
 
-import com.class_manager.user_auth_service.model.dto.AdminDto;
-import com.class_manager.user_auth_service.model.dto.StudentDto;
-import com.class_manager.user_auth_service.model.dto.TeacherDto;
-import com.class_manager.user_auth_service.model.dto.UserMapper;
+import com.class_manager.user_auth_service.model.dto.*;
 import com.class_manager.user_auth_service.model.entity.Filiere;
 import com.class_manager.user_auth_service.model.entity.Niveau;
 import com.class_manager.user_auth_service.model.entity.Student;
+import com.class_manager.user_auth_service.model.entity.Teacher;
 import com.class_manager.user_auth_service.repository.AdminRepository;
 import com.class_manager.user_auth_service.repository.StudentRepository;
 import com.class_manager.user_auth_service.repository.TeacherRepository;
@@ -27,6 +25,31 @@ public class UserService {
     private final StudentRepository studentRepo;
     private final TeacherRepository teacherRepo;
     private final AdminRepository adminRepo;
+
+
+
+    public TeacheremploiDTO getTeacherById(Long id) {
+        Teacher teacher = teacherRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Prof non trouvé avec id : " + id));
+        return toDto(teacher);
+    }
+
+    private TeacheremploiDTO toDto(Teacher teacher) {
+        return new TeacheremploiDTO(teacher.getId(), teacher.getLastname(), teacher.getFirstname(), teacher.getEmail(),teacher.getSpeciality());
+    }
+
+
+    public StudentClasseDTO getClasseInfoByStudentId(Long studentId) {
+
+        Student student = studentRepo.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Étudiant introuvable"));
+
+        String niveau = student.getNiveau().name();
+        String filiere = student.getFiliere().name();
+        String classe = niveau + "-" + filiere;
+
+        return new StudentClasseDTO(niveau, filiere, classe);
+    }
 
 
 
@@ -93,9 +116,6 @@ public class UserService {
                 activated
         );
     }
-
-
-
 
 
     public List<Student> getStudentsByClasse(Filiere filiere, Niveau niveau) {

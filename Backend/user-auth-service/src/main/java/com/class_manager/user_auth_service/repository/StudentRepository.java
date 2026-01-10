@@ -6,8 +6,12 @@ import com.class_manager.user_auth_service.model.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student,Long> {
 
     List<Student> findByNiveauAndFiliere(Niveau niveau, Filiere filiere);
+
+    @Override
+    Optional<Student> findById(Long aLong);
 }

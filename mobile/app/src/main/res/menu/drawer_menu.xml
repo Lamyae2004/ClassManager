@@ -17,6 +17,12 @@
             android:title="Mes absences"
             android:icon="@drawable/ic_absence"
             android:visible="false"/>
+
+        <item
+            android:id="@+id/nav_documents"
+            android:title="Mes documents"
+            android:icon="@drawable/ic_documents"/>
+
     </group>
 
     <item android:title="">
