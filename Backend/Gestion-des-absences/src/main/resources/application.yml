@@ -2,14 +2,13 @@ server:
   port: 8083
 
 
-
 spring:
   application:
     name: ABSENCE-SERVICE
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_absences
     username: postgres
-    password: admin
+    password: root
 
   jpa:
     hibernate:

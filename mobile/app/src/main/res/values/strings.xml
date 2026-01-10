@@ -58,7 +58,7 @@
     <string name="status_cancelled">CANCELLED</string>
 
     <string-array name="document_types">
-        <item>Cours</item>
+        <item>COURS</item>
         <item>TD</item>
         <item>TP</item>W
     </string-array>

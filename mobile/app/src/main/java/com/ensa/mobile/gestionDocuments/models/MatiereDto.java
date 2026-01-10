@@ -1,23 +1,23 @@
 package com.ensa.mobile.gestionDocuments.models;
-public class Matiere {
+public class MatiereDto {
     private Long id;
-    private String name;
+    private String nom;
 
-    public Matiere(Long id, String name) {
+    public MatiereDto(Long id, String name) {
         this.id = id;
-        this.name = name;
+        this.nom = name;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getNom() {
+        return nom;
     }
 
     @Override
     public String toString() {
-        return name;
+        return nom;
     }
 }

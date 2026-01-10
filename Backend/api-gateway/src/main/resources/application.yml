@@ -43,8 +43,8 @@ spring:
           predicates:
             - Path=/api/responsible/**
 
-        - id: document_sharing
-          uri: lb://DOCUMENT_SHARING
+        - id: document-sharing
+          uri: lb://document-sharing
           predicates:
             - Path=/api/document/**
 

@@ -25,6 +25,7 @@ public class DocumentDto {
     private Long moduleId;
     private Long classeId;
     private Long profId;
+    private String fileUrl;
 
     public DocumentDto toDocumentDto(DocumentEntity d){
         return DocumentDto.builder()
@@ -36,6 +37,7 @@ public class DocumentDto {
                 .moduleId(d.getModuleId())
                 .classeId(d.getClasseId())
                 .profId(d.getProfId())
+                .fileUrl(d.getFileUrl())
                 .build();
     }
 }
