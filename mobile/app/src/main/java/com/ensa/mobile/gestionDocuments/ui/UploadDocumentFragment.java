@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
-
+import okhttp3.ResponseBody;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -94,9 +94,9 @@ public class UploadDocumentFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100 && resultCode == getActivity().RESULT_OK && data != null) {
             selectedFileUri = data.getData();
-            Toast.makeText(getContext(),
-                    "Fichier choisi : " + selectedFileUri.getLastPathSegment(),
-                    Toast.LENGTH_SHORT).show();
+            String fileName = getFileName(selectedFileUri);
+            documentSelectFileButton.setText(fileName);
+
         }
     }
 
@@ -150,10 +150,9 @@ public class UploadDocumentFragment extends Fragment {
 
     private void uploadDocument(Uri fileUri) {
         try {
-            // Récupérer le vrai nom du fichier
+
             String fileName = getFileName(fileUri);
 
-            // Ouvrir le fichier depuis le ContentResolver
             InputStream inputStream = requireContext().getContentResolver().openInputStream(fileUri);
             if (inputStream == null) {
                 Toast.makeText(getContext(), "Impossible de lire le fichier", Toast.LENGTH_SHORT).show();
@@ -164,7 +163,7 @@ public class UploadDocumentFragment extends Fragment {
             String mimeType = requireContext().getContentResolver().getType(fileUri);
             if (mimeType == null) mimeType = "application/octet-stream";
 
-            // Créer RequestBody pour le fichier
+
             String finalMimeType = mimeType;
             RequestBody filePart = new RequestBody() {
                 @Override
@@ -189,14 +188,13 @@ public class UploadDocumentFragment extends Fragment {
                     filePart
             );
 
-            // Données du formulaire
             RequestBody titlePart = RequestBody.create(
                     documentTitleEditText.getText().toString(),
                     MediaType.parse("text/plain")
             );
 
             RequestBody typePart = RequestBody.create(
-                    documentTypeSpinner.getSelectedItem().toString().toUpperCase(), // pour matcher l'enum backend
+                    documentTypeSpinner.getSelectedItem().toString().toUpperCase(),
                     MediaType.parse("text/plain")
             );
 
@@ -216,18 +214,25 @@ public class UploadDocumentFragment extends Fragment {
                             RequestBody.create(fileName, MediaType.parse("text/plain")),
                             fileBody
                     )
-                    .enqueue(new Callback<String>() {
+                    .enqueue(new Callback<ResponseBody>() {
                         @Override
-                        public void onResponse(Call<String> call, Response<String> response) {
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
-                                Toast.makeText(getContext(), "Upload OK", Toast.LENGTH_SHORT).show();
+                                try {
+                                    String message = response.body().string(); // récupérer le message envoyé par Spring
+                                    Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(getContext(), "Upload réussi mais impossible de lire la réponse", Toast.LENGTH_SHORT).show();
+                                }
+                                resetForm();
                             } else {
                                 Toast.makeText(getContext(), "Erreur serveur : " + response.code(), Toast.LENGTH_SHORT).show();
                             }
                         }
 
                         @Override
-                        public void onFailure(Call<String> call, Throwable t) {
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
                             Toast.makeText(getContext(), "Erreur réseau : " + t.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -252,6 +257,25 @@ public class UploadDocumentFragment extends Fragment {
         }
         return result;
     }
+
+    private void resetForm() {
+
+        documentTitleEditText.setText("");
+
+        if (documentClasseSpinner.getAdapter() != null)
+            documentClasseSpinner.setSelection(0);
+
+        if (documentModuleSpinner.getAdapter() != null)
+            documentModuleSpinner.setSelection(0);
+
+        if (documentTypeSpinner.getAdapter() != null)
+            documentTypeSpinner.setSelection(0);
+
+        selectedFileUri = null;
+
+        documentSelectFileButton.setText("Choisir un fichier");
+    }
+
 
 
 }
