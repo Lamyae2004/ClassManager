@@ -7,8 +7,9 @@
             android:icon="@drawable/ic_calendar"/>
 
         <item
-            android:id="@+id/nav_documents"
+            android:id="@+id/nav_documentsTeacher"
             android:title="Documents partagés"
+            android:icon="@drawable/ic_documents"
             />
 
         <!-- Cet item sera ajouté dynamiquement pour les STUDENTS -->

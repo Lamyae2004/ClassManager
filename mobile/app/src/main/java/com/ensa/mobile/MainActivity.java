@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.fragmentContainer, new FragmentEmploi())
                         .commit();
             }
-            if (item.getItemId() == R.id.nav_documents) {
+            if (item.getItemId() == R.id.nav_documentsTeacher) {
 
                 getSupportFragmentManager()
                         .beginTransaction()
@@ -155,12 +155,13 @@ public class MainActivity extends AppCompatActivity {
         String role = tokenManager.getRole();
         Menu menu = navigationView.getMenu();
         MenuItem absenceItem = menu.findItem(R.id.nav_absence);
-        MenuItem documentsItem = menu.findItem(R.id.nav_documents);
+        MenuItem documentsItem = menu.findItem(R.id.nav_documentsTeacher);
         if (role != null && role.equalsIgnoreCase("STUDENT")) {
             // Afficher "Mes absences" pour les étudiants
             if (absenceItem != null) {
                 absenceItem.setVisible(true);
             }
+            if (documentsItem != null) documentsItem.setVisible(false);
         } else if (role != null && role.equalsIgnoreCase("TEACHER")) {
             // Masquer "Mes absences" pour les professeurs
             if (absenceItem != null) {
