@@ -16,8 +16,27 @@ cache:
     - .m2/repository/
 
 
-# Class Responsibility Service Pipeline
+# Config Lib Pipeline (must be built first)
 
+config-lib:build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - echo "Building config-lib..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - echo "config-lib built and installed to local repository"
+  artifacts:
+    paths:
+      - .m2/repository/com/class_manager/common/config-lib/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+# Class Responsibility Service Pipeline
 
 class-responsibility-service:build:
   stage: build
@@ -31,6 +50,8 @@ class-responsibility-service:build:
     paths:
       - Backend/class-responsibility-service/target/classes/
     expire_in: 1 hour
+  dependencies:
+    - config-lib:build
   only:
     - main
     - develop
@@ -53,6 +74,8 @@ class-responsibility-service:test:
     paths:
       - Backend/class-responsibility-service/target/surefire-reports/
     expire_in: 1 week
+  dependencies:
+    - config-lib:build
   only:
     - main
     - develop
@@ -85,6 +108,8 @@ class-responsibility-service:coverage:
       junit:
         - Backend/class-responsibility-service/target/surefire-reports/TEST-*.xml
     expire_in: 1 month
+  dependencies:
+    - config-lib:build
   only:
     - main
     - develop
@@ -101,6 +126,7 @@ class-responsibility-service:coverage-check:
     - echo "Coverage check passed "
   dependencies:
     - class-responsibility-service:coverage
+    - config-lib:build
   allow_failure: false
   only:
     - main
@@ -119,6 +145,8 @@ class-responsibility-service:package:
     paths:
       - Backend/class-responsibility-service/target/*.jar
     expire_in: 1 week
+  dependencies:
+    - config-lib:build
   only:
     - main
     - develop
