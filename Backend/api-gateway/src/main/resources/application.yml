@@ -43,6 +43,11 @@ spring:
           predicates:
             - Path=/api/responsible/**
 
+        - id: document-sharing
+          uri: lb://document-sharing
+          predicates:
+            - Path=/api/document/**
+
 eureka:
   client:
     service-url:

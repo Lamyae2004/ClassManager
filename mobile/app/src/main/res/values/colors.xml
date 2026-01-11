@@ -69,4 +69,17 @@
 
     <color name="white_alpha_80">#CCFFFFFF</color>
 
+    <!-- Transparent -->
+    <color name="transparent">#00000000</color>
+
+
+    <color name="surface_variant">#F1F5F9</color>
+    <color name="on_surface">#1E293B</color>
+    <color name="on_surface_variant">#64748B</color>
+
+    <!-- Couleurs pour les badges -->
+    <color name="badge_math">#EF4444</color>
+    <color name="badge_physics">#3B82F6</color>
+    <color name="badge_chemistry">#10B981</color>
+    <color name="badge_biology">#8B5CF6</color>
 </resources>

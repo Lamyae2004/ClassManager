@@ -6,12 +6,24 @@
             android:title="Emploi de temps"
             android:icon="@drawable/ic_calendar"/>
 
+        <item
+            android:id="@+id/nav_documentsTeacher"
+            android:title="Documents partagés"
+            android:icon="@drawable/ic_documents"
+            />
+
         <!-- Cet item sera ajouté dynamiquement pour les STUDENTS -->
         <item
             android:id="@+id/nav_absence"
             android:title="Mes absences"
             android:icon="@drawable/ic_absence"
             android:visible="false"/>
+
+        <item
+            android:id="@+id/nav_documents"
+            android:title="Mes documents"
+            android:icon="@drawable/ic_documents"/>
+
     </group>
 
     <item android:title="">

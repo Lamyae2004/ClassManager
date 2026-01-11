@@ -35,6 +35,18 @@ public class EmploiImportController {
     private final TeacherClient teacherClient ;
     private final EtudiantClient etudiantClient;
 
+
+    @GetMapping("/classes/matieres-profs")
+    public ResponseEntity<List<MatiereProfDTO>> getMatieresEtProfs(
+            @RequestParam String niveau,
+            @RequestParam Filiere filiere
+    ) {
+        return ResponseEntity.ok(
+                emploiService.getMatieresEtProfs(niveau, filiere)
+        );
+    }
+
+
     @GetMapping("/classe/{classeId}")
     public List<EmploiDuTempsDTO> getEmploiByClasse(@PathVariable Long classeId) {
         return emploiService.getEmploiByClasse(classeId);

@@ -17,6 +17,7 @@ import com.ensa.mobile.authentification.api.RetrofitClient;
 import com.ensa.mobile.authentification.models.UserResponse;
 import com.ensa.mobile.emploitemps.ui.FragmentEmploi;
 import com.ensa.mobile.authentification.activities.LoginActivity;
+import com.ensa.mobile.gestionDocuments.ui.FragmentDocumentsEtudiants;
 import com.ensa.mobile.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
@@ -110,11 +111,30 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.fragmentContainer, new FragmentEmploi())
                         .commit();
             }
+            if (item.getItemId() == R.id.nav_documentsTeacher) {
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(
+                                R.id.fragmentContainer,
+                                new com.ensa.mobile.gestionDocuments.ui.UploadDocumentFragment()
+                        )
+                        .addToBackStack(null)
+                        .commit();
+            }
+
 
             if (item.getItemId() == R.id.nav_absence) {
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.fragmentContainer, new FragmentAbsenceEtudiant())
+                        .commit();
+            }
+
+            if (item.getItemId() == R.id.nav_documents) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, new FragmentDocumentsEtudiants())
                         .commit();
             }
 
@@ -136,17 +156,22 @@ public class MainActivity extends AppCompatActivity {
         String role = tokenManager.getRole();
         Menu menu = navigationView.getMenu();
         MenuItem absenceItem = menu.findItem(R.id.nav_absence);
-
+        MenuItem documentsItem = menu.findItem(R.id.nav_documentsTeacher);
+        MenuItem documentsStudentItem = menu.findItem(R.id.nav_documents);
         if (role != null && role.equalsIgnoreCase("STUDENT")) {
             // Afficher "Mes absences" pour les étudiants
             if (absenceItem != null) {
                 absenceItem.setVisible(true);
             }
+            if (documentsStudentItem != null) documentsStudentItem.setVisible(true);
+            if (documentsItem != null) documentsItem.setVisible(false);
         } else if (role != null && role.equalsIgnoreCase("TEACHER")) {
             // Masquer "Mes absences" pour les professeurs
             if (absenceItem != null) {
                 absenceItem.setVisible(false);
+                if (documentsItem != null) documentsItem.setVisible(true);
             }
+            if (documentsStudentItem != null) documentsStudentItem.setVisible(false);
         }
     }
 

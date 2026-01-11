@@ -1,10 +1,7 @@
 package com.class_manager.user_auth_service.Controller;
 
 import com.class_manager.user_auth_service.config.JwtService;
-import com.class_manager.user_auth_service.model.dto.AdminDto;
-import com.class_manager.user_auth_service.model.dto.StudentDto;
-import com.class_manager.user_auth_service.model.dto.TeacherDto;
-import com.class_manager.user_auth_service.model.dto.TeacherDtoMapper;
+import com.class_manager.user_auth_service.model.dto.*;
 import com.class_manager.user_auth_service.model.entity.Role;
 import com.class_manager.user_auth_service.model.entity.Filiere;
 import com.class_manager.user_auth_service.model.entity.Niveau;
@@ -34,6 +31,17 @@ public class UserController {
     private final UserRepository userRepository;
     public record UserResponse(Long id, String email, String firstname, String lastname, String role) {}
     private final TeacherRepository teacherRepository;
+
+
+    @GetMapping("/teachers/{id}")
+    public TeacheremploiDTO getTeacherById(@PathVariable Long id) {
+        return userService.getTeacherById(id);
+    }
+
+    @GetMapping("/{id}/classe")
+    public ResponseEntity<StudentClasseDTO> getClasseInfo(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getClasseInfoByStudentId(id));
+    }
 
 
     @GetMapping("/absence/classes-with-id")
@@ -159,7 +167,9 @@ public class UserController {
 
         return TeacherDtoMapper.fromEntity(teacher);
     }
-    
+
+   
+
     @GetMapping("students/random")
     public StudentDto getRandomStudent(
             @RequestParam Niveau niveau,

@@ -56,6 +56,23 @@
     <string name="status_upcoming">UPCOMING</string>
     <string name="status_completed">COMPLETED</string>
     <string name="status_cancelled">CANCELLED</string>
+
+    <string-array name="document_types">
+        <item>COURS</item>
+        <item>TD</item>
+        <item>TP</item>W
+    </string-array>
+
+    <string name="prompt_classe">Sélectionner la classe</string>
+    <string name="prompt_module">Sélectionner le module</string>
+
+    <string name="telecharger">Download</string>
+    <string name="document_icon">Document icon</string>
+    <string name="filtrer_par">Filter by</string>
+    <string name="documents">Documents</string>
+    <string name="matiere">Subject</string>
+    <string name="type">Type</string>
+    <string name="uploader_document">Upload document</string>
     <!-- Dialog Justification -->
     <string name="dialog_justify_title">Justifier l\'absence</string>
     <string name="dialog_justify_subtitle">Ajoutez un document pour justifier votre absence</string>

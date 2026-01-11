@@ -2,6 +2,8 @@ package com.ensa.mobile.authentification.api;
 
 import com.ensa.mobile.utils.ApiConfig;
 
+import com.ensa.mobile.gestionDocuments.api.ClasseApi;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -45,6 +47,8 @@ public class RetrofitClient {
         }
         return instance;
     }
+
+
 
     public AuthApiService getAuthApiService() {
         return authApiService;

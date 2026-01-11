@@ -25,6 +25,30 @@ public class EmploiImportService {
     private final TeacherClient teacherClient;
 
 
+    public List<MatiereProfDTO> getMatieresEtProfs(
+            String niveau,
+            Filiere filiere
+    ) {
+
+        List<EmploiDuTemps> emplois =
+                edtRepo.findByClasseNomAndFiliere(niveau, filiere);
+
+        return emplois.stream()
+                .filter(e -> e.getMatiere() != null && e.getProfId() != null)
+                .map(e -> {
+                    TeacherDTO prof = teacherClient.getTeacherById(e.getProfId());
+
+                    return new MatiereProfDTO(
+                            e.getMatiere().getId(),        // ✅ ID de la matière
+                            e.getMatiere().getNom(),
+                            prof.getLastname(),
+                            prof.getFirstname()
+                    );
+                })
+                .distinct()
+                .toList();
+    }
+
     public List<Map<String, Object>> getStudentsStatusPerClass(Long profId) {
 
         List<Classe> classes = edtRepo.findDistinctClassesByProfId(profId);
@@ -53,8 +77,6 @@ public class EmploiImportService {
 
         return result;
     }
-
-
 
 
 
