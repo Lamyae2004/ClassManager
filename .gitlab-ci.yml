@@ -50,7 +50,7 @@ class-responsibility-service:build:
     paths:
       - Backend/class-responsibility-service/target/classes/
     expire_in: 1 hour
-  dependencies:
+  needs:
     - config-lib:build
   only:
     - main
@@ -74,7 +74,7 @@ class-responsibility-service:test:
     paths:
       - Backend/class-responsibility-service/target/surefire-reports/
     expire_in: 1 week
-  dependencies:
+  needs:
     - config-lib:build
   only:
     - main
@@ -108,7 +108,7 @@ class-responsibility-service:coverage:
       junit:
         - Backend/class-responsibility-service/target/surefire-reports/TEST-*.xml
     expire_in: 1 month
-  dependencies:
+  needs:
     - config-lib:build
   only:
     - main
@@ -124,7 +124,7 @@ class-responsibility-service:coverage-check:
     - cd Backend/class-responsibility-service
     - mvn clean verify
     - echo "Coverage check passed "
-  dependencies:
+  needs:
     - class-responsibility-service:coverage
     - config-lib:build
   allow_failure: false
@@ -145,13 +145,12 @@ class-responsibility-service:package:
     paths:
       - Backend/class-responsibility-service/target/*.jar
     expire_in: 1 week
-  dependencies:
-    - config-lib:build
   only:
     - main
     - develop
     - tags
   needs:
+    - config-lib:build
     - class-responsibility-service:build
     - class-responsibility-service:test
     - class-responsibility-service:coverage-check
