@@ -1,3 +1,8 @@
+stages:
+  - build
+  - test
+  - coverage
+
 # Config Lib must be built first
 config-lib:build:
   stage: build
