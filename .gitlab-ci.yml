@@ -134,8 +134,7 @@ gestion-des-absences:coverage:
     - merge_requests
     - branches
 
-# User Auth Service Pipeline
-user-auth-service:build:
+
 
 # ==========================
 # Build user-auth-service
@@ -147,7 +146,7 @@ build-auth:
     - cd Backend/user-auth-service
     - mvn clean compile
 
-user-auth-service:test:
+
 # ==========================
 # Build emploi-service
 # ==========================
