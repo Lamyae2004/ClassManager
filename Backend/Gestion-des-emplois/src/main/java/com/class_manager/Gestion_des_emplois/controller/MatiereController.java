@@ -30,7 +30,10 @@ public class MatiereController {
             @PathVariable Long profId) {
         return emploiImportService.getMatieresByClasseAndProf(classeId, profId);
     }
-
+    @GetMapping("/{id}")
+    public Matiere getMatiereById(@PathVariable Long id) {
+        return repo.findById(id).orElse(null);
+    }
 
     @GetMapping
     public List<Matiere> getAll() {

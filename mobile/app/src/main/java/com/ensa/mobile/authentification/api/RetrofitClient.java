@@ -1,5 +1,6 @@
 package com.ensa.mobile.authentification.api;
 
+import com.ensa.mobile.utils.ApiConfig;
 
 import java.util.concurrent.TimeUnit;
 
@@ -10,10 +11,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitClient {
-    // Change this to your backend URL
-    // Use 10.0.2.2 for Android Emulator
-    // For physical device, use your computer's IP address: "http://192.168.x.x:9090/"
-    private static final String BASE_URL = "http://10.0.2.2:9090/";
+    // Use API Gateway URL from shared configuration
+    // The API Gateway routes /api/v1/auth/** and /api/users/** to USER-AUTH-SERVICE
+    private static final String BASE_URL = ApiConfig.API_GATEWAY_BASE_URL;
 
     private static RetrofitClient instance;
     private AuthApiService authApiService;

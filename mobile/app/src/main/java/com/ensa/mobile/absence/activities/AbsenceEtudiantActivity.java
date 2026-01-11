@@ -1,12 +1,17 @@
-package com.ensa.mobile;
+package com.ensa.mobile.absence.activities;
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.ensa.mobile.utils.Absence;
+
+import com.ensa.mobile.R;
+import com.ensa.mobile.absence.adapters.AbsenceAdapter;
+import com.ensa.mobile.absence.models.Absence;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +23,12 @@ public class AbsenceEtudiantActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
+
         setContentView(R.layout.activity_absence_etudiant);
 
         spinnerMatiere = findViewById(R.id.spinnerMatiere);
@@ -41,6 +52,6 @@ public class AbsenceEtudiantActivity extends AppCompatActivity {
         absences.add(new Absence("Java", "05/12/2025", "10:00 - 12:00", "VALIDEE"));
 
         recyclerAbsences.setLayoutManager(new LinearLayoutManager(this));
-        recyclerAbsences.setAdapter(new AbsenceAdapter(absences));
+        recyclerAbsences.setAdapter(new AbsenceAdapter(absences, this));
     }
 }

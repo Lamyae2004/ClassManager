@@ -1,10 +1,8 @@
 package com.class_manager.Gestion_des_absences.service;
 
-
 import com.class_manager.Gestion_des_absences.client.UserClient;
 import com.class_manager.Gestion_des_absences.model.dto.*;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
-import com.class_manager.Gestion_des_absences.model.entity.Role;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
 import com.class_manager.Gestion_des_absences.repository.AbsenceRepository;
 import com.class_manager.Gestion_des_absences.repository.SeanceRepository;
@@ -30,30 +28,30 @@ public class SeanceService {
             double absenceThreshold // ex: 0.25
     ) {
 
-        // 1️⃣ Tous les étudiants
+
         List<StudentDTO> students = userClient.getAllStudents();
         Map<Long, StudentDTO> studentMap = students.stream()
                 .collect(Collectors.toMap(StudentDTO::getId, s -> s));
 
-        // 2️⃣ Absences
+        // Absences - CORRECTION ICI
         Map<Long, Long> absencesMap = absenceRepository
                 .countAbsencesByStudentForProf(profId)
                 .stream()
                 .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
+                        r -> ((Number) r[0]).longValue(),  // Cast vers Number puis Long
+                        r -> ((Number) r[1]).longValue()
                 ));
 
-        // 3️⃣ Total séances
+        //  Total séances - CORRECTION ICI
         Map<Long, Long> totalMap = absenceRepository
                 .countTotalSeancesByStudentForProf(profId)
                 .stream()
                 .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
+                        r -> ((Number) r[0]).longValue(),  // Cast vers Number puis Long
+                        r -> ((Number) r[1]).longValue()
                 ));
 
-        // 4️⃣ Regroupement par classe + filière
+        // Regroupement par classe + filière
         Map<String, StudentsStatusByClassDTO> result = new HashMap<>();
 
         for (Long studentId : totalMap.keySet()) {
@@ -89,8 +87,6 @@ public class SeanceService {
         return new ArrayList<>(result.values());
     }
 
-
-
     public List<ClassAbsenceRateDTO> getAbsenceRateByClassAndFiliere() {
 
         List<StudentDTO> students = userClient.getAllStudents();
@@ -98,14 +94,15 @@ public class SeanceService {
         Map<Long, StudentDTO> studentMap = students.stream()
                 .collect(Collectors.toMap(StudentDTO::getId, s -> s));
 
+        // CORRECTION ICI
         List<Object[]> absences = absenceRepository.countAbsencesByStudent();
 
         Map<String, Long> absenceCountByClass = new HashMap<>();
         Map<String, Long> studentCountByClass = new HashMap<>();
 
         for (Object[] row : absences) {
-            Long studentId = (Long) row[0];
-            Long count = (Long) row[1];
+            Long studentId = ((Number) row[0]).longValue();  // Cast correct
+            Long count = ((Number) row[1]).longValue();      // Cast correct
 
             StudentDTO student = studentMap.get(studentId);
             if (student == null) continue;
@@ -133,10 +130,6 @@ public class SeanceService {
         return result;
     }
 
-
-
-
-
     public List<Seance> getSeancesByClasseAndUser(Long classeId, Long userId) {
 
         UserDTO user = userClient.getUserById(userId);
@@ -151,7 +144,6 @@ public class SeanceService {
             default -> List.of();
         };
     }
-
 
     public Seance saveSeanceWithAbsences(SeanceDTO request) {
         Seance seance = new Seance();
@@ -174,6 +166,4 @@ public class SeanceService {
 
         return seanceRepository.save(seance);
     }
-
-
 }

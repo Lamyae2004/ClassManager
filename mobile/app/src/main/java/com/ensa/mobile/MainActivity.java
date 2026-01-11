@@ -20,6 +20,7 @@ import com.ensa.mobile.authentification.activities.LoginActivity;
 import com.ensa.mobile.utils.TokenManager;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
+import com.ensa.mobile.absence.ui.FragmentAbsenceEtudiant;
 
 import retrofit2.Call;
 import retrofit2.Callback;

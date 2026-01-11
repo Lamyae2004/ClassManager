@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";

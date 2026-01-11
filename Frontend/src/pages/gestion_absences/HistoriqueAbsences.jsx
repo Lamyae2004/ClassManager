@@ -48,6 +48,67 @@ export default function HistoriqueAbsences() {
     const role = user.role;
   const currentUserId = user.id;
 
+  // Function to handle accept/reject justification
+  const handleJustificationStatus = async (absenceId, justifie) => {
+    // For reject, show confirmation dialog
+    if (!justifie) {
+      const confirmed = window.confirm(
+        "Êtes-vous sûr de vouloir rejeter cette justification ?\n\n" +
+        "Le fichier sera supprimé et l'étudiant pourra téléverser un nouveau justificatif."
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8083/absences/${absenceId}/justification?justifie=${justifie}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Erreur lors de la mise à jour');
+      }
+
+      // Show success message
+      if (justifie) {
+        alert("Justification acceptée avec succès ✓");
+      } else {
+        alert("Justification rejetée. Le fichier a été supprimé.");
+      }
+
+      // Refresh seances data
+      const fetchSeances = async () => {
+        try {
+          const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+              setSeances(data);
+            }
+          }
+        } catch (error) {
+          console.error("Erreur fetchSeances:", error);
+        }
+      };
+      fetchSeances();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la justification:", error);
+      alert("Erreur lors de la mise à jour de la justification");
+    }
+  };
+
+  // Helper function to get filename from filePath
+  const getFilenameFromPath = (filePath) => {
+    if (!filePath) return null;
+    // Extract filename from path (e.g., "uploads/justifications/absence_3_1768128616412.pdf" -> "absence_3_1768128616412.pdf")
+    const parts = filePath.split('/');
+    return parts[parts.length - 1];
+  };
+
   useEffect(() => {
     const fetchClasses = async () => {
       let url = role === "ADMIN"
@@ -226,7 +287,9 @@ export default function HistoriqueAbsences() {
     }
 
     if (absence.justifie) {
-      const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
+      const filePath = absence.filePath || absence.justificatif;
+      const filename = getFilenameFromPath(filePath);
+      const hasFile = filename && filename.trim() !== "";
 
       return (
         <div className="flex items-center justify-center">
@@ -247,7 +310,7 @@ export default function HistoriqueAbsences() {
                         variant="ghost"
                         size="sm"
                         className="h-8 px-2 text-xs"
-                        onClick={() => window.open(`/${absence.justificatif}`, '_blank')}
+                        onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
                       >
                         <Eye className="h-3 w-3 mr-1" />
                         Voir
@@ -269,8 +332,8 @@ export default function HistoriqueAbsences() {
                         onClick={() => {
                           // Télécharger le fichier
                           const link = document.createElement('a');
-                          link.href = `/${absence.justificatif}`;
-                          link.download = `justificatif_${absence.id}.pdf`;
+                          link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                          link.download = filename || `justificatif_${absence.id}.pdf`;
                           link.click();
                         }}
                       >
@@ -310,7 +373,11 @@ export default function HistoriqueAbsences() {
       );
     }
 
-    // Non justifié
+    // Non justifié - peut avoir un fichier en attente de validation
+    const filePath = absence.filePath || absence.justificatif;
+    const filename = getFilenameFromPath(filePath);
+    const hasFile = filename && filename.trim() !== "";
+
     return (
       <div className="flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
@@ -321,8 +388,68 @@ export default function HistoriqueAbsences() {
             </div>
           </Badge>
 
-          {/* Option: Bouton pour ajouter un justificatif (si admin/prof) */}
-          {(role === "admin" || role === "prof") && (
+          {hasFile && (role === "ADMIN" || role === "TEACHER") && (
+            <div className="flex items-center gap-2 mt-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                    >
+                      <Eye className="h-3 w-3 mr-1" />
+                      Voir
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Voir le justificatif</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                      onClick={() => handleJustificationStatus(absence.id, true)}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Accepter
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Accepter la justification</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => handleJustificationStatus(absence.id, false)}
+                    >
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Rejeter
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Rejeter la justification</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          )}
+
+          {!hasFile && (role === "ADMIN" || role === "TEACHER") && (
             <Button
               variant="outline"
               size="sm"
@@ -357,7 +484,9 @@ export default function HistoriqueAbsences() {
     }
 
     if (absence.justifie) {
-      const hasFile = absence.justificatif && absence.justificatif.trim() !== "";
+      const filePath = absence.filePath || absence.justificatif;
+      const filename = getFilenameFromPath(filePath);
+      const hasFile = filename && filename.trim() !== "";
 
       return (
         <TooltipProvider>
@@ -369,6 +498,7 @@ export default function HistoriqueAbsences() {
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
                   >
                     <FileCheck className="h-4 w-4" />
                   </Button>
@@ -388,7 +518,7 @@ export default function HistoriqueAbsences() {
                       variant="outline"
                       size="sm"
                       className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`/${absence.justificatif}`, '_blank')}
+                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
                     >
                       Voir
                     </Button>
@@ -398,8 +528,8 @@ export default function HistoriqueAbsences() {
                       className="h-6 px-2 text-xs"
                       onClick={() => {
                         const link = document.createElement('a');
-                        link.href = `/${absence.justificatif}`;
-                        link.download = `justificatif_${absence.id}.pdf`;
+                        link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                        link.download = filename || `justificatif_${absence.id}.pdf`;
                         link.click();
                       }}
                     >
@@ -416,7 +546,11 @@ export default function HistoriqueAbsences() {
       );
     }
 
-    // Non justifié
+    // Non justifié - peut avoir un fichier en attente de validation
+    const filePath = absence.filePath || absence.justificatif;
+    const filename = getFilenameFromPath(filePath);
+    const hasFile = filename && filename.trim() !== "";
+
     return (
       <TooltipProvider>
         <Tooltip>
@@ -430,7 +564,40 @@ export default function HistoriqueAbsences() {
           <TooltipContent>
             <div className="space-y-2">
               <p className="font-medium">Absence non justifiée</p>
-              {(role === "admin" || role === "prof") && (
+              {hasFile && (role === "ADMIN" || role === "TEACHER") && (
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-6 px-2 text-xs w-full"
+                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                  >
+                    <Eye className="h-3 w-3 mr-1" />
+                    Voir le justificatif
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="h-6 px-2 text-xs flex-1 bg-green-600 hover:bg-green-700"
+                      onClick={() => handleJustificationStatus(absence.id, true)}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Accepter
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-6 px-2 text-xs flex-1"
+                      onClick={() => handleJustificationStatus(absence.id, false)}
+                    >
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Rejeter
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {!hasFile && (role === "ADMIN" || role === "TEACHER") && (
                 <Button
                   variant="outline"
                   size="sm"
