@@ -13,6 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>user-auth-service</name>
 	<description>microservice pour gérer les utilisateurs (admins, profs, étudiants) et leur authentification via JWT, avec contrôle d’accès basé sur les rôles.</description>
+	<packaging>jar</packaging>
 	<url/>
 	<licenses>
 		<license/>
