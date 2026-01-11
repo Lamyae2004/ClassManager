@@ -1,31 +1,10 @@
-stages:
-  - build
-  - test
-  - coverage
-  - quality
-  - package
-  - deploy
-
-variables:
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-
-
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .m2/repository/
-
-
-# Config Lib Pipeline (must be built first)
-
+# Config Lib must be built first
 config-lib:build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
   script:
-    - echo "Building config-lib..."
     - cd Backend/config-lib
     - mvn clean install -DskipTests
-    - echo "config-lib built and installed to local repository"
   artifacts:
     paths:
       - .m2/repository/com/class_manager/common/config-lib/
@@ -36,27 +15,18 @@ config-lib:build:
     - merge_requests
     - branches
 
-# Class Responsibility Service Pipeline
-
 class-responsibility-service:build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
-  before_script:
-    - echo "Installing config-lib dependency..."
-    - cd Backend/config-lib
-    - mvn clean install -DskipTests
-    - cd ../..
+  needs:
+    - config-lib:build
   script:
-    - echo "Building class-responsibility-service..."
     - cd Backend/class-responsibility-service
     - mvn clean compile -DskipTests
-    - echo "Build completed successfully"
   artifacts:
     paths:
       - Backend/class-responsibility-service/target/classes/
     expire_in: 1 hour
-  needs:
-    - config-lib:build
   only:
     - main
     - develop
@@ -66,16 +36,11 @@ class-responsibility-service:build:
 class-responsibility-service:test:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
-  before_script:
-    - echo "Installing config-lib dependency..."
-    - cd Backend/config-lib
-    - mvn clean install -DskipTests
-    - cd ../..
+  needs:
+    - class-responsibility-service:build
   script:
-    - echo "Running tests for class-responsibility-service..."
     - cd Backend/class-responsibility-service
-    - mvn clean test
-    - echo "Tests completed"
+    - mvn test
   artifacts:
     when: always
     reports:
@@ -84,113 +49,30 @@ class-responsibility-service:test:
     paths:
       - Backend/class-responsibility-service/target/surefire-reports/
     expire_in: 1 week
-  needs:
-    - config-lib:build
-  only:
-    - main
-    - develop
-    - merge_requests
-    - branches
 
 class-responsibility-service:coverage:
   stage: coverage
   image: maven:3.9.6-eclipse-temurin-17
-  before_script:
-    - echo "Installing config-lib dependency..."
-    - cd Backend/config-lib
-    - mvn clean install -DskipTests
-    - cd ../..
+  needs:
+    - class-responsibility-service:test
   script:
-    - echo "Generating coverage report for class-responsibility-service..."
     - cd Backend/class-responsibility-service
-    - mvn clean test jacoco:report
-    - echo "Coverage report generated"
-    - |
-      if [ -f target/site/jacoco/index.html ]; then
-        echo "JaCoCo HTML report available at target/site/jacoco/index.html"
-        echo "Coverage Summary:"
-        grep -oP 'Total.*?(\d+)%' target/site/jacoco/index.html | head -1 || echo "Check HTML report for details"
-      else
-        echo "Coverage report not found"
-      fi
-  coverage: '/Total.*?([0-9]{1,3})%/'
+    - mvn verify
   artifacts:
     when: always
     paths:
       - Backend/class-responsibility-service/target/site/jacoco/
-      - Backend/class-responsibility-service/target/jacoco.exec
-    reports:
-      junit:
-        - Backend/class-responsibility-service/target/surefire-reports/TEST-*.xml
     expire_in: 1 month
-  needs:
-    - config-lib:build
-  only:
-    - main
-    - develop
-    - merge_requests
-    - branches
 
-class-responsibility-service:coverage-check:
-  stage: quality
-  image: maven:3.9.6-eclipse-temurin-17
-  before_script:
-    - echo "Installing config-lib dependency..."
-    - cd Backend/config-lib
-    - mvn clean install -DskipTests
-    - cd ../..
-  script:
-    - echo "Checking coverage for class-responsibility-service..."
-    - cd Backend/class-responsibility-service
-    - mvn clean verify
-    - echo "Coverage check passed "
-  needs:
-    - class-responsibility-service:coverage
-    - config-lib:build
-  allow_failure: false
-  only:
-    - main
-    - develop
-    - merge_requests
-
-class-responsibility-service:package:
-  stage: package
-  image: maven:3.9.6-eclipse-temurin-17
-  before_script:
-    - echo "Installing config-lib dependency..."
-    - cd Backend/config-lib
-    - mvn clean install -DskipTests
-    - cd ../..
-  script:
-    - echo "Packaging class-responsibility-service..."
-    - cd Backend/class-responsibility-service
-    - mvn clean package -DskipTests
-    - echo "Package created successfully"
-  artifacts:
-    paths:
-      - Backend/class-responsibility-service/target/*.jar
-    expire_in: 1 week
-  only:
-    - main
-    - develop
-    - tags
-  needs:
-    - config-lib:build
-    - class-responsibility-service:build
-    - class-responsibility-service:test
-    - class-responsibility-service:coverage-check
-
-
-# User Auth Service Pipeline
-
-build:
+# User Auth Service Pipeline (kept as-is)
+user-auth-service:build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/user-auth-service
     - mvn clean compile
 
-test:
+user-auth-service:test:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
   script:
