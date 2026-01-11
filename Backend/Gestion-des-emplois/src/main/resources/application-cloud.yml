@@ -1,23 +1,19 @@
 server:
   port: 8082
 
-
-  eureka:
-    client:
-      service-url:
-        defaultZone: http://localhost:8761/eureka
-
-
-
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka
 
 spring:
   application:
     name: EMPLOI-SERVICE
-  datasource:
-    url: jdbc:postgresql://localhost:5432/gestion_emplois
-    username: postgres
-    password: root
 
+  datasource:
+    url: jdbc:postgresql://emploi-db:5432/gestion_emplois
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   servlet:
     multipart:
@@ -33,10 +29,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # Desactiver Spring Cloud Config
   cloud:
     config:
       enabled: false
       import-check:
         enabled: false
-
