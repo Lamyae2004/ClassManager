@@ -18,6 +18,11 @@ public class DocumentDto {
     // Getters
     public String getNom() { return nom; }
     public String getType() { return type; }
+
+    public Long getProfId() {
+        return profId;
+    }
+
     public Long getMatiere() { return matiereId; }
     public Long getClasse() { return classeId; }
     public String getUrl() { return url; }

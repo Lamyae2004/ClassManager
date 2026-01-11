@@ -7,6 +7,10 @@ import com.class_manager.document_sharing.model.entity.DocumentEntity;
 import com.class_manager.document_sharing.repository.DocumentRepository;
 import com.class_manager.document_sharing.service.DocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/document")
@@ -22,6 +29,37 @@ import java.time.LocalDateTime;
 public class DocumentController {
     private final DocumentRepository repository;
     private final DocumentService documentService;
+
+
+    @GetMapping("/uploads/{filename}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) throws IOException {
+
+        Path filePath = Paths.get("uploads").resolve(filename).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + filename + "\"")
+                .body(resource);
+    }
+
+
+
+
+    @GetMapping
+    public List<DocumentDto> getDocuments(
+            @RequestParam Long classeId,
+            @RequestParam(required = false) Long moduleId,
+            @RequestParam(required = false) DocumentType type
+    ) {
+        return documentService.getDocuments(classeId, moduleId, type);
+    }
+
 
     @PostMapping("/upload")
     public ResponseEntity<String> uploadDocument(

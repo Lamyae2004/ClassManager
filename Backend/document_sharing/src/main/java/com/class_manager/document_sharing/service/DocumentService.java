@@ -1,6 +1,7 @@
 package com.class_manager.document_sharing.service;
 
 import com.class_manager.document_sharing.model.DocumentType;
+import com.class_manager.document_sharing.model.dto.DocumentDto;
 import com.class_manager.document_sharing.model.dto.DocumentUploadRequest;
 import com.class_manager.document_sharing.model.entity.DocumentEntity;
 import com.class_manager.document_sharing.repository.DocumentRepository;
@@ -12,12 +13,32 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentRepository repository;
+
+    public List<DocumentDto> getDocuments(Long classeId, Long moduleId, DocumentType type) {
+
+        List<DocumentEntity> docs;
+
+        if (moduleId != null && type != null)
+            docs = repository.findByClasseIdAndModuleIdAndType(classeId, moduleId, type);
+        else if (moduleId != null)
+            docs = repository.findByClasseIdAndModuleId(classeId, moduleId);
+        else if (type != null)
+            docs = repository.findByClasseIdAndType(classeId, type);
+        else
+            docs = repository.findByClasseId(classeId);
+
+        return docs.stream()
+                .map(d -> new DocumentDto().toDocumentDto(d))
+                .toList();
+    }
+
 
     public void uploadDocument(DocumentUploadRequest request) throws IOException {
 
