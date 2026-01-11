@@ -43,7 +43,9 @@ class-responsibility-service:build:
   image: maven:3.9.6-eclipse-temurin-17
   before_script:
     - echo "Installing config-lib dependency..."
-    - mvn clean install -DskipTests -Dmaven.repo.local=.m2/repository -f Backend/config-lib/pom.xml
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - cd ../..
   script:
     - echo "Building class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -66,7 +68,9 @@ class-responsibility-service:test:
   image: maven:3.9.6-eclipse-temurin-17
   before_script:
     - echo "Installing config-lib dependency..."
-    - mvn clean install -DskipTests -Dmaven.repo.local=.m2/repository -f Backend/config-lib/pom.xml
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - cd ../..
   script:
     - echo "Running tests for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -93,7 +97,9 @@ class-responsibility-service:coverage:
   image: maven:3.9.6-eclipse-temurin-17
   before_script:
     - echo "Installing config-lib dependency..."
-    - mvn clean install -DskipTests -Dmaven.repo.local=.m2/repository -f Backend/config-lib/pom.xml
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - cd ../..
   script:
     - echo "Generating coverage report for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -130,7 +136,9 @@ class-responsibility-service:coverage-check:
   image: maven:3.9.6-eclipse-temurin-17
   before_script:
     - echo "Installing config-lib dependency..."
-    - mvn clean install -DskipTests -Dmaven.repo.local=.m2/repository -f Backend/config-lib/pom.xml
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - cd ../..
   script:
     - echo "Checking coverage for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -150,7 +158,9 @@ class-responsibility-service:package:
   image: maven:3.9.6-eclipse-temurin-17
   before_script:
     - echo "Installing config-lib dependency..."
-    - mvn clean install -DskipTests -Dmaven.repo.local=.m2/repository -f Backend/config-lib/pom.xml
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests
+    - cd ../..
   script:
     - echo "Packaging class-responsibility-service..."
     - cd Backend/class-responsibility-service
