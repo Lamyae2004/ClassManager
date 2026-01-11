@@ -12,7 +12,7 @@ config-lib:build:
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/config-lib
-    - mvn clean install -DskipTests
+    - mvn clean install -DskipTests -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
   artifacts:
     paths:
       - .m2/repository/
@@ -30,10 +30,10 @@ class-responsibility-service:build:
     - config-lib:build
   script:
     - cd Backend/class-responsibility-service
-    - mvn clean compile -DskipTests
+    - mvn clean compile -DskipTests -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
   artifacts:
     paths:
-      - Backend/class-responsibility-service/target/classes/
+      - Backend/class-responsibility-service/target/
       - .m2/repository/
     expire_in: 1 hour
   only:
@@ -49,14 +49,15 @@ class-responsibility-service:test:
     - class-responsibility-service:build
   script:
     - cd Backend/class-responsibility-service
-    - mvn test
+    - mvn test -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
   artifacts:
     when: always
     reports:
       junit:
         - Backend/class-responsibility-service/target/surefire-reports/TEST-*.xml
     paths:
-      - Backend/class-responsibility-service/target/surefire-reports/
+      - Backend/class-responsibility-service/target/
+      - .m2/repository/
     expire_in: 1 week
 
 class-responsibility-service:coverage:
@@ -66,7 +67,7 @@ class-responsibility-service:coverage:
     - class-responsibility-service:test
   script:
     - cd Backend/class-responsibility-service
-    - mvn verify
+    - mvn jacoco:report -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
   artifacts:
     when: always
     paths:
