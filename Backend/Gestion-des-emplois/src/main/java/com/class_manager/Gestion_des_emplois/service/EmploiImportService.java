@@ -99,6 +99,7 @@ public class EmploiImportService {
                         //e.getJour().equalsIgnoreCase(today)
                 )
                 .map(e -> new EmploiProfDTO(
+                        e.getId(),
                         e.getJour(),
                         e.getCreneau() != null ? e.getCreneau().getHeureDebut() : null,
                         e.getCreneau() != null ? e.getCreneau().getHeureFin() : null,

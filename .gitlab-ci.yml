@@ -2,16 +2,42 @@ stages:
   - build
   - test
 
-build:
+# ==========================
+# Build user-auth-service
+# ==========================
+build-auth:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/user-auth-service
     - mvn clean compile
 
-test:
+# ==========================
+# Build emploi-service
+# ==========================
+build-emploi:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/Gestion-des-emplois
+    - mvn clean compile
+
+# ==========================
+# Test user-auth-service
+# ==========================
+test-auth:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/user-auth-service
-    - mvn test 
+    - mvn test
+
+# ==========================
+# Test emploi-service
+# ==========================
+test-emploi:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/Gestion-des-emplois
+    -  mvn test -Dspring.profiles.active=test

@@ -73,4 +73,27 @@
     <string name="matiere">Subject</string>
     <string name="type">Type</string>
     <string name="uploader_document">Upload document</string>
+    <!-- Dialog Justification -->
+    <string name="dialog_justify_title">Justifier l\'absence</string>
+    <string name="dialog_justify_subtitle">Ajoutez un document pour justifier votre absence</string>
+    <string name="absence_details_label">Détails de l\'absence</string>
+    <string name="motif_hint">Motif de l\'absence (optionnel)</string>
+    <string name="piece_justificative_label">Pièce justificative</string>
+    <string name="required_badge">Obligatoire</string>
+    <string name="choose_file_button">Choisir un fichier</string>
+    <string name="file_selected_label">Fichier sélectionné</string>
+    <string name="accepted_formats_info">PDF, JPG, PNG • Max 10 MB</string>
+
+    <!-- Mes Absences Screen -->
+    <string name="absences_title">Mes absences</string>
+    <string name="absences_subtitle">Consultez et justifiez vos absences</string>
+    <string name="filter_by_subject">Filtrer par matière</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_document_icon">Icône document</string>
+    <string name="cd_info_icon">Icône information</string>
+    <string name="cd_attach_icon">Icône pièce jointe</string>
+    <string name="cd_check_icon">Icône validation</string>
+    <string name="cd_close_icon">Icône fermer</string>
+    <string name="cd_remove_file">Supprimer le fichier</string>
 </resources>

@@ -41,7 +41,7 @@ public class FragmentJour extends Fragment {
 
     private String jour;
     private RecyclerView recyclerView;
-    private TextView tvNoCours;
+    private View tvNoCours;
     private EmploiAdapter adapter;
     private List<EmploiDuTempsDTO> data = new ArrayList<>();
 
@@ -226,6 +226,7 @@ public class FragmentJour extends Fragment {
 
                             // Convertir EmploiProfDTO → EmploiDuTempsDTO
                             EmploiDuTempsDTO dto = new EmploiDuTempsDTO();
+                            dto.setId(profDTO.getId());
                             dto.setJour(profDTO.getJour());
                             dto.setCreneauDebut(profDTO.getCreneauDebut());
                             dto.setCreneauFin(profDTO.getCreneauFin());

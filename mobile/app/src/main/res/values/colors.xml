@@ -1,55 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Couleurs existantes -->
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="teal_200">#03DAC5</color>
-    <color name="teal_700">#018786</color>
-    <color name="gray">#808080</color>
-    <color name="error">#FF0000</color>
-    <color name="green">#4CAF50</color>
-    <color name="blue">#2196F3</color>
+    <color name="transparent">#00000000</color>
 
-    <!-- Couleurs principales existantes -->
-    <color name="primary_500">#0D47A1</color> <!-- bleu foncé -->
+
+    <color name="primary_indigo">#5C6BC0</color>
+    <color name="primary_indigo_light">#E8EAF6</color>
+
+    <color name="primary_500">#0D47A1</color>
     <color name="primary_700">#0B3C91</color>
     <color name="primary_200">#5472d3</color>
+
     <color name="secondary_500">#03A9F4</color>
     <color name="secondary_700">#0288D1</color>
     <color name="secondary_200">#81D4FA</color>
 
-    <!-- Nouvelles couleurs pour le design moderne -->
-    <!-- Primary Colors (utilisation de vos couleurs existantes) -->
-    <color name="primary">@color/primary_500</color>
-    <color name="primary_dark">@color/primary_700</color>
-    <color name="primary_light">@color/primary_200</color>
+    <color name="primary">@color/primary_indigo</color>
+    <color name="primary_dark">#3949AB</color>
+    <color name="primary_light">@color/primary_indigo_light</color>
 
-    <!-- Accent Colors (utilisation de vos couleurs secondaires) -->
-    <color name="accent">@color/secondary_500</color>
-    <color name="accent_dark">@color/secondary_700</color>
+    <color name="colorPrimary">@color/primary_indigo</color>
+    <color name="colorPrimaryDark">#3949AB</color>
+    <color name="colorAccent">#FF6B6B</color>
 
-    <!-- Background Colors -->
-    <color name="background">#F8FAFC</color>
-    <color name="surface">#FFFFFF</color>
-
-    <!-- Text Colors -->
-    <color name="text_primary">#1E293B</color>
-    <color name="text_secondary">#64748B</color>
+    <color name="text_primary">#263238</color>
+    <color name="text_secondary">#757575</color>
     <color name="text_tertiary">#94A3B8</color>
+    <color name="text_hint">#9E9E9E</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_white_secondary">#E0E0E0</color>
 
-    <!-- Utility Colors -->
-    <color name="white_alpha_80">#CCFFFFFF</color>
-    <color name="divider">#E2E8F0</color>
 
-    <!-- Error Colors -->
+    <color name="accent_red">#FF6B6B</color>
+    <color name="error">#FF0000</color>
     <color name="error_light">#FEE2E2</color>
 
-    <!-- Success Colors -->
+
+    <color name="accent_green">#4CAF50</color>
+    <color name="accent_green_dark">#2E7D32</color>
+    <color name="accent_green_darker">#1B5E20</color>
+    <color name="green">#4CAF50</color>
     <color name="success">#10B981</color>
     <color name="success_light">#D1FAE5</color>
 
-    <!-- Transparent -->
-    <color name="transparent">#00000000</color>
+
+    <color name="blue">#2196F3</color>
+    <color name="accent">@color/secondary_500</color>
+    <color name="accent_dark">@color/secondary_700</color>
+
+
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+
+
+    <color name="gray">#808080</color>
+
+    <color name="background">#F8FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="bg_success">#E8F5E9</color>
+    <color name="accent_green_bg">#E8F5E9</color>
+
+    <color name="border_light">#E0E0E0</color>
+    <color name="stroke_indigo_light">#E8EAF6</color>
+    <color name="divider">#E2E8F0</color>
+
+
+    <color name="white_alpha_80">#CCFFFFFF</color>
+
 
 
     <color name="surface_variant">#F1F5F9</color>

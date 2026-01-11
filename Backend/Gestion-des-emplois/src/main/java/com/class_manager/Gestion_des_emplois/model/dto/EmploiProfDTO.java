@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmploiProfDTO {
+    private Long id;
     private String jour;
     private String creneauDebut;
     private String creneauFin;

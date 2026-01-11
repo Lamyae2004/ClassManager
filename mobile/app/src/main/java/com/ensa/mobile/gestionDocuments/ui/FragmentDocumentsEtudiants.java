@@ -18,9 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.ensa.mobile.R;
 import com.ensa.mobile.gestionDocuments.adapters.DocumentAdapter;
 import com.ensa.mobile.gestionDocuments.api.ClasseService;
+import com.ensa.mobile.gestionDocuments.api.DocumentService;
 import com.ensa.mobile.gestionDocuments.api.EmploiService;
+import com.ensa.mobile.gestionDocuments.models.ClasseDto;
 import com.ensa.mobile.gestionDocuments.models.ClasseEtudiantDto;
 import com.ensa.mobile.gestionDocuments.models.Document;
+import com.ensa.mobile.gestionDocuments.models.DocumentDto;
 import com.ensa.mobile.gestionDocuments.models.MatiereDto;
 import com.ensa.mobile.gestionDocuments.models.MatiereProfDto;
 import com.ensa.mobile.utils.TokenManager;
@@ -42,7 +45,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
     private DocumentAdapter adapter;
     private List<Document> allDocuments = new ArrayList<>();
     private List<MatiereDto> matieres = new ArrayList<>();
-    private List<String> types = Arrays.asList("Cours", "TP", "TD");
+    private List<String> types = Arrays.asList("COURS", "TP", "TD");
     private ClasseEtudiantDto etudiantClasse;
 
     // Map matiereId -> MatiereProfDto pour récupérer le prof
@@ -71,22 +74,105 @@ public class FragmentDocumentsEtudiants extends Fragment {
 
     private void loadClasseEtudiant() {
         Long studentId = TokenManager.getInstance(getContext()).getStudentId();
-        ClasseService classeService = new ClasseService();
+        ClasseService userClasseService = new ClasseService();
+        ClasseService classeService2 = new ClasseService();
 
-        classeService.getClasse(studentId, new Callback<ClasseEtudiantDto>() {
+        // 1️⃣ Premier appel : récupérer niveau + filiere de l'étudiant
+        userClasseService.getClasse(studentId, new Callback<ClasseEtudiantDto>() {
             @Override
             public void onResponse(Call<ClasseEtudiantDto> call, Response<ClasseEtudiantDto> response) {
-                if(response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null) {
                     etudiantClasse = response.body();
-                    loadMatieres();
+
+                    // 2️⃣ Deuxième appel : récupérer classeId à partir de niveau + filiere
+                    classeService2.getClasseId(etudiantClasse.getNiveau(), etudiantClasse.getFiliere(),
+                            new Callback<ClasseDto>() {
+                                @Override
+                                public void onResponse(Call<ClasseDto> call, Response<ClasseDto> response2) {
+                                    if (response2.isSuccessful() && response2.body() != null) {
+                                        etudiantClasse.setClasseId(response2.body().getId()); // mettre le setter dans ClasseEtudiantDto
+                                        loadMatieres(); // continuer le reste
+                                    } else {
+                                        Toast.makeText(getContext(),
+                                                "Classe introuvable pour ce niveau/filière",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<ClasseDto> call, Throwable t) {
+                                    Toast.makeText(getContext(),
+                                            "Erreur récupération id de la classe",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                } else {
+                    Toast.makeText(getContext(),
+                            "Impossible de récupérer les informations de l'étudiant",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ClasseEtudiantDto> call, Throwable t) {
-                Toast.makeText(getContext(), "Erreur récupération classe", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),
+                        "Erreur récupération classe de l'étudiant",
+                        Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    private void loadDocumentsFromApi(Long moduleId, String type) {
+
+        DocumentService service = new DocumentService();
+
+        service.getDocuments(
+                etudiantClasse.getClasseId(),
+                moduleId,
+                type,
+                new Callback<List<Document>>() {
+
+                    @Override
+                    public void onResponse(Call<List<Document>> call,
+                                           Response<List<Document>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+
+                            Toast.makeText(getContext(),
+                                    "URL params: classeId=" + etudiantClasse.getClasseId()
+                                            + " moduleId=" + moduleId
+                                            + " type=" + type,
+                                    Toast.LENGTH_LONG).show();
+
+                            allDocuments.clear();
+
+                            for (Document d : response.body()) {
+                                String fileUrl = "http://10.0.2.2:8080/api/document/" + d.getFileUrl();
+                                String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1); // bc6c390a-2ede-4ae1-8d4e-63ff12db9030.docx
+
+                                allDocuments.add(new Document(
+                                        d.getTitle(),
+                                        d.getType(),
+                                        d.getModuleId(),
+                                        d.getProfId(),
+                                        d.getClasseId(),
+                                        fileUrl,
+                                        fileName
+                                      //  "http://10.0.2.2:8080/" + d.getFileUrl()   // IMPORTANT
+                                ));
+                            }
+
+                            filterDocuments();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Document>> call, Throwable t) {
+                        Toast.makeText(getContext(),
+                                "Erreur chargement documents", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void loadMatieres() {
@@ -111,15 +197,6 @@ public class FragmentDocumentsEtudiants extends Fragment {
 
                                 // Créer un document statique
                                 String type = types.get(i % types.size());
-                                Document doc = new Document(
-                                        mp.getMatiere() + " " + type,
-                                        type,
-                                        mp.getMatiereId(),
-                                        null, // classeId
-                                        null, // profId
-                                        "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
-                                );
-                                allDocuments.add(doc);
                                 i++;
                             }
 
@@ -149,7 +226,13 @@ public class FragmentDocumentsEtudiants extends Fragment {
         AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filterDocuments();
+                MatiereDto selectedMatiere = (MatiereDto) spinnerMatiere.getSelectedItem();
+                String selectedType = (String) spinnerType.getSelectedItem();
+
+                if (selectedMatiere != null && selectedType != null && etudiantClasse != null) {
+                    loadDocumentsFromApi(selectedMatiere.getId(), selectedType);
+
+                }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
@@ -165,7 +248,7 @@ public class FragmentDocumentsEtudiants extends Fragment {
 
         List<Document> filtered = new ArrayList<>();
         for(Document doc : allDocuments) {
-            boolean matchMatiere = selectedMatiere == null || doc.getMatiereId().equals(selectedMatiere.getId());
+            boolean matchMatiere = selectedMatiere == null || doc.getModuleId().equals(selectedMatiere.getId());
             boolean matchType = selectedType == null || doc.getType().equalsIgnoreCase(selectedType);
 
             if(matchMatiere && matchType) {

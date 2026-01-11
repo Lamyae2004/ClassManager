@@ -1,28 +1,44 @@
 package com.ensa.mobile.gestionDocuments.models;
 
 public class Document {
-    private String nom;
-    private String type;     // Cours, TP, TD
+    private Long id;
+    private String title;
+    private String type;
 
-    private Long matiereId;
+    private String fileName;
+    private Long fileSize;
+    private String uploadDate;
+
+    private Long moduleId;
     private Long classeId;
     private Long profId;
+    private String fileUrl;
+       // URL complète (avec extension)
 
-    private String url;
 
-    public Document(String nom, String type, Long matiereId, Long classeId,Long profId, String url) {
-        this.nom = nom;
+
+
+    public Document(String title, String type, Long module,Long profId, Long classe, String url, String file) {
+        this.title = title;
         this.type = type;
-        this.matiereId = matiereId;
-        this.classeId = classeId;
+        this.moduleId = module;
         this.profId = profId;
-        this.url = url;
+        this.classeId = classe;
+        this.fileUrl = url;
+        this.fileName = file;
     }
 
-    // Getters
-    public String getNom() { return nom; }
+
+
+
+    public Long getId() { return id; }
+    public String getTitle() { return title; }
     public String getType() { return type; }
-    public Long getMatiereId() { return matiereId; }
+    public String getFileName() { return fileName; }
+    public Long getFileSize() { return fileSize; }
+    public String getUploadDate() { return uploadDate; }
+    public Long getModuleId() { return moduleId; }
     public Long getClasseId() { return classeId; }
-    public String getUrl() { return url; }
+    public Long getProfId() { return profId; }
+    public String getFileUrl() { return fileUrl; }
 }

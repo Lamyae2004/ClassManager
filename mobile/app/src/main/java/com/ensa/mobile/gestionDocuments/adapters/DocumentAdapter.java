@@ -44,11 +44,11 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
     public void onBindViewHolder(@NonNull DocumentViewHolder holder, int position) {
         Document doc = documents.get(position);
 
-        holder.tvNom.setText(doc.getNom());
+        holder.tvNom.setText(doc.getTitle());
         holder.tvType.setText("Type : " + doc.getType());
 
         // Récupérer la matière et le prof depuis la map
-        MatiereProfDto mp = matiereIdMap.get(doc.getMatiereId());
+        MatiereProfDto mp = matiereIdMap.get(doc.getModuleId());
         if (mp != null) {
             String matiereName = mp.getMatiere();
             String profName = mp.getProfNom() + " " + mp.getProfPrenom();
@@ -59,7 +59,8 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.Docume
 
         holder.btnDownload.setOnClickListener(v -> {
             Toast.makeText(context, "Téléchargement lancé", Toast.LENGTH_SHORT).show();
-            downloadDocument(doc.getUrl(), doc.getNom());
+            downloadDocument(doc.getFileUrl(), doc.getFileName());
+
         });
     }
 
