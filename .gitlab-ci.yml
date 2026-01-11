@@ -3,6 +3,9 @@ stages:
   - test
   - coverage
 
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
 # Config Lib must be built first
 config-lib:build:
   stage: build
@@ -12,7 +15,7 @@ config-lib:build:
     - mvn clean install -DskipTests
   artifacts:
     paths:
-      - .m2/repository/com/class_manager/common/config-lib/
+      - .m2/repository/
     expire_in: 1 hour
   only:
     - main
@@ -31,6 +34,7 @@ class-responsibility-service:build:
   artifacts:
     paths:
       - Backend/class-responsibility-service/target/classes/
+      - .m2/repository/
     expire_in: 1 hour
   only:
     - main
@@ -69,7 +73,7 @@ class-responsibility-service:coverage:
       - Backend/class-responsibility-service/target/site/jacoco/
     expire_in: 1 month
 
-# User Auth Service Pipeline (kept as-is)
+# User Auth Service Pipeline
 user-auth-service:build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
