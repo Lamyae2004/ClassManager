@@ -156,11 +156,13 @@ public class MainActivity extends AppCompatActivity {
         Menu menu = navigationView.getMenu();
         MenuItem absenceItem = menu.findItem(R.id.nav_absence);
         MenuItem documentsItem = menu.findItem(R.id.nav_documentsTeacher);
+        MenuItem documentsStudentItem = menu.findItem(R.id.nav_documents);
         if (role != null && role.equalsIgnoreCase("STUDENT")) {
             // Afficher "Mes absences" pour les étudiants
             if (absenceItem != null) {
                 absenceItem.setVisible(true);
             }
+            if (documentsStudentItem != null) documentsStudentItem.setVisible(true);
             if (documentsItem != null) documentsItem.setVisible(false);
         } else if (role != null && role.equalsIgnoreCase("TEACHER")) {
             // Masquer "Mes absences" pour les professeurs
@@ -168,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 absenceItem.setVisible(false);
                 if (documentsItem != null) documentsItem.setVisible(true);
             }
+            if (documentsStudentItem != null) documentsStudentItem.setVisible(false);
         }
     }
 
