@@ -1,11 +1,12 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import axios from "axios";
 import { Upload } from "lucide-react";
 import { useState } from "react";
+const API_URL =  "http://localhost:8080";
 
 const addStudents = () =>{
     const [niveau,setNiveau]=useState("");
@@ -30,7 +31,7 @@ const addStudents = () =>{
         formData.append("niveau", niveau);
         formData.append("filiere", field);
         try {
-          const res = await axios.post("http://localhost:8080/admin/createStudents",formData,{ withCredentials: true });
+          const res = await axios.post(`${API_URL}/admin/createStudents`,formData,{ withCredentials: true });
           alert(res.data);
         } catch (error) {
           console.error(error);

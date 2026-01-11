@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/Label";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
-
+const API_URL =  "http://localhost:8080";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +22,12 @@ const Login = () => {
     } else {
 
           try{
-            const res = await axios.post("http://localhost:8080/api/v1/auth/authenticate",{email,password}, {
+            const res = await axios.post(`${API_URL}/api/v1/auth/authenticate`,{email,password}, {
           headers: {
             "Content-Type": "application/json" 
           }, withCredentials: true 
         });
-          const res2 = await axios.get("http://localhost:8080/api/users/profile", {
+          const res2 = await axios.get(`${API_URL}/api/users/profile`, {
         withCredentials: true,
       });
 

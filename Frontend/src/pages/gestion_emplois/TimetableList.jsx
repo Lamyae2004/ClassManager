@@ -1,11 +1,11 @@
 "use client";
 const BASE_URL = "http://localhost:8080";
-
+const API_URL =  "http://localhost:8080";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { FileText, Calendar, Edit, Trash2, Eye, Plus, Download, BookOpen, GraduationCap, User, Building2, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -31,8 +31,8 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil } from "lucide-react";
 
@@ -118,7 +118,7 @@ export function TimetableList() {
   useEffect(() => {
     const fetchTimetables = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/emploi`);
+        const response = await fetch(`${API_URL}/emploi`);
         if (response.ok) {
           const data = await response.json();
 
@@ -180,7 +180,7 @@ export function TimetableList() {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/users/teachers");
+        const res = await fetch(`${API_URL}/api/users/teachers`,{credentials: "include"});
         if (!res.ok) throw new Error("Erreur chargement profs");
 
         const teachers = await res.json();
@@ -210,7 +210,7 @@ export function TimetableList() {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const cRes = await fetch(`http://localhost:8080/emploi/classes`);
+        const cRes = await fetch(`${API_URL}/emploi/classes`);
 
         if (!cRes.ok) {
           throw new Error("Erreur chargement classes");
@@ -433,7 +433,7 @@ export function TimetableList() {
           semestre: editingTimetable.semester
         };
 
-        const createResponse = await fetch(`${BASE_URL}/emploi/create`, {
+        const createResponse = await fetch(`${API_URL}/emploi/create`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newEmploiDTO)
@@ -448,7 +448,7 @@ export function TimetableList() {
       } else {
         // ✅ Si l'emploi existe, le mettre à jour normalement
         console.log("EMPLOI TO UPDATE =", emploiToUpdate);
-        const updateResponse = await fetch(`${BASE_URL}/emploi/${emploiToUpdate.id}/cell`, {
+        const updateResponse = await fetch(`${API_URL}/emploi/${emploiToUpdate.id}/cell`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updateDTO)
@@ -506,7 +506,7 @@ export function TimetableList() {
       const params = new URLSearchParams({ classe: timetable.class });
       if (timetable.filiere) params.append('filiere', timetable.filiere);
       if (timetable.semester) params.append('semester', timetable.semester);
-      const res = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`);
+      const res = await fetch(`${API_URL}/emploi/group?${params.toString()}`);
       if (!res.ok) return [];
       return await res.json();
     } catch (err) {
@@ -538,7 +538,7 @@ export function TimetableList() {
         params.append('semester', timetableToDelete.semester);
       }
 
-      const response = await fetch(`${BASE_URL}/emploi/group?${params.toString()}`, {
+      const response = await fetch(`${API_URL}/emploi/group?${params.toString()}`, {
         method: "DELETE"
       });
 
@@ -589,7 +589,7 @@ export function TimetableList() {
         return;
       }
 
-      const url = `${BASE_URL}/emploi/${timetable.fileName}/file`;
+      const url = `${API_URL}/emploi/${timetable.fileName}/file`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Erreur ${res.status}: ${res.statusText}`);
       const blob = await res.blob();
@@ -611,7 +611,7 @@ export function TimetableList() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch('http://localhost:8080/emploi/upload', {
+    const res = await fetch(`${API_URL}/emploi/upload`, {
       method: 'POST',
       body: formData 
 

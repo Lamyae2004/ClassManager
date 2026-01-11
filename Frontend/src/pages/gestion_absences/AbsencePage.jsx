@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect,useContext } from "react";
 import { etudiants, creneaux, emploi, matieres, salles } from "./data";
 import {
@@ -15,14 +14,15 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/Label";
 import { Calendar, Clock, Users, CheckCircle, XCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { AuthContext } from "@/context/AuthContext";
+const API_URL =  "http://localhost:8080";
 
 export default function AbsencePage() {
     const [classe, setClasse] = useState(null);
@@ -53,7 +53,7 @@ export default function AbsencePage() {
 
     useEffect(() => {
 
-        fetch(`http://localhost:8080/emploi/classes/prof/${profConnecte}`)
+        fetch(`${API_URL}/emploi/classes/prof/${profConnecte}`)
 
             .then(res => res.json())
             .then(data => {
@@ -79,7 +79,7 @@ export default function AbsencePage() {
         //const token = localStorage.getItem("token");
 
         fetch(
-            `http://localhost:8080/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`
+           `${API_URL}/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`
 
         )
             .then(res => {
@@ -102,7 +102,7 @@ export default function AbsencePage() {
     // 🔹 Créneaux filtrés selon classe + jour + prof
     useEffect(() => {
         if (!classe) return;
-        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
+        const url = `${API_URL}/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
 
         fetch(url)
             .then(res => {
@@ -145,7 +145,7 @@ salleId: selectedCreneau.salleId,
             }))
         };
 
-        fetch("http://localhost:8083/absences", {
+        fetch(`${API_URL}/absences`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)

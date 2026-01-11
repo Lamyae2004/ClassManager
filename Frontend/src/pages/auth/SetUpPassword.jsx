@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useState } from "react";
 import { useLocation ,useNavigate} from "react-router-dom";
 import axios from "axios";
+const API_URL =  "http://localhost:8080";
 const SetUpPassword = ({ mode }) =>{
     const [password,setPassword]=useState("");
     const [confirmPassword,setConfirmPassword]=useState("");
@@ -19,8 +20,8 @@ const SetUpPassword = ({ mode }) =>{
         }
        try {
            const url = mode === "validate"
-          ? `http://localhost:8080/api/v1/auth/validate-account/set-password/${email}`
-          : `http://localhost:8080/api/v1/auth/forgot-password/change/${email}`;
+          ? `${API_URL}/api/v1/auth/validate-account/set-password/${email}`
+          : `${API_URL}/api/v1/auth/forgot-password/change/${email}`;
           const res = await axios.post(url,{password,repeatPassword: confirmPassword});
           alert(res.data);
           navigate("/login");

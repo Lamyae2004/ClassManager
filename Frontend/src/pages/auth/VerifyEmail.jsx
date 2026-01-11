@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useState } from "react";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
+const API_URL =  "http://localhost:8080";
 const VerifyEmail = ({ mode })=>{
     const [email,setEmail]=useState("");
     const navigate = useNavigate("");
@@ -16,8 +17,8 @@ const VerifyEmail = ({ mode })=>{
         try {
           const url =
         mode === "validate"
-          ? `http://localhost:8080/api/v1/auth/validate-account/request/${email}`
-          : `http://localhost:8080/api/v1/auth/forgot-password/request/${email}`;
+          ? `${API_URL}/api/v1/auth/validate-account/request/${email}`
+          : `${API_URL}/api/v1/auth/forgot-password/request/${email}`;
           const res = await axios.post(url);
           alert(res.data);
           const dest =   mode === "validate" ? "/verifyOtp": "/forgotOtp";

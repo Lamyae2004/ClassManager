@@ -1,5 +1,3 @@
-"use client";
-
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import StatCard from "@/components/ui/StatCard";
@@ -10,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function DashboardStats() {
+const API_URL =  "http://localhost:8080";
   const { user } = useContext(AuthContext);
   const [stats, setStats] = useState({});
   const [studentsStatusByClass, setStudentsStatusByClass] = useState([]);
@@ -29,8 +28,8 @@ export default function DashboardStats() {
 
     if (user.role === "ADMIN") {
       Promise.all([
-        fetch("http://localhost:8080/api/users/dashboard/stats").then(res => res.json()),
-        fetch("http://localhost:8083/absences/classes-by-absence").then(res => res.json())
+        fetch(`${API_URL}/api/users/dashboard/stats`,{credentials: "include"}).then(res => res.json()),
+        fetch(`${API_URL}/absences/classes-by-absence`).then(res => res.json())
       ])
         .then(([dashboardStats, absenceData]) => {
           const classesByAbsence = absenceData

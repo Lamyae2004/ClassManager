@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+const API_URL =  "http://localhost:8080";
 const VerifyOtp =({ mode })=>{
     const [otp,setOtp]=useState("");
     const [message,setMessage]=useState("");
@@ -18,8 +19,8 @@ const VerifyOtp =({ mode })=>{
         }
         try {
           const url = mode === "validate"
-          ? `http://localhost:8080/api/v1/auth/validate-account/verify/${email}/${otp}`
-          : `http://localhost:8080/api/v1/auth/forgot-password/verify/${email}/${otp}`;
+          ? `${API_URL}/api/v1/auth/validate-account/verify/${email}/${otp}`
+          : `${API_URL}/api/v1/auth/forgot-password/verify/${email}/${otp}`;
           const res = await axios.post(url);
           alert(res.data);
          const dest =   mode === "validate" ? "/setUpPassword": "/resetPassword";

@@ -1,13 +1,13 @@
-"use client";
 const BASE_URL = "http://localhost:8082";
+const API_URL =  "http://localhost:8080";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Upload, FileText, Calendar, School, BookOpen, ArrowLeft, CheckCircle2, Loader2, AlertCircle, Pencil, GraduationCap, User, Building2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -87,8 +87,8 @@ export function TimetableUpload() {
       const fetchAll = async () => {
         try {
           const [cRes, fRes] = await Promise.all([
-            fetch(`http://localhost:8080/emploi/classes`),
-            fetch(`${BASE_URL}/filieres`)
+            fetch(`${API_URL}/emploi/classes`),
+            fetch(`${API_URL}/filieres`)
           ]);
 
           if (!cRes.ok || !fRes.ok) throw new Error("Erreur chargement ressources");
@@ -775,7 +775,7 @@ export function TimetableUpload() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const uploadRes = await fetch(`http://localhost:8080/emploi/upload`, {
+      const uploadRes = await fetch(`${API_URL}/emploi/upload`, {
         method: "POST",
         body: formData
       });
@@ -798,7 +798,7 @@ export function TimetableUpload() {
       console.log("Payload à envoyer :", payload);
 
 
-      const importRes = await fetch(`http://localhost:8080/emploi/import`, {
+      const importRes = await fetch(`${API_URL}/emploi/import`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -837,7 +837,7 @@ export function TimetableUpload() {
       setIsUploading(true);
       setUploadStatus("");
 
-      const res = await fetch(`http://localhost:8080/emploi/upload`, {
+      const res = await fetch(`${API_URL}/emploi/upload`, {
         method: "POST",
         body: formData
 
@@ -862,7 +862,7 @@ export function TimetableUpload() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`http://localhost:8080/emploi/upload`, {
+    const res = await fetch(`${API_URL}/emploi/upload`, {
       method: 'POST',
       body: formData 
 

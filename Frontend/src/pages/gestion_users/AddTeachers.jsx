@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useState } from "react";
 import axios from "axios";
+const API_URL = "http://localhost:8080";
 
 const AddTeachers = ()=>{
 
@@ -17,7 +18,7 @@ const AddTeachers = ()=>{
         const formData = new FormData();
         formData.append("file", file);
         try {
-          const res = await axios.post("http://localhost:8080/admin/createTeachers",formData,{ withCredentials: true });
+          const res = await axios.post(`${API_URL}/admin/createTeachers`,formData,{ withCredentials: true });
           alert(res.data);
         } catch (error) {
           console.error(error);
