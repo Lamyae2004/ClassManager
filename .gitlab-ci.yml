@@ -41,6 +41,11 @@ config-lib:build:
 class-responsibility-service:build:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
+  before_script:
+    - echo "Installing config-lib dependency..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -q
+    - cd ../..
   script:
     - echo "Building class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -61,6 +66,11 @@ class-responsibility-service:build:
 class-responsibility-service:test:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
+  before_script:
+    - echo "Installing config-lib dependency..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -q
+    - cd ../..
   script:
     - echo "Running tests for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -85,6 +95,11 @@ class-responsibility-service:test:
 class-responsibility-service:coverage:
   stage: coverage
   image: maven:3.9.6-eclipse-temurin-17
+  before_script:
+    - echo "Installing config-lib dependency..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -q
+    - cd ../..
   script:
     - echo "Generating coverage report for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -119,6 +134,11 @@ class-responsibility-service:coverage:
 class-responsibility-service:coverage-check:
   stage: quality
   image: maven:3.9.6-eclipse-temurin-17
+  before_script:
+    - echo "Installing config-lib dependency..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -q
+    - cd ../..
   script:
     - echo "Checking coverage for class-responsibility-service..."
     - cd Backend/class-responsibility-service
@@ -136,6 +156,11 @@ class-responsibility-service:coverage-check:
 class-responsibility-service:package:
   stage: package
   image: maven:3.9.6-eclipse-temurin-17
+  before_script:
+    - echo "Installing config-lib dependency..."
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -q
+    - cd ../..
   script:
     - echo "Packaging class-responsibility-service..."
     - cd Backend/class-responsibility-service
