@@ -69,8 +69,6 @@
 
     <color name="white_alpha_80">#CCFFFFFF</color>
 
-    <!-- Transparent -->
-    <color name="transparent">#00000000</color>
 
 
     <color name="surface_variant">#F1F5F9</color>
