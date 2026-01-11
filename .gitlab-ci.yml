@@ -40,4 +40,4 @@ test-emploi:
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/Gestion-des-emplois
-    - mvn test
+    -  mvn test -Dspring.profiles.active=test
