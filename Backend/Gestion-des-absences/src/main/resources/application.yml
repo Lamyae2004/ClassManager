@@ -8,11 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_absences
     username: postgres
-<<<<<<< HEAD
     password: root
-=======
-    password: postgres
->>>>>>> main
 
   jpa:
     hibernate:
