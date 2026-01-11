@@ -37,7 +37,7 @@ public class SecurityConfiguration {
                         .requestMatchers(request ->
                                 "true".equals(request.getHeader("X-Internal-Call"))
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
 
 
                 )

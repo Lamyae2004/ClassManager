@@ -31,7 +31,7 @@ public class AdminInitializer {
                 AdminDto admin = AdminDto.builder()
                         .firstname("Lamyae")
                         .lastname("HIMIDI")
-                        .email("inasse.mossalli@uit.ac.ma")
+                        .email("lamyae.himidi@uit.ac.ma")
                         .password(passwordEncoder.encode(randomPassword))
                         .role(Role.ADMIN.name())
                         .isActivated(false)

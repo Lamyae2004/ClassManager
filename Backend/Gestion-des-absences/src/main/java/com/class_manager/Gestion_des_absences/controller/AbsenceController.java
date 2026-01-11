@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/absences")
-@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class AbsenceController {
     private final SeanceService seanceService;

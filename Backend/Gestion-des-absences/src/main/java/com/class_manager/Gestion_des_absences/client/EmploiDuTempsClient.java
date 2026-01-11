@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @FeignClient(
-        name = "EMPLOI-SERVICE"
+        name = "EMPLOI-SERVICE",
+        configuration = com.class_manager.Gestion_des_absences.config.FeignInternalConfig.class
 )
 public interface EmploiDuTempsClient {
 
