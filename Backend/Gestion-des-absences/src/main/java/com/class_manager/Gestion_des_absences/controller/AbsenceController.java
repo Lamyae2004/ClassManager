@@ -1,10 +1,14 @@
 package com.class_manager.Gestion_des_absences.controller;
 
 import com.class_manager.Gestion_des_absences.model.dto.AbsenceResponseDTO;
+import com.class_manager.Gestion_des_absences.model.dto.ClassAbsenceRateDTO;
 import com.class_manager.Gestion_des_absences.model.dto.SeanceDTO;
+import com.class_manager.Gestion_des_absences.model.dto.StudentsStatusByClassDTO;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
 import com.class_manager.Gestion_des_absences.service.AbsenceService;
 import com.class_manager.Gestion_des_absences.service.SeanceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -20,14 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Tag(name = "Absence", description = "Gestion des absences et justificatifs")
 @RestController
 @RequestMapping("/absences")
-@CrossOrigin(origins = {"http://localhost:5173", "*"})
 @RequiredArgsConstructor
 public class AbsenceController {
     private final SeanceService seanceService;
     private final AbsenceService absenceService;
 
+    @Operation(summary = "Liste des séances d'un utilisateur pour une classe")
     @GetMapping("/classes/{classeId}/user/{userId}")
     public ResponseEntity<List<Seance>> getSeancesForUser(
             @PathVariable Long classeId,
@@ -36,6 +41,21 @@ public class AbsenceController {
         return ResponseEntity.ok(seances);
     }
 
+    @Operation(summary = "Liste des étudiants dépassant un seuil d'absences")
+    @GetMapping("/dépassertaux/{profId}")
+    public List<StudentsStatusByClassDTO> getStudentsStatus(
+            @PathVariable Long profId
+    ) {
+        return seanceService.getStudentsStatusByClassForProf(profId, 0.25);
+    }
+
+    @Operation(summary = "Taux d'absences par classe et filière")
+    @GetMapping("/classes-by-absence")
+    public List<ClassAbsenceRateDTO> classesByAbsence() {
+        return seanceService.getAbsenceRateByClassAndFiliere();
+    }
+
+    @Operation(summary = "Liste des absences d'un étudiant")
     @GetMapping("/student/{etudiantId}")
     public ResponseEntity<List<AbsenceResponseDTO>> getAbsencesByStudent(
             @PathVariable Long etudiantId) {
@@ -43,6 +63,7 @@ public class AbsenceController {
         return ResponseEntity.ok(absences);
     }
 
+    @Operation(summary = "Uploader un justificatif pour une absence")
     @PostMapping("/{absenceId}/justify")
     public ResponseEntity<AbsenceResponseDTO> uploadJustification(
             @PathVariable Long absenceId,
@@ -57,12 +78,14 @@ public class AbsenceController {
         }
     }
 
+    @Operation(summary = "Enregistrer une séance avec ses absences")
     @PostMapping
     public ResponseEntity<Seance> saveAbsences(@RequestBody SeanceDTO request) {
         Seance seance = seanceService.saveSeanceWithAbsences(request);
         return ResponseEntity.ok(seance);
     }
 
+    @Operation(summary = "Mettre à jour le statut de justification d'une absence")
     @PutMapping("/{absenceId}/justification")
     public ResponseEntity<AbsenceResponseDTO> updateJustificationStatus(
             @PathVariable Long absenceId,
@@ -74,7 +97,7 @@ public class AbsenceController {
             return ResponseEntity.badRequest().build();
         }
     }
-
+    @Operation(summary = "Télécharger un fichier justificatif")
     @GetMapping("/justifications/{filename:.+}")
     public ResponseEntity<Resource> getJustificationFile(@PathVariable String filename) {
         try {

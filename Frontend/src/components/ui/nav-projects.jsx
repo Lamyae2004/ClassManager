@@ -48,14 +48,14 @@ export function NavProjects({ projects }) {
         // Redirection selon le rôle
         link: role === "ADMIN" ? "/timetable" : "/timetable/prof"
       },
-      { separator: true },
+     
     ],
     "Gestion des absences": [
       ...(user.role !== "ADMIN"
         ? [{ icon: UserCheck, label: "Enregistrer l'absence", link: "/absences/create" }]
         : []),
       { icon: ClipboardList, label: "Consulter les absences", link: "/absences/consulter" },
-      { separator: true },
+      
 
     ],
     "Gestion des annonces": [
@@ -83,7 +83,7 @@ export function NavProjects({ projects }) {
             <SidebarMenuButton asChild>
               <a href={item.url} className="
     flex items-center gap-2 px-3 py-2 rounded-md
-    text-sidebar-foreground
+    text-sidebar-textp
     hover:bg-sidebar-accent
     hover:text-sidebar-accent-foreground
     transition-colors
@@ -104,7 +104,7 @@ export function NavProjects({ projects }) {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
-                className="w-48 rounded-lg"
+               className="w-48 rounded-lg text-blue-900"
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
@@ -114,7 +114,7 @@ export function NavProjects({ projects }) {
                     <DropdownMenuSeparator key={index} />
                   ) : (
                     <DropdownMenuItem key={index}>
-                      <menuItem.icon className="text-muted-foreground" />
+                      <menuItem.icon className="text-muted-textp" />
                       <Link to={menuItem.link}>{menuItem.label}</Link>
                     </DropdownMenuItem>
                   )

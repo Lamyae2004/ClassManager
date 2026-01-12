@@ -62,7 +62,7 @@ export function AppSidebar(props) {
   return (
     <Sidebar 
       collapsible="icon"
-      className="bg-sidebar text-sidebar-foreground"
+      className="bg-sidebar text-sidebar-textp"
       //className="transition-colors duration-200 rounded-md"
       {...props}
     >

@@ -1,11 +1,11 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Label } from '@/components/ui/Label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import axios from 'axios'
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+const API_URL =  "http://localhost:8080";
 function AssignResponsible() {
     const [niveau,setNiveau]=useState("");
       const [field,setField]=useState("");
@@ -30,7 +30,7 @@ function AssignResponsible() {
          }
 
         try {
-          const res = await axios.post("http://localhost:8080/api/responsible/assign-Random",  { niveau, filiere: field }, 
+          const res = await axios.post(`${API_URL}/api/responsible/assign-Random`,  { niveau, filiere: field }, 
          {withCredentials: true });
           
            navigate("/responsable-details", {

@@ -38,25 +38,41 @@ export function TeamSwitcher({ teams }) {
 >
   <div className="relative flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 shadow-xs group-hover:shadow-sm group-hover:border-[#1370fc]/20 transition-all duration-200">
     <activeTeam.logo 
-      className="w-5 h-5 text-[#1370fc] group-hover:text-[#1370fc] transition-transform duration-200 group-hover:scale-110" 
+      className="w-5 h-5 text-[#0D47A1] group-hover:text-[#87CEFA] transition-transform duration-200 group-hover:scale-110" 
     />
   </div>
   
-  <div className="grid flex-1 text-left text-sm leading-tight ml-3 space-y-0.5">
-    <div className="flex items-center gap-1">
-       <span className="truncate font-semibold text-foreground group-hover:text-[#1370fc] transition-colors duration-200">  
-         {activeTeam.name}
-      </span>
-      {activeTeam.badge && (
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-[#1370fc]/10 text-[#1370fc]">
-          {activeTeam.badge}
-        </span>
-      )}
-    </div>
-    <span className="truncate text-xs text-gray-500">
-      {activeTeam.plan}
+ <div className="flex-1 ml-3 text-left leading-tight">
+  <div className="flex items-center gap-2">
+    <span
+      className="
+        truncate font-semibold text-[#0D47A1]
+        group-hover:text-[#87CEFA]
+        transition-colors duration-200
+      "
+    >
+      {activeTeam.name}
     </span>
+
+    {activeTeam.badge && (
+      <span
+        className="
+          text-[11px] font-semibold
+          px-2 py-0.5 rounded-full
+          bg-[#1370fc]/15 text-[#1370fc]
+          ring-1 ring-[#1370fc]/30
+        "
+      >
+        {activeTeam.badge}
+      </span>
+    )}
   </div>
+
+  <span className="block truncate text-xs text-gray-500 mt-0.5">
+    {activeTeam.plan}
+  </span>
+</div>
+
   
   <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 group-hover:rotate-180 transition-all duration-300 size-4" />
 </SidebarMenuButton>

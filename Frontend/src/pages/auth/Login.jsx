@@ -1,11 +1,11 @@
 import React, { useContext, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Label } from "@/components/ui/Label";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/AuthContext";
-
+const API_URL =  "http://localhost:8080";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +22,12 @@ const Login = () => {
     } else {
 
           try{
-            const res = await axios.post("http://localhost:8080/api/v1/auth/authenticate",{email,password}, {
+            const res = await axios.post(`${API_URL}/api/v1/auth/authenticate`,{email,password}, {
           headers: {
             "Content-Type": "application/json" 
           }, withCredentials: true 
         });
-          const res2 = await axios.get("http://localhost:8080/api/users/profile", {
+          const res2 = await axios.get(`${API_URL}/api/users/profile`, {
         withCredentials: true,
       });
 
@@ -54,11 +54,11 @@ const Login = () => {
       <form onSubmit={handleLogin}
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">
+        <h2 className="text-2xl text-blue-700 font-bold mb-6 text-center">
           Sign-In
         </h2>
         {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
           <Label>Email</Label>
           <Input
             type="email"
@@ -68,7 +68,7 @@ const Login = () => {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
           <Label>Mot de passe</Label>
           <Input
             type="password"
@@ -79,7 +79,7 @@ const Login = () => {
           />
         </div>
 
-        <Button type="submit" className="w-full bg-black hover:bg-gray-600">
+        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
           Se connecter
         </Button>
         <p className="mt-2 text-sm text-center">

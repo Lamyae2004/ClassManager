@@ -29,9 +29,9 @@ public class AdminInitializer {
                 String randomPassword = UUID.randomUUID().toString().substring(0, 8);
 
                 AdminDto admin = AdminDto.builder()
-                        .firstname("Sara")
-                        .lastname("BGHIGH")
-                        .email("sara.bghigh@uit.ac.ma")
+                        .firstname("Lamyae")
+                        .lastname("HIMIDI")
+                        .email("lamyae.himidi@uit.ac.ma")
                         .password(passwordEncoder.encode(randomPassword))
                         .role(Role.ADMIN.name())
                         .isActivated(false)

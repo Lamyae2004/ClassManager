@@ -6,6 +6,8 @@ import com.class_manager.document_sharing.model.dto.DocumentUploadRequest;
 import com.class_manager.document_sharing.model.entity.DocumentEntity;
 import com.class_manager.document_sharing.repository.DocumentRepository;
 import com.class_manager.document_sharing.service.DocumentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -23,6 +25,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Document", description = "Gestion des documents")
 @RestController
 @RequestMapping("/api/document")
 @RequiredArgsConstructor
@@ -30,7 +33,7 @@ public class DocumentController {
     private final DocumentRepository repository;
     private final DocumentService documentService;
 
-
+    @Operation(summary = "Télécharger un fichier", description = "Récupère un document par son nom de fichier")
     @GetMapping("/uploads/{filename}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) throws IOException {
 
@@ -50,7 +53,7 @@ public class DocumentController {
 
 
 
-
+    @Operation(summary = "Lister les documents", description = "Liste tous les documents filtrables par classe, module et type")
     @GetMapping
     public List<DocumentDto> getDocuments(
             @RequestParam Long classeId,
@@ -60,7 +63,7 @@ public class DocumentController {
         return documentService.getDocuments(classeId, moduleId, type);
     }
 
-
+    @Operation(summary = "Uploader un document", description = "Envoie un fichier avec ses informations (classe, module, type)")
     @PostMapping("/upload")
     public ResponseEntity<String> uploadDocument(
             @ModelAttribute DocumentUploadRequest request

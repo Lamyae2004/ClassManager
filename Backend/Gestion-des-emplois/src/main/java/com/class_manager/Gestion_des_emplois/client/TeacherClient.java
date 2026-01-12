@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 @FeignClient(
-        name = "USER-AUTH-SERVICE"
+        name = "USER-AUTH-SERVICE",
+        configuration = com.class_manager.Gestion_des_emplois.config.FeignInternalConfig.class
 )
 public interface TeacherClient {
     @GetMapping("/api/users/teachers")

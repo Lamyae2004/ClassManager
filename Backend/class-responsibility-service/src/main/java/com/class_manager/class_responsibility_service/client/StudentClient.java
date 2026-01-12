@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "USER-AUTH-SERVICE")
+@FeignClient(name = "USER-AUTH-SERVICE",
+        configuration = com.class_manager.class_responsibility_service.config.FeignInternalConfig.class
+)
 public interface StudentClient {
     @GetMapping("/api/users/students/random")
     StudentDto getRandomStudent(  @RequestParam("niveau") Niveau niveau,

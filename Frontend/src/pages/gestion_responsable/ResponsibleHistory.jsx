@@ -1,10 +1,11 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
+const API_URL = "http://localhost:8080";
 
 function ResponsibleHistory() {
      const [niveau, setNiveau] = useState("");
@@ -45,7 +46,7 @@ function ResponsibleHistory() {
      const fetchHistory = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8080/api/responsible/history",
+        `${API_URL}/api/responsible/history`,
         {
           withCredentials: true
         }

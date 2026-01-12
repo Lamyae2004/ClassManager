@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { useState } from "react";
 import { useLocation ,useNavigate} from "react-router-dom";
 import axios from "axios";
+const API_URL =  "http://localhost:8080";
 const SetUpPassword = ({ mode }) =>{
     const [password,setPassword]=useState("");
     const [confirmPassword,setConfirmPassword]=useState("");
@@ -19,8 +20,8 @@ const SetUpPassword = ({ mode }) =>{
         }
        try {
            const url = mode === "validate"
-          ? `http://localhost:8080/api/v1/auth/validate-account/set-password/${email}`
-          : `http://localhost:8080/api/v1/auth/forgot-password/change/${email}`;
+          ? `${API_URL}/api/v1/auth/validate-account/set-password/${email}`
+          : `${API_URL}/api/v1/auth/forgot-password/change/${email}`;
           const res = await axios.post(url,{password,repeatPassword: confirmPassword});
           alert(res.data);
           navigate("/login");
@@ -35,17 +36,17 @@ const SetUpPassword = ({ mode }) =>{
     <div className="flex items-center justify-center min-h-screen ">
         <form onSubmit={handlePasswordSetUp} 
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">
+        <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
           Set-Up your Password
         </h2>
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
          <Label>Password :</Label>
          <Input
          type="password"
          value={password}
          onChange={(e)=>setPassword(e.target.value)} />
          </div>
-          <div className="mb-4">
+          <div className="mb-4 text-gray-600">
          <Label>Confirm password :</Label>
          <Input
          type="password"
@@ -53,7 +54,7 @@ const SetUpPassword = ({ mode }) =>{
          onChange={(e)=>setConfirmPassword(e.target.value)} />
          </div>
          
-         <Button type="submit" className="w-full bg-black hover:bg-gray-600">Submit</Button>
+         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Submit</Button>
         </form>
     </div>
  )

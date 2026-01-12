@@ -1,12 +1,11 @@
-"use client";
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Pencil, CalendarDays, Layers, Target, BookOpen, GraduationCap, User, Building2 } from "lucide-react";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-// ------------------ Composant cellule ------------------
+const API_URL =  "http://localhost:8080";
 const TimetableCellView = ({ cellData, isEmpty, onEdit }) => {
     const cellHeight = "165px";
     if (isEmpty || (!cellData.cours && !cellData.professeur && !cellData.salle)) {
@@ -76,7 +75,6 @@ const TimetableCellView = ({ cellData, isEmpty, onEdit }) => {
     );
 };
 
-// ------------------ Page Prof ------------------
 const TIME_SLOTS = ["8:30h-10:30h", "10:45h-12:45h", "14:00h-16:00h", "16:15h-18:15h"];
 
 const ProfTimetablePage = () => {
@@ -88,7 +86,7 @@ const ProfTimetablePage = () => {
         const fetchProfTimetable = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`http://localhost:8080/emploi/prof/${user.id}`);
+                const res = await fetch(`${API_URL}/emploi/prof/${user.id}`);
                 console.log(res);
                 if (!res.ok) throw new Error("Impossible de charger l'emploi du temps");
                 const data = await res.json();

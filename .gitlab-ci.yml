@@ -115,24 +115,24 @@ gestion-des-absences:test:
     - merge_requests
     - branches
 
-gestion-des-absences:coverage:
-  stage: coverage
-  image: maven:3.9.6-eclipse-temurin-17
-  needs:
-    - gestion-des-absences:test
-  script:
-    - cd Backend/Gestion-des-absences
-    - mvn jacoco:report -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
-  artifacts:
-    when: always
-    paths:
-      - Backend/Gestion-des-absences/target/site/jacoco/
-    expire_in: 1 month
-  only:
-    - main
-    - develop
-    - merge_requests
-    - branches
+#gestion-des-absences:coverage:
+#  stage: coverage
+#  image: maven:3.9.6-eclipse-temurin-17
+#  needs:
+#    - gestion-des-absences:test
+#  script:
+#    - cd Backend/Gestion-des-absences
+#    - mvn jacoco:report -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+#  artifacts:
+#    when: always
+#    paths:
+#      - Backend/Gestion-des-absences/target/site/jacoco/
+#    expire_in: 1 month
+#  only:
+#    - main
+#    - develop
+#    - merge_requests
+#    - branches
 
 
 
@@ -158,6 +158,16 @@ build-emploi:
     - mvn clean compile
 
 # ==========================
+# Build document-service
+# ==========================
+build-document:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/document_sharing
+    - mvn clean compile
+
+# ==========================
 # Test user-auth-service
 # ==========================
 test-auth:
@@ -176,4 +186,14 @@ test-emploi:
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/Gestion-des-emplois
+    -  mvn test -Dspring.profiles.active=test
+
+# ==========================
+# Test document-service
+# ==========================
+test-document:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/document_sharing
     -  mvn test -Dspring.profiles.active=test

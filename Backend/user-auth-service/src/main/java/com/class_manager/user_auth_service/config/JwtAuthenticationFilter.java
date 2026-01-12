@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 
@@ -30,7 +33,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
+        if ("true".equals(request.getHeader("X-Internal-Call"))) {
+
+            UsernamePasswordAuthenticationToken internalAuth =
+                    new UsernamePasswordAuthenticationToken(
+                            "INTERNAL_SERVICE",
+                            null,
+                            List.of(new SimpleGrantedAuthority("ROLE_INTERNAL"))
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(internalAuth);
+            filterChain.doFilter(request, response);
+            return;
+        }
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/v1/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String jwt = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -71,7 +93,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/v1/auth/");
+        String internalHeader = request.getHeader("X-Internal-Call");
+        return path.startsWith("/api/v1/auth/") || "true".equals(internalHeader);
+
     }
 
 }

@@ -17,18 +17,4 @@ public class GestionDesEmploisApplication {
 		SpringApplication.run(GestionDesEmploisApplication.class, args);
 	}
 
-
-	/*@Bean
-	public WebMvcConfigurer corsConfigurer() {
-		return new WebMvcConfigurer() {
-			@Override
-			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/**")  // tous les endpoints
-						.allowedOrigins("http://localhost:5173")  // ton React dev server
-						.allowedMethods("*")  // GET, POST, PUT, DELETE...
-						.allowedHeaders("*");
-			}
-		};
-	}*/
-
 }

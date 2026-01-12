@@ -1,6 +1,7 @@
 package com.class_manager.Gestion_des_absences.service;
 
-import com.class_manager.Gestion_des_absences.client.UserClient;
+
+import com.class_manager.Gestion_des_absences.client.EtudiantClient;
 import com.class_manager.Gestion_des_absences.model.dto.*;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SeanceService {
     private final SeanceRepository seanceRepository;
-    private final UserClient userClient;
+    private final EtudiantClient etudiantClient;
     private final AbsenceRepository absenceRepository;
 
     public List<StudentsStatusByClassDTO> getStudentsStatusByClassForProf(
@@ -28,8 +29,8 @@ public class SeanceService {
             double absenceThreshold // ex: 0.25
     ) {
 
-
-        List<StudentDTO> students = userClient.getAllStudents();
+        // 1️⃣ Tous les étudiants
+        List<StudentDTO> students = etudiantClient.getAllStudents();
         Map<Long, StudentDTO> studentMap = students.stream()
                 .collect(Collectors.toMap(StudentDTO::getId, s -> s));
 
@@ -89,7 +90,7 @@ public class SeanceService {
 
     public List<ClassAbsenceRateDTO> getAbsenceRateByClassAndFiliere() {
 
-        List<StudentDTO> students = userClient.getAllStudents();
+        List<StudentDTO> students = etudiantClient.getAllStudents();
 
         Map<Long, StudentDTO> studentMap = students.stream()
                 .collect(Collectors.toMap(StudentDTO::getId, s -> s));
@@ -132,7 +133,7 @@ public class SeanceService {
 
     public List<Seance> getSeancesByClasseAndUser(Long classeId, Long userId) {
 
-        UserDTO user = userClient.getUserById(userId);
+        UserDTO user = etudiantClient.getUserById(userId);
 
         if (user == null || user.getRole() == null) {
             throw new RuntimeException("Utilisateur ou rôle invalide");

@@ -34,10 +34,11 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(request ->
                                 "true".equals(request.getHeader("X-Internal-Call"))
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
 
 
                 )

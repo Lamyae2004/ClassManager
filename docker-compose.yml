@@ -1,0 +1,193 @@
+version: "3.9"
+
+networks:
+  classmanager-net:
+    driver: bridge
+
+services:
+
+  # Eureka Server
+  eureka-server:
+    build: ./Backend/eureka-server
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - classmanager-net
+
+  # API Gateway
+  api-gateway:
+    build: ./Backend/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+      - user-auth-service
+      - emploi-service
+      - absence-service
+      - class-responsibility-service
+      - document-sharing
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+    networks:
+      - classmanager-net
+
+  # Microservice: User Auth
+  postgres-user-auth:
+    image: postgres:15
+    container_name: postgres-user-auth
+    environment:
+      POSTGRES_DB: user_auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5435:5432"   # changer port local pour éviter conflit
+    networks:
+      - classmanager-net
+
+  user-auth-service:
+    build: ./Backend/user-auth-service
+    container_name: user-auth-service
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres-user-auth
+      - eureka-server
+    environment:
+      MAIL_USERNAME: lamyae.himidi@uit.ac.ma
+      MAIL_PASSWORD: pass
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+    networks:
+      - classmanager-net
+
+  # Microservice: Emploi
+  emploi-db:
+    image: postgres:15
+    container_name: emploi-db
+    environment:
+      POSTGRES_DB: gestion_emplois
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5437:5432"
+    networks:
+      - classmanager-net
+
+  emploi-service:
+    build: ./Backend/Gestion-des-emplois
+    container_name: emploi-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka-server
+      - emploi-db
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+    networks:
+      - classmanager-net
+
+  # Microservice: Class Responsibility
+  class-responsibility-db:
+    image: postgres:15
+    container_name: class-responsibility-db
+    environment:
+      POSTGRES_DB: random_resp_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    networks:
+      - classmanager-net
+
+  class-responsibility-service:
+    build: ./Backend/class-responsibility-service
+    container_name: class-responsibility-service
+    ports:
+      - "9091:9091"
+    depends_on:
+      - eureka-server
+      - class-responsibility-db
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+    networks:
+      - classmanager-net
+
+
+  postgres-absence:
+    image: postgres:15
+    container_name: postgres-absence
+    environment:
+      POSTGRES_DB: gestion_absences
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5436:5432"
+    networks:
+      - classmanager-net
+
+
+  absence-service:
+    build: ./Backend/Gestion-des-absences
+    container_name: absence-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+      - postgres-absence
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+    networks:
+      - classmanager-net
+
+
+
+    # Microservice: Document Sharing
+  document-db:
+    image: postgres:15
+    container_name: document-db
+    environment:
+      POSTGRES_DB: shared_documents_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5434:5432"
+    networks:
+      - classmanager-net
+
+  document-sharing:
+    build: ./Backend/document_sharing
+    container_name: document-sharing
+    ports:
+      - "9092:9092"
+    depends_on:
+      - eureka-server
+      - document-db
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+    networks:
+      - classmanager-net
+#
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: class-manager-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - classmanager-net
+
+

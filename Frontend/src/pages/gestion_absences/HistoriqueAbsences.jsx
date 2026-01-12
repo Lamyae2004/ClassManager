@@ -7,10 +7,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/Label";
 import { Separator } from "@/components/ui/separator";
 import {
   Calendar, Clock, Building, BookOpen, Users, CheckCircle, XCircle, Search,
@@ -28,7 +28,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-
+const API_URL =  "http://localhost:8080";
 export default function HistoriqueAbsences() {
   const [classe, setClasse] = useState(null);
   const [matiere, setMatiere] = useState(null);
@@ -62,7 +62,7 @@ export default function HistoriqueAbsences() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8083/absences/${absenceId}/justification?justifie=${justifie}`, {
+      const res = await fetch(`${API_URL}/absences/${absenceId}/justification?justifie=${justifie}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function HistoriqueAbsences() {
       // Refresh seances data
       const fetchSeances = async () => {
         try {
-          const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
+          const res = await fetch(`${API_URL}/absences/classes/${classe}/user/${currentUserId}`);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data)) {
@@ -112,8 +112,8 @@ export default function HistoriqueAbsences() {
   useEffect(() => {
     const fetchClasses = async () => {
       let url = role === "ADMIN"
-        ? `http://localhost:8080/emploi/classes`  // toutes les classes pour admin
-        : `http://localhost:8080/emploi/classes/prof/${currentUserId}`; // seulement celles du prof
+        ? `${API_URL}/emploi/classes`  // toutes les classes pour admin
+        : `${API_URL}/emploi/classes/prof/${currentUserId}`; // seulement celles du prof
       const res = await fetch(url);
       const data = await res.json();
       setClasses(data);
@@ -131,8 +131,8 @@ export default function HistoriqueAbsences() {
     const fetchMatieres = async () => {
       try {
         let url = role === "ADMIN"
-          ? `http://localhost:8080/emploi/matieres/classe/${classe}`
-          : `http://localhost:8080/emploi/matieres/classe/prof/${classe}/${currentUserId}`;
+          ? `${API_URL}/emploi/matieres/classe/${classe}`
+          : `${API_URL}/emploi/matieres/classe/prof/${classe}/${currentUserId}`;
         const res = await fetch(url);
         const data = await res.json();
         console.log("Matieres reçues:", data); // <-- Vérifier ici
@@ -152,7 +152,7 @@ export default function HistoriqueAbsences() {
   useEffect(() => {
   const fetchStudents = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/users/students');
+      const res = await fetch(`${API_URL}/api/users/students`,{credentials: "include"});
       const data = await res.json();
       console.log("Étudiants reçus :", data); 
       setEtudiants(data);
@@ -173,7 +173,7 @@ export default function HistoriqueAbsences() {
 
     const fetchSeances = async () => {
       try {
-        const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
+        const res = await fetch(`${API_URL}/absences/classes/${classe}/user/${currentUserId}`);
         const text = await res.clone().text();
         console.log("Réponse brute fetchSeances:", text);
         if (!res.ok) {
@@ -204,7 +204,7 @@ export default function HistoriqueAbsences() {
     if (!classe) return;
 
     const fetchEmploi = async () => {
-      const res = await fetch(`http://localhost:8080/emploi/classe/${classe}`);
+      const res = await fetch(`${API_URL}/emploi/classe/${classe}`);
       const data = await res.json();
        console.log("emplois reçus :", data); 
       setEmploi(data);
@@ -310,7 +310,7 @@ export default function HistoriqueAbsences() {
                         variant="ghost"
                         size="sm"
                         className="h-8 px-2 text-xs"
-                        onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                        onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                       >
                         <Eye className="h-3 w-3 mr-1" />
                         Voir
@@ -332,7 +332,7 @@ export default function HistoriqueAbsences() {
                         onClick={() => {
                           // Télécharger le fichier
                           const link = document.createElement('a');
-                          link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                          link.href = `${API_URL}/absences/justifications/${filename}`;
                           link.download = filename || `justificatif_${absence.id}.pdf`;
                           link.click();
                         }}
@@ -397,7 +397,7 @@ export default function HistoriqueAbsences() {
                       variant="ghost"
                       size="sm"
                       className="h-8 px-2 text-xs"
-                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                      onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Voir
@@ -498,7 +498,7 @@ export default function HistoriqueAbsences() {
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                    onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                   >
                     <FileCheck className="h-4 w-4" />
                   </Button>
@@ -518,7 +518,7 @@ export default function HistoriqueAbsences() {
                       variant="outline"
                       size="sm"
                       className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                      onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                     >
                       Voir
                     </Button>
@@ -528,7 +528,7 @@ export default function HistoriqueAbsences() {
                       className="h-6 px-2 text-xs"
                       onClick={() => {
                         const link = document.createElement('a');
-                        link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                        link.href = `${API_URL}/absences/justifications/${filename}`;
                         link.download = filename || `justificatif_${absence.id}.pdf`;
                         link.click();
                       }}
@@ -570,7 +570,7 @@ export default function HistoriqueAbsences() {
                     variant="outline"
                     size="sm"
                     className="h-6 px-2 text-xs w-full"
-                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                    onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                   >
                     <Eye className="h-3 w-3 mr-1" />
                     Voir le justificatif

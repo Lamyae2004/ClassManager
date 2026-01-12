@@ -1,7 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom';
+
+const API_URL = "http://localhost:8080";
 
 function ResponsibleDetails() {
   const { state } = useLocation();
