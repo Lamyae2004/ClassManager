@@ -7,22 +7,25 @@ import axios from "axios";
 const API_URL = "http://localhost:8080";
 
 const AddTeachers = ()=>{
-
+    
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+    
     const [file,setFile]=useState("");
      const handleSubmit = async (e) =>{
         e.preventDefault();
         if (!file) {
-           alert("Veuillez inserer d'abord le fichier .");
+           setError("Veuillez inserer d'abord le fichier .");
            return;
          }
         const formData = new FormData();
         formData.append("file", file);
         try {
           const res = await axios.post(`${API_URL}/admin/createTeachers`,formData,{ withCredentials: true });
-          alert(res.data);
+          setMessage(res.data);
         } catch (error) {
           console.error(error);
-          alert("Erreur lors de l’envoi");
+          setError("Erreur lors de l’enregistrement des profs ");
         }
       };
     return(
@@ -31,6 +34,16 @@ const AddTeachers = ()=>{
         <CardTitle className="text-xl font-bold text-center">Ajouter les professeurs</CardTitle>
       </CardHeader>
       <CardContent>
+        {message && (
+        <div className="mt-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded text-center transition duration-300 ease-in-out">
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+          {error}
+        </div>
+      )}
         <form onSubmit={handleSubmit}>    
            <div className="space-y-2">
             <div className="mb-2"><Label>Importer un fichier Excel</Label></div>

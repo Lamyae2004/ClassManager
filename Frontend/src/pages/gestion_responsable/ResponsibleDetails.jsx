@@ -9,7 +9,6 @@ function ResponsibleDetails() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // Sécurité si accès direct à l'URL
   if (!state?.responsable) {
     return (
       <p className="text-center mt-10 text-red-500">

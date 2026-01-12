@@ -12,17 +12,19 @@ const addStudents = () =>{
     const [niveau,setNiveau]=useState("");
     const [field,setField]=useState("");
     const [file,setFile]=useState(null);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
     
     const handleSubmit = async (e) =>{
           e.preventDefault();
         if (!niveau || !field || !file) {
-           alert("Veuillez remplir tous les champs.");
+           setError("Veuillez remplir tous les champs.");
            return;
          }
         const formData = new FormData();
        
       if ((niveau === "CP1" ||  niveau === "CP2")&& field != "NONE" ) {
-           alert("Si CP1 ou CP2 la filière devra etre none !");
+           setError("Si CP1 ou CP2 la filière devra etre none !");
            return;
          }
 
@@ -32,10 +34,10 @@ const addStudents = () =>{
         formData.append("filiere", field);
         try {
           const res = await axios.post(`${API_URL}/admin/createStudents`,formData,{ withCredentials: true });
-          alert(res.data);
+          setMessage(res.data);
         } catch (error) {
           console.error(error);
-          alert("Erreur lors de l’envoi");
+          setError("Erreur lors de l'enregistrement des étudiants");
         }
       };
     return(
@@ -43,8 +45,20 @@ const addStudents = () =>{
       <CardHeader>
         <CardTitle className="text-xl font-bold text-center">Ajouter les étudiants </CardTitle>
       </CardHeader>
+      
       <CardContent>
+      
         <form onSubmit={handleSubmit}>
+          {message && (
+        <div className="mt-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded text-center transition duration-300 ease-in-out">
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+          {error}
+        </div>
+      )}
           <div className="space-y-2">
             <Label className="mb-2">Filière:</Label>
             <Select onValueChange={setField}>

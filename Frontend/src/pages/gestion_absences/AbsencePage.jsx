@@ -33,6 +33,8 @@ export default function AbsencePage() {
     const [classeList, setClasseList] = useState([]);
     const [todayCreneaux, setTodayCreneaux] = useState([]);
     const [students, setStudents] = useState([]);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
     
     const { user} = useContext(AuthContext);
 
@@ -129,7 +131,7 @@ export default function AbsencePage() {
 
     const handleSave = () => {
          if (!classe || !creneau || !selectedCreneau) {
-        alert("Veuillez sélectionner un créneau valide.");
+        setError("Veuillez sélectionner un créneau valide.");
         return;
     }
         const data = {
@@ -158,11 +160,11 @@ salleId: selectedCreneau.salleId,
             })
             .then(res => {
                 console.log("Absences enregistrées :", res);
-                alert("Absences enregistrées ✔");
+                setMessage("Absences enregistrées ✔");
             })
             .catch(err => {
                 console.error("Erreur enregistrement :", err);
-                alert("Erreur lors de l'enregistrement");
+                setError("Erreur lors de l'enregistrement");
             });
     };
 
@@ -205,6 +207,16 @@ salleId: selectedCreneau.salleId,
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-3">
+                 {message && (
+                   <div className="mt-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded text-center transition duration-300 ease-in-out">
+                    {message}
+                   </div>
+                 )}
+                 {error && (
+                   <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+                     {error}
+                 </div>
+                )}
                     {/* Carte de sélection */}
                     <Card className="md:col-span-2">
                         <CardHeader>

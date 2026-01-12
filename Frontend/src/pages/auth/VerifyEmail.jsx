@@ -7,12 +7,16 @@ import axios from "axios";
 const API_URL =  "http://localhost:8080";
 const VerifyEmail = ({ mode })=>{
     const [email,setEmail]=useState("");
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
     const navigate = useNavigate("");
     const handleVerifyEmail = async(e)=>{
          e.preventDefault();
+         setMessage("");
+         setError("");
       if(!email){
-        alert("Vous devez tapez votre email d'abord !")
-        return;
+         setError("Vous devez taper votre email d'abord !");
+         return;
         }
         try {
           const url =
@@ -20,13 +24,14 @@ const VerifyEmail = ({ mode })=>{
           ? `${API_URL}/api/v1/auth/validate-account/request/${email}`
           : `${API_URL}/api/v1/auth/forgot-password/request/${email}`;
           const res = await axios.post(url);
-          alert(res.data);
+          setMessage(res.data);
           const dest =   mode === "validate" ? "/verifyOtp": "/forgotOtp";
+          setTimeout(() => {
           navigate(dest, { state: { email } });
-        
+          }, 2000);        
         } catch (error) {
           console.error(error);
-          alert("Erreur lors de l’envoi");
+          setError("Erreur lors de l’envoi Vérifiez votre connexion !");
         }
       };
 
@@ -37,6 +42,17 @@ return(
         <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
           Verify your Email
         </h2>
+         {message && (
+        <div className="mt-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded text-center transition duration-300 ease-in-out">
+          {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+          {error}
+        </div>
+      )}
         <div className="mb-4 text-gray-600">
          <Label>Email institutionnel:</Label>
          <Input 

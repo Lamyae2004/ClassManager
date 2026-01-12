@@ -16,14 +16,10 @@ function AssignResponsible() {
 
         e.preventDefault();
         if (!niveau || !field) {
-           alert("Veuillez remplir tous les champs.");
+           setErrorMessage("Veuillez remplir tous les champs.");
            return;
          }
-       /* const filiereToSend = (niveau === "CP1" || niveau === "CP2") ? "NONE" : field;
-        if (!filiereToSend) {
-          alert("Veuillez sélectionner une filière.");
-          return;
-        }*/
+
          if ((niveau === "CP1" ||  niveau === "CP2")&& field != "NONE" ) {
            setErrorMessage("Si CP1 ou CP2 la filière devra etre none !");
            return;
@@ -49,27 +45,14 @@ function AssignResponsible() {
          <CardHeader>
            <CardTitle className="text-xl font-bold text-center">Choisir un responsable</CardTitle>
          </CardHeader>
-         {errorMessage && (
-    <div className="mt-4 ml-6 mr-5 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 shadow-sm">
-        <svg
-            className="h-5 w-5 mt-0.5 text-red-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"
-            />
-        </svg>
+         
 
-        <span className="text-sm font-medium">
-            {errorMessage}
-        </span>
-    </div>
-)}
+      {errorMessage && (
+        <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+          {errorMessage}
+        </div>
+      )}
+    
 
          <CardContent>
            <form onSubmit={handleSubmit}>

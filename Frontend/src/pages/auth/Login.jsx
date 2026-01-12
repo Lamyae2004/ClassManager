@@ -11,6 +11,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { setUser } = useContext(AuthContext);
+  const [message, setMessage] = useState("");
+
 
   const navigate = useNavigate();
   const handleLogin = async (e) => {
@@ -23,18 +25,17 @@ const Login = () => {
 
           try{
             const res = await axios.post(`${API_URL}/api/v1/auth/authenticate`,{email,password}, {
-          headers: {
-            "Content-Type": "application/json" 
-          }, withCredentials: true 
-        });
-          const res2 = await axios.get(`${API_URL}/api/users/profile`, {
-        withCredentials: true,
-      });
-
-      setUser(res2.data); // 
-      navigate("/");
-          alert("Connexion réussie !"); 
-          navigate("/");
+            headers: {
+               "Content-Type": "application/json" 
+                     }, 
+                withCredentials: true 
+             });
+          const res2 = await axios.get(`${API_URL}/api/users/profile`, { withCredentials: true});
+          setUser(res2.data);  
+          setMessage("Opération réussie !");
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
           }
           catch(err){
             console.error(error);
@@ -43,7 +44,7 @@ const Login = () => {
                 
     } else {
                 setError("Erreur inconnue lors de la connexion");
-                alert("Erreur inconnue lors de la connexion");
+               
     }
   }
    }
@@ -57,7 +58,17 @@ const Login = () => {
         <h2 className="text-2xl text-blue-700 font-bold mb-6 text-center">
           Sign-In
         </h2>
-        {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
+        {message && (
+          <div className="mt-4 p-3 bg-green-100 text-green-800 border border-green-300 rounded text-center transition duration-300 ease-in-out">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-100 text-red-800 border border-red-300 rounded text-center transition duration-300 ease-in-out">
+            {error}
+          </div>
+        )}
         <div className="mb-4 text-gray-600">
           <Label>Email</Label>
           <Input
