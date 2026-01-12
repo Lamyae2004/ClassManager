@@ -3,6 +3,7 @@ package com.class_manager.user_auth_service.Controller;
 import com.class_manager.user_auth_service.config.JwtService;
 import com.class_manager.user_auth_service.model.dto.*;
 import com.class_manager.user_auth_service.model.entity.Role;
+import com.class_manager.user_auth_service.model.dto.ChangePassword;
 import com.class_manager.user_auth_service.model.entity.Filiere;
 import com.class_manager.user_auth_service.model.entity.Niveau;
 import com.class_manager.user_auth_service.model.entity.Teacher;
@@ -16,11 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +34,9 @@ public class UserController {
     private final UserRepository userRepository;
     public record UserResponse(Long id, String email, String firstname, String lastname, String role) {}
     private final TeacherRepository teacherRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    public record UpdateProfileRequest(String firstname, String lastname, String email) {}
 
 
     @GetMapping("/teachers/{id}")
@@ -140,6 +146,76 @@ public class UserController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<UserResponse> updateProfile(@RequestBody UpdateProfileRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        // Update firstname and lastname
+        if (request.firstname() != null && !request.firstname().trim().isEmpty()) {
+            user.setFirstname(request.firstname());
+        }
+        if (request.lastname() != null && !request.lastname().trim().isEmpty()) {
+            user.setLastname(request.lastname());
+        }
+
+        // Only allow email update for ADMIN role
+        if (request.email() != null && !request.email().trim().isEmpty()) {
+            if (user.getRole() == Role.ADMIN) {
+                // Check if email is already taken by another user
+                Optional<User> existingUser = userRepository.findByEmail(request.email());
+                if (existingUser.isPresent() && !existingUser.get().getId().equals(user.getId())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(null);
+                }
+                user.setEmail(request.email());
+            }
+        }
+
+        userRepository.save(user);
+
+        UserResponse response = new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getLastname(),
+                user.getRole().name()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePassword changePassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé"));
+
+        // Verify passwords match
+        if (!changePassword.password().equals(changePassword.repeatPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Les mots de passe ne correspondent pas"));
+        }
+
+        // Update password
+        String encodedPassword = passwordEncoder.encode(changePassword.password());
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Mot de passe modifié avec succès"));
     }
 
 

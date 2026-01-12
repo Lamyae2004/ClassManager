@@ -16,13 +16,13 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_emplois
     username: postgres
-    password: admin
+    password: postgres
 
   mail:
     host: smtp.gmail.com
     port: 587
-    username: nourelhouda.essafi@uit.ac.ma
-    password: "qvsu ezjk tffb vbtr"
+    username: "sara.bghigh@uit.ac.ma"
+    password: "pass"
     properties:
       mail:
         smtp:
