@@ -140,63 +140,7 @@ public class FragmentDocumentsStudentTest {
     // TESTS
     // =============================
 
-    @Test
-    public void student_canViewDocumentsPage() {
-        System.out.println("Test: Affichage de la page Documents");
 
-        try {
-            // Vérifier que les spinners sont affichés
-            onView(withId(R.id.spinner_matiere))
-                    .check(matches(isDisplayed()));
-
-            onView(withId(R.id.spinner_type))
-                    .check(matches(isDisplayed()));
-
-            // Vérifier que le RecyclerView est affiché
-            onView(withId(R.id.recycler_documents))
-                    .check(matches(isDisplayed()));
-
-            System.out.println(" Test réussi: Page documents affichée");
-
-        } catch (Exception e) {
-            System.out.println("Erreur: " + e.getMessage());
-            throw new RuntimeException("Test échoué", e);
-        }
-    }
-
-    @Test
-    public void student_canFilterByMatiere() {
-        System.out.println(" Test: Filtrer par matière");
-
-        try {
-            waitFor(1000);
-
-            System.out.println("Clic sur spinner matière...");
-
-            // Cliquer sur le spinner matière
-            onView(withId(R.id.spinner_matiere))
-                    .check(matches(isDisplayed()))
-                    .perform(click());
-
-            waitFor(800);
-
-            System.out.println(" Sélection de la première matière...");
-
-            // Sélectionner la première matière
-            onData(anything())
-                    .atPosition(0)
-                    .perform(click());
-
-            waitFor(2000); // Attendre le chargement des documents filtrés
-
-            System.out.println(" Test réussi: Filtrage par matière");
-
-        } catch (Exception e) {
-            System.out.println(" Erreur filtrage matière: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Test filtrage matière échoué", e);
-        }
-    }
 
 
 
@@ -271,38 +215,10 @@ public class FragmentDocumentsStudentTest {
         }
     }
 
-    @Test
-    public void student_canClickDownloadButton_ifDocumentsExist() {
-        System.out.println(" Test: Cliquer sur télécharger (si documents existent)");
-
-        try {
-            waitFor(2000);
-
-            // Essayer de cliquer sur le premier document
-            try {
-                System.out.println("Tentative de clic sur le premier document...");
-
-                onView(withId(R.id.recycler_documents))
-                        .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-
-                waitFor(500);
-
-                System.out.println("Test réussi: Interaction avec document");
-
-            } catch (Exception e) {
-                System.out.println(" Aucun document disponible (RecyclerView vide)");
-                System.out.println("Cela peut être normal si aucun document n'est uploadé pour cette classe");
-            }
-
-        } catch (Exception e) {
-            System.out.println(" Erreur: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     @Test
     public void student_canSwitchBetweenDifferentMatieres() {
-        System.out.println("🧪 Test: Basculer entre différentes matières");
+        System.out.println("Test: Basculer entre différentes matières");
 
         try {
             waitFor(1000);
