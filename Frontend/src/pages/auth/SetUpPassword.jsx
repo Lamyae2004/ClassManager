@@ -36,17 +36,17 @@ const SetUpPassword = ({ mode }) =>{
     <div className="flex items-center justify-center min-h-screen ">
         <form onSubmit={handlePasswordSetUp} 
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center">
+        <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
           Set-Up your Password
         </h2>
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
          <Label>Password :</Label>
          <Input
          type="password"
          value={password}
          onChange={(e)=>setPassword(e.target.value)} />
          </div>
-          <div className="mb-4">
+          <div className="mb-4 text-gray-600">
          <Label>Confirm password :</Label>
          <Input
          type="password"
@@ -54,7 +54,7 @@ const SetUpPassword = ({ mode }) =>{
          onChange={(e)=>setConfirmPassword(e.target.value)} />
          </div>
          
-         <Button type="submit" className="w-full bg-black hover:bg-gray-600">Submit</Button>
+         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">Submit</Button>
         </form>
     </div>
  )

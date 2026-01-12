@@ -54,11 +54,11 @@ const Login = () => {
       <form onSubmit={handleLogin}
         className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">
+        <h2 className="text-2xl text-blue-700 font-bold mb-6 text-center">
           Sign-In
         </h2>
         {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
           <Label>Email</Label>
           <Input
             type="email"
@@ -68,7 +68,7 @@ const Login = () => {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
           <Label>Mot de passe</Label>
           <Input
             type="password"
@@ -79,7 +79,7 @@ const Login = () => {
           />
         </div>
 
-        <Button type="submit" className="w-full bg-black hover:bg-gray-600">
+        <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
           Se connecter
         </Button>
         <p className="mt-2 text-sm text-center">
