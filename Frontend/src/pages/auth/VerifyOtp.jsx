@@ -45,17 +45,17 @@ const VerifyOtp =({ mode })=>{
            {message && (
           <p className="mb-4 text-center text-red-600">{message}</p>
         )}
-             <h2 className="text-2xl font-bold mb-6 text-center">
+             <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
           Verify your Email
         </h2>
-        <div className="mb-4">
+        <div className="mb-4 text-gray-600">
          <Label>Otp:</Label>
          <Input
          type="Number"
          value={otp}
          onChange={(e)=>setOtp(e.target.value)} />
          </div>
-         <Button type="submit" className="w-full bg-black hover:bg-gray-600">validate otp</Button>
+         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">validate otp</Button>
         </form>
     </div>
  )

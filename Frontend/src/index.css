@@ -42,7 +42,8 @@
 :root {
   --radius: 0.625rem;
   --background: #ffffff;
-  --foreground: #0D47A1;
+  --foreground: #000000;
+  --textp : #0D47A1;
   --card: #ffffff;
   --card-foreground: #252525;
   --popover: #ffffff;
@@ -69,7 +70,7 @@
   --sidebar-primary: #000000;
   --sidebar-primary-foreground: #fcfcfc;
   --sidebar-accent: #f5f5f5;
-  --sidebar-accent-foreground: #4e12f5;
+  --sidebar-accent-foreground: #87CEFA;
   --sidebar-border: #ebebeb;
   --sidebar-ring: #bdbdbd;
 }
