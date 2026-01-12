@@ -1,14 +1,14 @@
 import { useState, useContext, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AuthContext } from "@/context/AuthContext";
 import axios from "axios";
 import { User, Mail, Lock, Save, Edit2, X } from "lucide-react";
-
+const API_URL =  "http://localhost:8080";
 export default function Account() {
   const { user, setUser } = useContext(AuthContext);
   const [isEditing, setIsEditing] = useState(false);
@@ -72,7 +72,7 @@ export default function Account() {
       }
 
       const response = await axios.put(
-        "http://localhost:8080/api/users/profile",
+        `${API_URL}/api/users/profile`,
         updateData,
         { withCredentials: true }
       );
@@ -101,7 +101,7 @@ export default function Account() {
     setLoading(true);
     try {
       await axios.put(
-        "http://localhost:8080/api/users/change-password",
+        `${API_URL}/api/users/change-password`,
         {
           password: passwordData.password,
           repeatPassword: passwordData.repeatPassword,

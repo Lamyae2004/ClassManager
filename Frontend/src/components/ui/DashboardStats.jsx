@@ -48,12 +48,12 @@ const API_URL =  "http://localhost:8080";
     }
 
     if (user.role === "TEACHER") {
-      fetch(`http://localhost:8080/emploi/my-classes/${user.id}`)
+      fetch(`${API_URL}/emploi/my-classes/${user.id}`)
         .then(res => res.json())
         .then(data => setStats(data))
         .catch(err => console.error(err));
 
-      fetch(`http://localhost:8080/emploi/students-status/${user.id}`)
+      fetch(`${API_URL}/emploi/students-status/${user.id}`)
         .then(res => res.json())
         .then(data => {
           const formatted = data.map(d => ({
@@ -64,7 +64,7 @@ const API_URL =  "http://localhost:8080";
         })
         .catch(console.error);
 
-      fetch(`http://localhost:8083/absences/dépassertaux/${user.id}`)
+      fetch(`${API_URL}/absences/dépassertaux/${user.id}`)
         .then(res => res.json())
         .then(data => {
           const formatted = data.map(d => ({

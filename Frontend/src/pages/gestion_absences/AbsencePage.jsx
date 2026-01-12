@@ -79,7 +79,8 @@ export default function AbsencePage() {
         //const token = localStorage.getItem("token");
 
         fetch(
-           `${API_URL}/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`
+           `${API_URL}/api/users/students?filiere=${selectedClasse.filiere}&niveau=${selectedClasse.nom}`,
+           {credentials: "include"}
 
         )
             .then(res => {
