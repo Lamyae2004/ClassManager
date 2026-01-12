@@ -21,4 +21,5 @@ public interface EtudiantClient {
 
     @GetMapping("/api/users/{id}")
     UserDTO getUserById(@PathVariable("id") Long id);
+
 }

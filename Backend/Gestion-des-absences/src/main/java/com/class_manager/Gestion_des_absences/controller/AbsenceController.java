@@ -1,7 +1,9 @@
 package com.class_manager.Gestion_des_absences.controller;
 
 import com.class_manager.Gestion_des_absences.model.dto.AbsenceResponseDTO;
+import com.class_manager.Gestion_des_absences.model.dto.ClassAbsenceRateDTO;
 import com.class_manager.Gestion_des_absences.model.dto.SeanceDTO;
+import com.class_manager.Gestion_des_absences.model.dto.StudentsStatusByClassDTO;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
 import com.class_manager.Gestion_des_absences.service.AbsenceService;
 import com.class_manager.Gestion_des_absences.service.SeanceService;
@@ -34,6 +36,20 @@ public class AbsenceController {
         List<Seance> seances = seanceService.getSeancesByClasseAndUser(classeId, userId);
         return ResponseEntity.ok(seances);
     }
+
+    @GetMapping("/dépassertaux/{profId}")
+    public List<StudentsStatusByClassDTO> getStudentsStatus(
+            @PathVariable Long profId
+    ) {
+        return seanceService.getStudentsStatusByClassForProf(profId, 0.25);
+    }
+
+
+    @GetMapping("/classes-by-absence")
+    public List<ClassAbsenceRateDTO> classesByAbsence() {
+        return seanceService.getAbsenceRateByClassAndFiliere();
+    }
+
 
     @GetMapping("/student/{etudiantId}")
     public ResponseEntity<List<AbsenceResponseDTO>> getAbsencesByStudent(

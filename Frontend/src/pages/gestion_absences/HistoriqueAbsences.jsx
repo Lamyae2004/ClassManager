@@ -62,7 +62,7 @@ export default function HistoriqueAbsences() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8083/absences/${absenceId}/justification?justifie=${justifie}`, {
+      const res = await fetch(`${API_URL}/absences/${absenceId}/justification?justifie=${justifie}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export default function HistoriqueAbsences() {
       // Refresh seances data
       const fetchSeances = async () => {
         try {
-          const res = await fetch(`http://localhost:8083/absences/classes/${classe}/user/${currentUserId}`);
+          const res = await fetch(`${API_URL}/absences/classes/${classe}/user/${currentUserId}`);
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data)) {
@@ -310,7 +310,7 @@ export default function HistoriqueAbsences() {
                         variant="ghost"
                         size="sm"
                         className="h-8 px-2 text-xs"
-                        onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                        onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                       >
                         <Eye className="h-3 w-3 mr-1" />
                         Voir
@@ -332,7 +332,7 @@ export default function HistoriqueAbsences() {
                         onClick={() => {
                           // Télécharger le fichier
                           const link = document.createElement('a');
-                          link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                          link.href = `${API_URL}/absences/justifications/${filename}`;
                           link.download = filename || `justificatif_${absence.id}.pdf`;
                           link.click();
                         }}
@@ -397,7 +397,7 @@ export default function HistoriqueAbsences() {
                       variant="ghost"
                       size="sm"
                       className="h-8 px-2 text-xs"
-                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                      onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Voir
@@ -498,7 +498,7 @@ export default function HistoriqueAbsences() {
                     variant="ghost"
                     size="sm"
                     className="h-7 w-7 p-0 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                    onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                   >
                     <FileCheck className="h-4 w-4" />
                   </Button>
@@ -518,7 +518,7 @@ export default function HistoriqueAbsences() {
                       variant="outline"
                       size="sm"
                       className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                      onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                     >
                       Voir
                     </Button>
@@ -528,7 +528,7 @@ export default function HistoriqueAbsences() {
                       className="h-6 px-2 text-xs"
                       onClick={() => {
                         const link = document.createElement('a');
-                        link.href = `http://localhost:8083/absences/justifications/${filename}`;
+                        link.href = `${API_URL}/absences/justifications/${filename}`;
                         link.download = filename || `justificatif_${absence.id}.pdf`;
                         link.click();
                       }}
@@ -570,7 +570,7 @@ export default function HistoriqueAbsences() {
                     variant="outline"
                     size="sm"
                     className="h-6 px-2 text-xs w-full"
-                    onClick={() => window.open(`http://localhost:8083/absences/justifications/${filename}`, '_blank')}
+                    onClick={() => window.open(`${API_URL}/absences/justifications/${filename}`, '_blank')}
                   >
                     <Eye className="h-3 w-3 mr-1" />
                     Voir le justificatif

@@ -1,6 +1,6 @@
 package com.class_manager.Gestion_des_absences.service;
 
-import com.class_manager.Gestion_des_absences.client.UserClient;
+import com.class_manager.Gestion_des_absences.client.EtudiantClient;
 import com.class_manager.Gestion_des_absences.model.dto.*;
 import com.class_manager.Gestion_des_absences.model.entity.Role;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
@@ -28,7 +28,7 @@ class SeanceServiceTest {
     private SeanceRepository seanceRepository;
 
     @Mock
-    private UserClient userClient;
+    private EtudiantClient etudiantClient;
 
     @Mock
     private AbsenceRepository absenceRepository;
@@ -67,7 +67,7 @@ class SeanceServiceTest {
         Long userId = 1L;
         List<Seance> seances = Arrays.asList(testSeance);
 
-        when(userClient.getUserById(userId)).thenReturn(adminUser);
+        when(etudiantClient.getUserById(userId)).thenReturn(adminUser);
         when(seanceRepository.findByClasseId(classeId)).thenReturn(seances);
 
     
@@ -77,7 +77,7 @@ class SeanceServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testSeance.getId(), result.get(0).getId());
-        verify(userClient, times(1)).getUserById(userId);
+        verify(etudiantClient, times(1)).getUserById(userId);
         verify(seanceRepository, times(1)).findByClasseId(classeId);
         verify(seanceRepository, never()).findByClasseIdAndProfId(anyLong(), anyLong());
     }
@@ -89,7 +89,7 @@ class SeanceServiceTest {
         Long userId = 10L;
         List<Seance> seances = Arrays.asList(testSeance);
 
-        when(userClient.getUserById(userId)).thenReturn(teacherUser);
+        when(etudiantClient.getUserById(userId)).thenReturn(teacherUser);
         when(seanceRepository.findByClasseIdAndProfId(classeId, userId)).thenReturn(seances);
 
    
@@ -99,7 +99,7 @@ class SeanceServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(testSeance.getId(), result.get(0).getId());
-        verify(userClient, times(1)).getUserById(userId);
+        verify(etudiantClient, times(1)).getUserById(userId);
         verify(seanceRepository, times(1)).findByClasseIdAndProfId(classeId, userId);
         verify(seanceRepository, never()).findByClasseId(anyLong());
     }
@@ -110,13 +110,13 @@ class SeanceServiceTest {
         Long classeId = 1L;
         Long userId = 1L;
 
-        when(userClient.getUserById(userId)).thenReturn(null);
+        when(etudiantClient.getUserById(userId)).thenReturn(null);
 
      
         assertThrows(RuntimeException.class, () -> {
             seanceService.getSeancesByClasseAndUser(classeId, userId);
         });
-        verify(userClient, times(1)).getUserById(userId);
+        verify(etudiantClient, times(1)).getUserById(userId);
         verify(seanceRepository, never()).findByClasseId(anyLong());
         verify(seanceRepository, never()).findByClasseIdAndProfId(anyLong(), anyLong());
     }
@@ -130,13 +130,13 @@ class SeanceServiceTest {
         userWithoutRole.setId(userId);
         userWithoutRole.setRole(null);
 
-        when(userClient.getUserById(userId)).thenReturn(userWithoutRole);
+        when(etudiantClient.getUserById(userId)).thenReturn(userWithoutRole);
 
        
         assertThrows(RuntimeException.class, () -> {
             seanceService.getSeancesByClasseAndUser(classeId, userId);
         });
-        verify(userClient, times(1)).getUserById(userId);
+        verify(etudiantClient, times(1)).getUserById(userId);
     }
 
     @Test
@@ -148,7 +148,7 @@ class SeanceServiceTest {
         studentUser.setId(userId);
         studentUser.setRole(Role.STUDENT);
 
-        when(userClient.getUserById(userId)).thenReturn(studentUser);
+        when(etudiantClient.getUserById(userId)).thenReturn(studentUser);
 
      
         List<Seance> result = seanceService.getSeancesByClasseAndUser(classeId, userId);
@@ -156,7 +156,7 @@ class SeanceServiceTest {
        
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(userClient, times(1)).getUserById(userId);
+        verify(etudiantClient, times(1)).getUserById(userId);
         verify(seanceRepository, never()).findByClasseId(anyLong());
         verify(seanceRepository, never()).findByClasseIdAndProfId(anyLong(), anyLong());
     }
@@ -241,7 +241,7 @@ class SeanceServiceTest {
         student2.setNiveau("L3");
         student2.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
 
         Object[] absence1 = new Object[]{100L, 5L};
         Object[] absence2 = new Object[]{101L, 1L};
@@ -259,7 +259,7 @@ class SeanceServiceTest {
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
         verify(absenceRepository, times(1)).countAbsencesByStudentForProf(profId);
         verify(absenceRepository, times(1)).countTotalSeancesByStudentForProf(profId);
     }
@@ -277,7 +277,7 @@ class SeanceServiceTest {
         student2.setNiveau("L3");
         student2.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
 
         Object[] absence1 = new Object[]{100L, 5L};
         Object[] absence2 = new Object[]{101L, 3L};
@@ -289,7 +289,7 @@ class SeanceServiceTest {
 
        
         assertNotNull(result);
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
         verify(absenceRepository, times(1)).countAbsencesByStudent();
     }
 
@@ -299,7 +299,7 @@ class SeanceServiceTest {
         Long profId = 10L;
         double threshold = 0.25;
 
-        when(userClient.getAllStudents()).thenReturn(Collections.emptyList());
+        when(etudiantClient.getAllStudents()).thenReturn(Collections.emptyList());
         when(absenceRepository.countAbsencesByStudentForProf(profId))
                 .thenReturn(Collections.<Object[]>emptyList());
         when(absenceRepository.countTotalSeancesByStudentForProf(profId))
@@ -311,7 +311,7 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -320,7 +320,7 @@ class SeanceServiceTest {
         Long profId = 10L;
         double threshold = 0.25;
 
-        when(userClient.getAllStudents()).thenReturn(Collections.emptyList());
+        when(etudiantClient.getAllStudents()).thenReturn(Collections.emptyList());
 
         // Student ID in absence data but not in student map
         Object[] absence1 = new Object[]{999L, 5L};
@@ -341,7 +341,7 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         // Should skip student not found in map
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -355,7 +355,7 @@ class SeanceServiceTest {
         student1.setNiveau("L3");
         student1.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1));
 
         // No absences for this student
         when(absenceRepository.countAbsencesByStudentForProf(profId))
@@ -374,7 +374,7 @@ class SeanceServiceTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
         // Student with 0 absences should be active (rate = 0 < threshold)
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -388,7 +388,7 @@ class SeanceServiceTest {
         student1.setNiveau("L3");
         student1.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1));
 
         // 5 absences out of 10 seances = 50% (above threshold)
         Object[] absence1 = new Object[]{100L, 5L};
@@ -410,7 +410,7 @@ class SeanceServiceTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
         // Student should be marked as inactive
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -424,7 +424,7 @@ class SeanceServiceTest {
         student1.setNiveau("L3");
         student1.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1));
 
         // 2 absences out of 10 seances = 20% (below threshold)
         Object[] absence1 = new Object[]{100L, 2L};
@@ -446,7 +446,7 @@ class SeanceServiceTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
         // Student should be marked as active
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -465,7 +465,7 @@ class SeanceServiceTest {
         student2.setNiveau("L2");
         student2.setFiliere("GI");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
 
         Object[] absence1 = new Object[]{100L, 5L};
         Object[] absence2 = new Object[]{101L, 3L};
@@ -489,13 +489,13 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         // Should have separate entries for L3-INFO and L2-GI
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
     void testGetAbsenceRateByClassAndFiliere_EmptyData() {
         // Given
-        when(userClient.getAllStudents()).thenReturn(Collections.emptyList());
+        when(etudiantClient.getAllStudents()).thenReturn(Collections.emptyList());
         when(absenceRepository.countAbsencesByStudent())
                 .thenReturn(Collections.<Object[]>emptyList());
 
@@ -505,14 +505,14 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
         verify(absenceRepository, times(1)).countAbsencesByStudent();
     }
 
     @Test
     void testGetAbsenceRateByClassAndFiliere_StudentNotFoundInMap() {
         // Given
-        when(userClient.getAllStudents()).thenReturn(Collections.emptyList());
+        when(etudiantClient.getAllStudents()).thenReturn(Collections.emptyList());
 
         // Student ID in absence data but not in student map
         Object[] absence1 = new Object[]{999L, 5L};
@@ -527,7 +527,7 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         // Should skip student not found in map
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test
@@ -543,7 +543,7 @@ class SeanceServiceTest {
         student2.setNiveau("L3");
         student2.setFiliere("INFO");
 
-        when(userClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
+        when(etudiantClient.getAllStudents()).thenReturn(Arrays.asList(student1, student2));
 
         Object[] absence1 = new Object[]{100L, 5L};
         Object[] absence2 = new Object[]{101L, 3L};
@@ -559,7 +559,7 @@ class SeanceServiceTest {
         // Then
         assertNotNull(result);
         // Should aggregate absences for same class
-        verify(userClient, times(1)).getAllStudents();
+        verify(etudiantClient, times(1)).getAllStudents();
     }
 
     @Test

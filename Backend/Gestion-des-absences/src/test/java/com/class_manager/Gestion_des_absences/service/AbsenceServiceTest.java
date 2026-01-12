@@ -1,7 +1,7 @@
 package com.class_manager.Gestion_des_absences.service;
 
-import com.class_manager.Gestion_des_absences.client.CreneauClient;
-import com.class_manager.Gestion_des_absences.client.MatiereClient;
+
+import com.class_manager.Gestion_des_absences.client.EmploiDuTempsClient;
 import com.class_manager.Gestion_des_absences.model.dto.AbsenceResponseDTO;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
@@ -33,10 +33,7 @@ class AbsenceServiceTest {
     private AbsenceRepository absenceRepository;
 
     @Mock
-    private MatiereClient matiereClient;
-
-    @Mock
-    private CreneauClient creneauClient;
+    private EmploiDuTempsClient emploiDuTempsClient;
 
     @InjectMocks
     private AbsenceService absenceService;
@@ -70,8 +67,8 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
      
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -107,8 +104,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
      
         AbsenceResponseDTO result = absenceService.uploadJustification(absenceId, file);
@@ -146,8 +143,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
      
         AbsenceResponseDTO result = absenceService.uploadJustification(absenceId, file);
@@ -166,8 +163,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
       
         AbsenceResponseDTO result = absenceService.uploadJustification(absenceId, file);
@@ -186,8 +183,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
       
         AbsenceResponseDTO result = absenceService.updateJustificationStatus(absenceId, justifie);
@@ -213,8 +210,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
    
         AbsenceResponseDTO result = absenceService.updateJustificationStatus(absenceId, justifie);
@@ -241,8 +238,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
      
         AbsenceResponseDTO result = absenceService.updateJustificationStatus(absenceId, justifie);
@@ -278,8 +275,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
         // When
         AbsenceResponseDTO result = absenceService.uploadJustification(absenceId, file);
@@ -298,8 +295,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
         // When
         AbsenceResponseDTO result = absenceService.uploadJustification(absenceId, file);
@@ -321,8 +318,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
         // When
         AbsenceResponseDTO result = absenceService.updateJustificationStatus(absenceId, justifie);
@@ -343,8 +340,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
      
-        when(matiereClient.getMatiereById(anyLong())).thenThrow(new RuntimeException("Service unavailable"));
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenThrow(new RuntimeException("Service unavailable"));
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
        
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -364,9 +361,9 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
    
-        when(creneauClient.getCreneauById(anyLong())).thenThrow(new RuntimeException("Service unavailable"));
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenThrow(new RuntimeException("Service unavailable"));
 
     
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -387,8 +384,8 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(null);
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(null);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
     
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -410,8 +407,8 @@ class AbsenceServiceTest {
        
         Map<String, Object> matiereWithoutNom = new HashMap<>();
         matiereWithoutNom.put("id", 1L);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(matiereWithoutNom);
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(matiereWithoutNom);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
       
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -430,8 +427,8 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(null);
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(null);
 
         // When
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -451,11 +448,11 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
         // Creneau map without heureDebut/heureFin
         Map<String, Object> creneauWithoutTimes = new HashMap<>();
         creneauWithoutTimes.put("id", 1L);
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(creneauWithoutTimes);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(creneauWithoutTimes);
 
         // When
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -489,8 +486,8 @@ class AbsenceServiceTest {
         assertEquals(1, result.size());
         assertNull(result.get(0).getSeanceId());
         verify(absenceRepository, times(1)).findByEtudiantId(etudiantId);
-        verify(matiereClient, never()).getMatiereById(anyLong());
-        verify(creneauClient, never()).getCreneauById(anyLong());
+        verify(emploiDuTempsClient, never()).getMatiereById(anyLong());
+        verify(emploiDuTempsClient, never()).getCreneauById(anyLong());
     }
 
     @Test
@@ -508,7 +505,7 @@ class AbsenceServiceTest {
         absence.setSeance(seanceWithoutMatiere);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(Arrays.asList(absence));
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
        
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -517,7 +514,7 @@ class AbsenceServiceTest {
         assertNotNull(result);
         assertEquals(1, result.size());
         assertNull(result.get(0).getMatiereNom());
-        verify(matiereClient, never()).getMatiereById(anyLong());
+        verify(emploiDuTempsClient, never()).getMatiereById(anyLong());
     }
 
     @Test
@@ -535,7 +532,7 @@ class AbsenceServiceTest {
         absence.setSeance(seanceWithoutCreneau);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(Arrays.asList(absence));
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
 
         
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -545,7 +542,7 @@ class AbsenceServiceTest {
         assertEquals(1, result.size());
         assertNull(result.get(0).getHeureDebut());
         assertNull(result.get(0).getHeureFin());
-        verify(creneauClient, never()).getCreneauById(anyLong());
+        verify(emploiDuTempsClient, never()).getCreneauById(anyLong());
     }
 
     @Test
@@ -562,8 +559,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
         // When
         AbsenceResponseDTO result = absenceService.updateJustificationStatus(absenceId, justifie);
@@ -591,8 +588,8 @@ class AbsenceServiceTest {
 
         when(absenceRepository.findById(absenceId)).thenReturn(Optional.of(testAbsence));
         when(absenceRepository.save(any(Absence.class))).thenReturn(testAbsence);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(createCreneauMap());
 
         try {
           
@@ -617,13 +614,13 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
         
        
         Map<String, Object> creneauWithoutHeureDebut = new HashMap<>();
         creneauWithoutHeureDebut.put("id", 1L);
         creneauWithoutHeureDebut.put("heureFin", "10:00");
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(creneauWithoutHeureDebut);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(creneauWithoutHeureDebut);
 
        
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -642,13 +639,13 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
         
         // Creneau map without heureFin
         Map<String, Object> creneauWithoutHeureFin = new HashMap<>();
         creneauWithoutHeureFin.put("id", 1L);
         creneauWithoutHeureFin.put("heureDebut", "08:00");
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(creneauWithoutHeureFin);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(creneauWithoutHeureFin);
 
         // When
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);
@@ -667,12 +664,12 @@ class AbsenceServiceTest {
         List<Absence> absences = Arrays.asList(testAbsence);
 
         when(absenceRepository.findByEtudiantId(etudiantId)).thenReturn(absences);
-        when(matiereClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
+        when(emploiDuTempsClient.getMatiereById(anyLong())).thenReturn(createMatiereMap());
         
         // Creneau map without both times
         Map<String, Object> creneauWithoutTimes = new HashMap<>();
         creneauWithoutTimes.put("id", 1L);
-        when(creneauClient.getCreneauById(anyLong())).thenReturn(creneauWithoutTimes);
+        when(emploiDuTempsClient.getCreneauById(anyLong())).thenReturn(creneauWithoutTimes);
 
         // When
         List<AbsenceResponseDTO> result = absenceService.getAbsencesByEtudiantId(etudiantId);

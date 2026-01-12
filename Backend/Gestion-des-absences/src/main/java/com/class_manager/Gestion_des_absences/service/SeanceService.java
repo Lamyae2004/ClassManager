@@ -2,7 +2,6 @@ package com.class_manager.Gestion_des_absences.service;
 
 
 import com.class_manager.Gestion_des_absences.client.EtudiantClient;
-import com.class_manager.Gestion_des_absences.client.UserClient;
 import com.class_manager.Gestion_des_absences.model.dto.*;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SeanceService {
     private final SeanceRepository seanceRepository;
-    private final UserClient userClient;
     private final EtudiantClient etudiantClient;
     private final AbsenceRepository absenceRepository;
 

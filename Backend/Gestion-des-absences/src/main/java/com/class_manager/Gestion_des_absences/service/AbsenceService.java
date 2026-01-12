@@ -1,7 +1,6 @@
 package com.class_manager.Gestion_des_absences.service;
 
-import com.class_manager.Gestion_des_absences.client.CreneauClient;
-import com.class_manager.Gestion_des_absences.client.MatiereClient;
+import com.class_manager.Gestion_des_absences.client.EmploiDuTempsClient;
 import com.class_manager.Gestion_des_absences.model.dto.AbsenceResponseDTO;
 import com.class_manager.Gestion_des_absences.model.entity.Absence;
 import com.class_manager.Gestion_des_absences.model.entity.Seance;
@@ -23,8 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AbsenceService {
     private final AbsenceRepository absenceRepository;
-    private final MatiereClient matiereClient;
-    private final CreneauClient creneauClient;
+    private final EmploiDuTempsClient emploiDuTempsClient;
     private static final String UPLOAD_DIR = "uploads/justifications/";
 
     public List<AbsenceResponseDTO> getAbsencesByEtudiantId(Long etudiantId) {
@@ -113,7 +111,7 @@ public class AbsenceService {
             // Fetch matiere name
             if (seance.getMatiereId() != null) {
                 try {
-                    Map<String, Object> matiere = matiereClient.getMatiereById(seance.getMatiereId());
+                    Map<String, Object> matiere = emploiDuTempsClient.getMatiereById(seance.getMatiereId());
                     if (matiere != null && matiere.containsKey("nom")) {
                         dto.setMatiereNom((String) matiere.get("nom"));
                     }
@@ -126,7 +124,7 @@ public class AbsenceService {
             // Fetch creneau times
             if (seance.getCreneauId() != null) {
                 try {
-                    Map<String, Object> creneau = creneauClient.getCreneauById(seance.getCreneauId());
+                    Map<String, Object> creneau = emploiDuTempsClient.getCreneauById(seance.getCreneauId());
                     if (creneau != null) {
                         if (creneau.containsKey("heureDebut")) {
                             dto.setHeureDebut((String) creneau.get("heureDebut"));
