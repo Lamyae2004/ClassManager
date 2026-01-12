@@ -1112,10 +1112,10 @@ export function TimetableList() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">Liste des Emplois du Temps</h1>
+          <Calendar className="h-6 w-6 text-primary text-gray-500" />
+          <h1 className="text-2xl font-bold text-blue-700">Liste des Emplois du Temps</h1>
         </div>
-        <Button onClick={handleCreateNew} className="flex items-center gap-2">
+        <Button onClick={handleCreateNew} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4" />
           Nouvel Emploi du Temps
         </Button>

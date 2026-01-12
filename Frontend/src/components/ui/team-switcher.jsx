@@ -38,41 +38,28 @@ export function TeamSwitcher({ teams }) {
 >
   <div className="relative flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 shadow-xs group-hover:shadow-sm group-hover:border-[#1370fc]/20 transition-all duration-200">
     <activeTeam.logo 
-      className="w-5 h-5 text-[#0D47A1] group-hover:text-[#87CEFA] transition-transform duration-200 group-hover:scale-110" 
+      className="w-5 h-5  group-hover:text-[#1755ef] transition-transform duration-200 group-hover:scale-110" 
     />
   </div>
   
- <div className="flex-1 ml-3 text-left leading-tight">
-  <div className="flex items-center gap-2">
-    <span
-      className="
-        truncate font-semibold text-[#0D47A1]
-        group-hover:text-[#87CEFA]
-        transition-colors duration-200
-      "
-    >
-      {activeTeam.name}
-    </span>
-
-    {activeTeam.badge && (
-      <span
-        className="
-          text-[11px] font-semibold
-          px-2 py-0.5 rounded-full
-          bg-[#1370fc]/15 text-[#1370fc]
-          ring-1 ring-[#1370fc]/30
-        "
-      >
-        {activeTeam.badge}
-      </span>
-    )}
-  </div>
-
-  <span className="block truncate text-xs text-gray-500 mt-0.5">
-    {activeTeam.plan}
+ <div className="flex items-center gap-2.5">
+  <span className=" ml-2
+    font-bold text-lg tracking-tight
+    transition-all duration-300
+  ">
+    {activeTeam.name}
   </span>
-</div>
 
+  {activeTeam.badge && (
+    <span className="
+      text-xs font-bold tracking-wide
+      px-2.5 py-1 rounded-full
+      shadow-sm
+    ">
+      {activeTeam.badge}
+    </span>
+  )}
+</div>
   
   <ChevronsUpDown className="ml-auto text-gray-400 group-hover:text-gray-600 group-hover:rotate-180 transition-all duration-300 size-4" />
 </SidebarMenuButton>
