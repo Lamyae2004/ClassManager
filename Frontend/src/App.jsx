@@ -16,6 +16,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AssignResponsible from "./pages/gestion_responsable/AssignResponsible";
 import ResponsibleDetails from "./pages/gestion_responsable/ResponsibleDetails";
 import ResponsibleHistory from "./pages/gestion_responsable/ResponsibleHistory";
+import Account from "./pages/Account";
 
 
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="assign-reponsible" element={<AssignResponsible />} />
           <Route path="/responsable-details" element={<ResponsibleDetails />} />
           <Route path="/responsablesHistory" element={<ResponsibleHistory />} />
+          <Route path="account" element={<Account />} />
 
         </Route>
       </Routes>

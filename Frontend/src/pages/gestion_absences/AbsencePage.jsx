@@ -102,7 +102,7 @@ export default function AbsencePage() {
     // 🔹 Créneaux filtrés selon classe + jour + prof
     useEffect(() => {
         if (!classe) return;
-        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/${jourSelectionne}`;
+        const url = `http://localhost:8080/emploi/classe/${classe}/prof/${profConnecte}/jour/Lundi`;
 
         fetch(url)
             .then(res => {

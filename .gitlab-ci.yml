@@ -1,17 +1,179 @@
 stages:
   - build
   - test
+  - coverage
 
-build:
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+# Config Lib must be built first
+config-lib:build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/config-lib
+    - mvn clean install -DskipTests -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    paths:
+      - .m2/repository/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+class-responsibility-service:build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  needs:
+    - config-lib:build
+  script:
+    - cd Backend/class-responsibility-service
+    - mvn clean compile -DskipTests -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    paths:
+      - Backend/class-responsibility-service/target/
+      - .m2/repository/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+class-responsibility-service:test:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  needs:
+    - class-responsibility-service:build
+  script:
+    - cd Backend/class-responsibility-service
+    - mvn test -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - Backend/class-responsibility-service/target/surefire-reports/TEST-*.xml
+    paths:
+      - Backend/class-responsibility-service/target/
+      - .m2/repository/
+    expire_in: 1 week
+
+class-responsibility-service:coverage:
+  stage: coverage
+  image: maven:3.9.6-eclipse-temurin-17
+  needs:
+    - class-responsibility-service:test
+  script:
+    - cd Backend/class-responsibility-service
+    - mvn jacoco:report -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    when: always
+    paths:
+      - Backend/class-responsibility-service/target/site/jacoco/
+    expire_in: 1 month
+
+# Gestion des Absences Pipeline
+gestion-des-absences:build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/Gestion-des-absences
+    - mvn clean compile -DskipTests -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    paths:
+      - Backend/Gestion-des-absences/target/
+      - .m2/repository/
+    expire_in: 1 hour
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+gestion-des-absences:test:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  needs:
+    - gestion-des-absences:build
+  script:
+    - cd Backend/Gestion-des-absences
+    - mvn test -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - Backend/Gestion-des-absences/target/surefire-reports/TEST-*.xml
+    paths:
+      - Backend/Gestion-des-absences/target/
+      - .m2/repository/
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+gestion-des-absences:coverage:
+  stage: coverage
+  image: maven:3.9.6-eclipse-temurin-17
+  needs:
+    - gestion-des-absences:test
+  script:
+    - cd Backend/Gestion-des-absences
+    - mvn jacoco:report -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository
+  artifacts:
+    when: always
+    paths:
+      - Backend/Gestion-des-absences/target/site/jacoco/
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+    - merge_requests
+    - branches
+
+
+
+# ==========================
+# Build user-auth-service
+# ==========================
+build-auth:
   stage: build
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/user-auth-service
     - mvn clean compile
 
-test:
+
+# ==========================
+# Build emploi-service
+# ==========================
+build-emploi:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/Gestion-des-emplois
+    - mvn clean compile
+
+# ==========================
+# Test user-auth-service
+# ==========================
+test-auth:
   stage: test
   image: maven:3.9.6-eclipse-temurin-17
   script:
     - cd Backend/user-auth-service
-    - mvn test 
+    - mvn test
+    - mvn test
+
+# ==========================
+# Test emploi-service
+# ==========================
+test-emploi:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - cd Backend/Gestion-des-emplois
+    -  mvn test -Dspring.profiles.active=test
