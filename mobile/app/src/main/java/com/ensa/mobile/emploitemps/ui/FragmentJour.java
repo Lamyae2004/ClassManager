@@ -83,19 +83,22 @@ public class FragmentJour extends Fragment {
         loadEmploi();
     }
     public static String calculerEtat(String jour, String debut, String fin) {
-        // Comparer le jour
         Calendar c = Calendar.getInstance();
         String[] jours = {"Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"};
         String jourActuel = jours[c.get(Calendar.DAY_OF_WEEK) - 1];
 
+        // Si le jour est différent
         if (!jourActuel.equalsIgnoreCase(jour)) {
             return (c.get(Calendar.DAY_OF_WEEK) < jourEnNumero(jour)) ? "À venir" : "Terminé";
         }
 
-        // Comparer l'heure
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         try {
-            Date now = new Date();
+            // Compléter les heures partielles
+            debut = completeHour(debut);
+            fin = completeHour(fin);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+            Date now = sdf.parse(new SimpleDateFormat("HH:mm").format(new Date()));
             Date hDebut = sdf.parse(debut);
             Date hFin = sdf.parse(fin);
 
@@ -106,11 +109,31 @@ public class FragmentJour extends Fragment {
             } else {
                 return "Terminé";
             }
+
         } catch (ParseException e) {
             e.printStackTrace();
             return "Inconnu";
         }
     }
+
+    // Méthode pour compléter une heure partielle
+    private static String completeHour(String hour) {
+        if (hour == null) return "00:00";
+
+        hour = hour.trim();
+
+        if (!hour.contains(":")) {
+            hour += ":00";
+        } else {
+            String[] parts = hour.split(":");
+            if (parts.length == 0) return "00:00";
+            if (parts.length == 1) return parts[0] + ":00";  // ex: "14:" -> "14:00"
+            if (parts[1].isEmpty()) return parts[0] + ":00";  // ex: "14:" -> "14:00"
+        }
+
+        return hour;
+    }
+
 
     // Convertir nom du jour en numéro
     private static int jourEnNumero(String jour) {

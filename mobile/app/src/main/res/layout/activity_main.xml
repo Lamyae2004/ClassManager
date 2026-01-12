@@ -25,7 +25,9 @@
                 app:title="Class Manager"
                 app:titleTextColor="@android:color/white"
                 app:contentInsetStartWithNavigation="0dp"
-                android:paddingEnd="8dp">
+                android:paddingEnd="8dp"
+                app:navigationContentDescription="Ouvrir le menu">
+                >
 
                 <!-- PROFIL ÉTUDIANT COMPACT -->
                 <LinearLayout

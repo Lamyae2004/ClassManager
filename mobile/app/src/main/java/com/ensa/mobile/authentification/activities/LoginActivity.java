@@ -23,6 +23,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+import androidx.test.espresso.IdlingResource;
+
+import com.ensa.mobile.utils.SimpleIdlingResource;
+
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmail;
     private TextInputEditText etPassword;
@@ -32,6 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvForgotPassword;
     private ProgressBar progressBar;
     private TokenManager tokenManager;
+    @Nullable
+    private SimpleIdlingResource idlingResource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,11 +87,19 @@ public class LoginActivity extends AppCompatActivity {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
+        hideError(); // Cacher les erreurs précédentes
+
         if (email.isEmpty() || password.isEmpty()) {
             showError(getString(R.string.all_fields_required));
             return;
         }
+// Indiquer que l'activité n'est plus idle
+        if (idlingResource != null) {
+            idlingResource.setIdleState(false);
+        }
 
+        progressBar.setVisibility(View.VISIBLE);
+        btnLogin.setEnabled(false);
         progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
@@ -112,6 +129,10 @@ public class LoginActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     showError(errorMessage);
+                    // L'opération est terminée
+                    if (idlingResource != null) {
+                        idlingResource.setIdleState(true);
+                    }
                 }
             }
 
@@ -120,6 +141,10 @@ public class LoginActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 btnLogin.setEnabled(true);
                 showError("Error: " + t.getMessage());
+                // L'opération est terminée
+                if (idlingResource != null) {
+                    idlingResource.setIdleState(true);
+                }
             }
         });
     }
@@ -151,20 +176,36 @@ public class LoginActivity extends AppCompatActivity {
 
                     // Check if role is TEACHER or STUDENT (case-insensitive)
                     if (role != null && (role.equalsIgnoreCase("TEACHER") || role.equalsIgnoreCase("STUDENT"))) {
+                        // L'opération est terminée avant la navigation
+                        if (idlingResource != null) {
+                            idlingResource.setIdleState(true);
+                        }
                         navigateToMain();
                         Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
                     } else {
                         showError("Access denied. Only TEACHER and STUDENT can access this app.");
                         tokenManager.clearToken();
+                        // L'opération est terminée
+                        if (idlingResource != null) {
+                            idlingResource.setIdleState(true);
+                        }
                     }
                 } else {
                     showError("Failed to get user profile");
+                    // L'opération est terminée
+                    if (idlingResource != null) {
+                        idlingResource.setIdleState(true);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<UserResponse> call, Throwable t) {
                 showError("Error loading profile: " + t.getMessage());
+                // L'opération est terminée
+                if (idlingResource != null) {
+                    idlingResource.setIdleState(true);
+                }
             }
         });
     }
@@ -179,5 +220,32 @@ public class LoginActivity extends AppCompatActivity {
     private void showError(String message) {
         tvError.setText(message);
         tvError.setVisibility(View.VISIBLE);
+
+        // IMPORTANT: Afficher aussi le CardView parent
+        View cvError = findViewById(R.id.cvError);
+        if (cvError != null) {
+            cvError.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideError() {
+        tvError.setVisibility(View.GONE);
+        View cvError = findViewById(R.id.cvError);
+        if (cvError != null) {
+            cvError.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Méthode pour les tests uniquement
+     */
+    @VisibleForTesting
+    @NonNull
+    public IdlingResource getIdlingResource() {
+        if (idlingResource == null) {
+            idlingResource = new SimpleIdlingResource();
+        }
+        return idlingResource;
     }
 }
+
