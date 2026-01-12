@@ -175,12 +175,7 @@ const API_URL =  "http://localhost:8080";
               icon={School}
               color="blue"
             />
-            <StatCard
-              title="Mes étudiants"
-              value={safeStats.myStudents}
-              icon={GraduationCap}
-              color="green"
-            />
+           
           </>
         )}
       </div>

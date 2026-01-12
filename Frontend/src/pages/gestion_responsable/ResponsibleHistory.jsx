@@ -60,14 +60,14 @@ function ResponsibleHistory() {
   return (
     <Card className="w-full max-w-5l ml-5 p-4 ">
       <CardHeader>
-        <CardTitle className="text-xl text-center">
+        <CardTitle className=" text-center text-2xl  font-bold">
           Historique des Responsables
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-4 mr-9">
              {/* Filtres */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
           <div>
             <Label>Filière</Label>
             <Select onValueChange={setFiliere}>
@@ -113,13 +113,13 @@ function ResponsibleHistory() {
         <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-2">Prénom</th>
-                <th className="text-left py-2">Nom</th>
-                <th className="text-left py-2">Email</th>
-                <th className="text-left py-2">Filière</th>
-                <th className="text-left py-2">Niveau</th>
-                <th className="text-left py-2">Date d'affectation</th>
-                <th className="text-left py-2">Date de fin </th>
+                <th className="text-left py-2 text-gray-600">Prénom</th>
+                <th className="text-left py-2 text-gray-600">Nom</th>
+                <th className="text-left py-2 text-gray-600">Email</th>
+                <th className="text-left py-2 text-gray-600">Filière</th>
+                <th className="text-left py-2 text-gray-600">Niveau</th>
+                <th className="text-left py-2 text-gray-600">Date d'affectation</th>
+                <th className="text-left py-2 text-gray-600">Date de fin </th>
               </tr>
             </thead>
             <tbody>

@@ -96,9 +96,9 @@ public class LoginActivityFunctionalTest {
     public void loginCorrect_navigatesToMainActivity() {
         // Remplir avec des credentials corrects
         onView(withId(R.id.etEmail))
-                .perform(typeText("essafi.nourelhouda6@gmail.com"), closeSoftKeyboard());
+                .perform(typeText("inassemossalli2004@gmail.com"), closeSoftKeyboard());
         onView(withId(R.id.etPassword))
-                .perform(typeText("essafi2003"), closeSoftKeyboard());
+                .perform(typeText("inasse2004"), closeSoftKeyboard());
 
         // Cliquer sur login
         onView(withId(R.id.btnLogin)).perform(click());

@@ -43,7 +43,7 @@ function AssignResponsible() {
   return (
     <Card className="w-full max-w-xl mx-auto mt-10 ">
          <CardHeader>
-           <CardTitle className="text-xl font-bold text-center">Choisir un responsable</CardTitle>
+           <CardTitle className="text-xl font-bold  text-center">Choisir un responsable</CardTitle>
          </CardHeader>
          
 
@@ -57,7 +57,7 @@ function AssignResponsible() {
          <CardContent>
            <form onSubmit={handleSubmit}>
              <div className="space-y-2">
-               <Label className="mb-2">Filière:</Label>
+               <Label className="mb-2 text-gray-600">Filière:</Label>
                <Select onValueChange={setField}>
                  <SelectTrigger>
                    <SelectValue placeholder="Sélectionnez..." />
@@ -75,7 +75,7 @@ function AssignResponsible() {
              </div>
    
             <div className="space-y-2">
-               <Label className="mb-2">Niveau:</Label>
+               <Label className="mb-2 text-gray-600">Niveau:</Label>
                <Select onValueChange={setNiveau}>
                  <SelectTrigger>
                    <SelectValue placeholder="Sélectionnez..." />
@@ -92,7 +92,7 @@ function AssignResponsible() {
               <div className="space-y-2">
               
             
-                 <Button type="submit" className="w-full bg-black hover:bg-gray-600">Afficher</Button>
+                 <Button type="submit" className="w-full">Afficher</Button>
              
    
              </div>

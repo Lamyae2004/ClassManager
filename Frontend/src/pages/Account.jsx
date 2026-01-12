@@ -135,7 +135,7 @@ export default function Account() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Mon Compte</h1>
+        <h1 className="text-3xl font-bold ">Mon Compte</h1>
         <p className="text-muted-foreground mt-2">
           Gérez vos informations personnelles et vos paramètres de compte
         </p>
@@ -147,8 +147,8 @@ export default function Account() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-blue-600">
+                  <User className="h-5 w-5 " />
                   Informations Personnelles
                 </CardTitle>
                 <CardDescription>
@@ -160,8 +160,9 @@ export default function Account() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsEditing(true)}
+                  className="text-blue-700"
                 >
-                  <Edit2 className="h-4 w-4 mr-2" />
+                  <Edit2 className="h-4 w-4 mr-2 text-blue-700" />
                   Modifier
                 </Button>
               ) : (
@@ -185,6 +186,7 @@ export default function Account() {
                     size="sm"
                     onClick={handleSaveProfile}
                     disabled={loading}
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Enregistrer
@@ -196,12 +198,12 @@ export default function Account() {
           <CardContent>
             <div className="flex items-center gap-6 mb-6">
               <Avatar className="h-20 w-20">
-                <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
+                <AvatarFallback className="text-2xl   text-primary ">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-xl font-semibold">
+                <h3 className="text-xl font-semibold text-gray-800">
                   {user?.firstname} {user?.lastname}
                 </h3>
                 <p className="text-muted-foreground">{user?.email}</p>
@@ -216,7 +218,7 @@ export default function Account() {
             <Separator className="my-6" />
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+              <div className="space-y-2 text-gray-600">
                 <Label htmlFor="firstname">Prénom</Label>
                 <Input
                   id="firstname"
@@ -227,7 +229,7 @@ export default function Account() {
                   placeholder="Votre prénom"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 text-gray-600">
                 <Label htmlFor="lastname">Nom</Label>
                 <Input
                   id="lastname"
@@ -239,7 +241,7 @@ export default function Account() {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
+                <Label htmlFor="email" className="flex items-center gap-2 text-gray-600">
                   <Mail className="h-4 w-4" />
                   Email
                   {!canEditEmail && (
@@ -272,8 +274,8 @@ export default function Account() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-blue-600">
+                  <Lock className="h-5 w-5 text-blue-700" />
                   Sécurité
                 </CardTitle>
                 <CardDescription>
@@ -285,6 +287,7 @@ export default function Account() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsChangingPassword(true)}
+                  className="text-blue-700"
                 >
                   Changer le mot de passe
                 </Button>
@@ -294,7 +297,7 @@ export default function Account() {
           {isChangingPassword && (
             <CardContent>
               <div className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-2 text-gray-600">
                   <Label htmlFor="password">Nouveau mot de passe</Label>
                   <Input
                     id="password"
@@ -308,7 +311,7 @@ export default function Account() {
                     Le mot de passe doit contenir au moins 8 caractères
                   </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 text-gray-600">
                   <Label htmlFor="repeatPassword">Confirmer le mot de passe</Label>
                   <Input
                     id="repeatPassword"
@@ -335,6 +338,7 @@ export default function Account() {
                   <Button
                     onClick={handleChangePassword}
                     disabled={loading}
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Enregistrer le nouveau mot de passe
@@ -348,7 +352,7 @@ export default function Account() {
         {/* Account Information Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Informations du Compte</CardTitle>
+            <CardTitle className="text-blue-600">Informations du Compte</CardTitle>
             <CardDescription>
               Détails supplémentaires sur votre compte
             </CardDescription>
@@ -357,7 +361,7 @@ export default function Account() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium">Statut du compte</p>
+                  <p className="font-medium text-blue-600">Statut du compte</p>
                   <p className="text-sm text-muted-foreground">
                     {user?.enabled !== false ? "Actif" : "Inactif"}
                   </p>

@@ -74,8 +74,8 @@ public class FragmentDocumentsEtudiants extends Fragment {
 
     private void loadClasseEtudiant() {
         Long studentId = TokenManager.getInstance(getContext()).getStudentId();
-        ClasseService userClasseService = new ClasseService();
-        ClasseService classeService2 = new ClasseService();
+        ClasseService userClasseService = new ClasseService(requireContext());
+        ClasseService classeService2 = new ClasseService(requireContext());
 
         // 1️⃣ Premier appel : récupérer niveau + filiere de l'étudiant
         userClasseService.getClasse(studentId, new Callback<ClasseEtudiantDto>() {

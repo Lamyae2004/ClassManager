@@ -1,8 +1,13 @@
 package com.ensa.mobile.gestionDocuments.api;
 
 
+import static java.security.AccessController.getContext;
+
+import android.content.Context;
+
 import com.ensa.mobile.gestionDocuments.models.ClasseDto;
 import com.ensa.mobile.gestionDocuments.models.ClasseEtudiantDto;
+import com.ensa.mobile.utils.TokenManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -10,9 +15,14 @@ import retrofit2.Callback;
 public class ClasseService {
     private UserApi api;
 
+    private String token;
+    private long studentId;
 
-    public ClasseService() {
+
+    public ClasseService(Context context) {
         api = RetrofitClient.getInstance().create(UserApi.class);
+        TokenManager tokenManager = TokenManager.getInstance(context);
+        token = tokenManager.getToken();
     }
 
     public void getClasseId(String niveau, String filiere, Callback<ClasseDto> callback) {
@@ -22,6 +32,6 @@ public class ClasseService {
 
 
     public void getClasse(Long userId, Callback<ClasseEtudiantDto> callback) {
-        api.getClasse(userId).enqueue(callback);
+        api.getClasse(userId,"Bearer " + token).enqueue(callback);
     }
 }

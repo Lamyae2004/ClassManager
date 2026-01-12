@@ -104,7 +104,7 @@ export function NavProjects({ projects }) {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
-               className="w-48 rounded-lg text-blue-900"
+               className="w-48 rounded-lg text-blue-700"
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
@@ -114,7 +114,7 @@ export function NavProjects({ projects }) {
                     <DropdownMenuSeparator key={index} />
                   ) : (
                     <DropdownMenuItem key={index}>
-                      <menuItem.icon className="text-muted-textp" />
+                      <menuItem.icon className="text-muted-textp  " />
                       <Link to={menuItem.link}>{menuItem.label}</Link>
                     </DropdownMenuItem>
                   )
