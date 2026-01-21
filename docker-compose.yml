@@ -55,8 +55,8 @@ services:
       - postgres-user-auth
       - eureka-server
     environment:
-      MAIL_USERNAME: lamyae.himidi@uit.ac.ma
-      MAIL_PASSWORD: pass
+      MAIL_USERNAME: YOUR EMAIL
+      MAIL_PASSWORD: YOUR PASS
       SPRING_PROFILES_ACTIVE: cloud
       DB_USERNAME: postgres
       DB_PASSWORD: root
